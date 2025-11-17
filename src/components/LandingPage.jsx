@@ -11,8 +11,10 @@ import {
   Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import i18n from "../i18n";
+// import { useTranslation } from "react-i18next";
+import {useTranslation} from 'react-i18next';
+// import i18n from "../i18n";
+import i18n from "../i18n.js";
 import Globe from "../assets/Globe.png";
 import NpaxImage from "../assets/npax-white.png";
 import nPaxImage from "../assets/npax-logo.png";
@@ -84,13 +86,7 @@ export default function LandingPage() {
         }}
       >
         {/* Navigation */}
-        <nav
-          className={`fixed top-0 left-0 right-0 z-50 ${
-            isTransparent ? "bg-transparent" : "bg-white shadow-md"
-          } flex items-center justify-between px-8 py-3 text-sm transition-transform duration-300 ${
-            isNavbarVisible ? "translate-y-0" : "-translate-y-full"
-          }`}
-        >
+        <nav className="relative z-20 flex items-center justify-between px-8 py-3 text-sm">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
@@ -103,17 +99,18 @@ export default function LandingPage() {
           </div>
 
           {/* Navigation Links */}
-          <div className={`lg:flex hidden items-center gap-8 ${textColor}`}>
-            <Link to="/AboutUs" className={` ${hoverColor} transition`}>
-              {t('aboutUs')}
+          <div className="flex items-center gap-8 text-gray-500">
+            <Link
+              to="/AboutUs"
+              className="text-gray-600 hover:text-blue-300 transition"
+            >
+              ABOUT US
             </Link>
 
             {/* SOFTWARE PRODUCTS & SERVICES Dropdown */}
             <div className="relative group">
-              <button
-                className={`${hoverColor} transition flex items-center gap-1`}
-              >
-                {t('softwareProducts')}
+              <button className="hover:text-blue-300 transition flex items-center gap-1">
+                SOFTWARE PRODUCTS AND SERVICES
                 <ChevronDown className="w-4 h-4" />
               </button>
 
@@ -130,14 +127,14 @@ export default function LandingPage() {
                   </h3>
                   <div className="space-y-2 text-sm text-gray-500">
                     <a
-                      href="https://www.n-pax.com/advance_analytics.php"
+                      href="advance_analytics.php"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200 
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Advanced Analytics Solutions
                     </a>
                     <a
-                      href="https://www.n-pax.com/motionboard.php"
+                      href="motionboard.php"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
@@ -199,10 +196,8 @@ export default function LandingPage() {
 
             {/* INSIGHTS AND BLOGS (Mega Dropdown) */}
             <div className="relative group">
-              <button
-                className={`${hoverColor} transition flex items-center gap-1 `}
-              >
-                {t('insightsBlogs')}
+              <button className="hover:text-blue-300 transition flex items-center gap-1 ">
+                INSIGHTS AND BLOGS
                 <ChevronDown className="w-4 h-4" />
               </button>
               {/* Full-Width Mega Dropdown */}
@@ -275,14 +270,17 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <Link to="/Career" className={` ${hoverColor} transition`}>
-              {t('careers')}
+            <Link
+              to="/Career"
+              className="text-gray hover:text-blue-300 transition"
+            >
+              CAREERS
             </Link>
             <a
               href="#contact"
-              className={`${hoverColor} transition-colors uppercase text-sm tracking-wide`}
+              className="hover:text-blue-300 transition-colors uppercase text-sm tracking-wide"
             >
-              {t('contactUs')}
+              Contact Us
             </a>
             <div className="relative">
               <button
@@ -297,72 +295,6 @@ export default function LandingPage() {
                   <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('ja'); setIsLanguageDropdownOpen(false); }}>{t('japanese')}</button>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Responsive Nav Link */}
-          <div className="lg:hidden flex items-center">
-            <div className="relative group">
-              <button
-                className={`${hoverColor} transition flex items-center gap-1`}
-              >
-                <Menu className={`w-6 h-6 ${textColor}`} />
-              </button>
-
-              <div
-                className={`absolute right-0  mt-2 rounded-md ${mobileBg}
-                overflow-hidden max-h-0 opacity-0 invisible
-                -translate-y-2  w-[88vw] text-center
-                group-hover:max-h-[100vh] group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
-                transition-all duration-500 ease-out`}
-              >
-                <div className="p-5 flex flex-col gap-4">
-                  <Link
-                    to="/AboutUs"
-                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
-                  >
-                    {t('aboutUs')}
-                  </Link>
-                  <a
-                    href="#contact"
-                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
-                  >
-                    {t('softwareProducts')}
-                  </a>
-                  <a
-                    href="#contact"
-                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
-                  >
-                    {t('insightsBlogs')}
-                  </a>
-                  <Link
-                    to="/Career"
-                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
-                  >
-                    {t('careers')}
-                  </Link>
-                  <a
-                    href="#contact"
-                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
-                  >
-                    {t('contactUs')}
-                  </a>
-                  <div className="relative" onMouseEnter={() => setIsLanguageDropdownOpen(true)} onMouseLeave={() => setIsLanguageDropdownOpen(false)}>
-                    <button
-                      className={`${buttonTextColor} ${buttonBorderColor} px-4 py-2 ${buttonHoverBg} transition-all uppercase text-sm tracking-wide`}
-                      onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                    >
-                      {t('language')}
-                    </button>
-                    {isLanguageDropdownOpen && (
-                      <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-md z-60">
-                        <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('en'); setIsLanguageDropdownOpen(false); }}>{t('english')}</button>
-                        <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('ja'); setIsLanguageDropdownOpen(false); }}>{t('japanese')}</button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -409,7 +341,7 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero Content */}
-        <div className="relative z-10 container mx-auto px-8 py-16 mt-28 grid md:grid-cols-2 gap-12 items-center">
+        <div className="relative container mx-auto px-8 py-16 mt-28 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <h1 className="text-4xl md:text-4xl font-bold text-gray-700 leading-tight">
               {t('heroTitle')}

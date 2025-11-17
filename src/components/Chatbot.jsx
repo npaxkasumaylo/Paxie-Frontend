@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Send, MessageCircle, Minus, ArrowBigDown, ChevronDown, ChevronUp, Mic, Paperclip } from 'lucide-react';
+import { X, Send, MessageCircle, Minus, ArrowBigDown, ChevronDown, ChevronUp, Mic, Paperclip, Maximize2, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import BotIcon from './BotIcon';
+import { api } from '../api/api';
 
 export default function Chatbot() {
   const { t } = useTranslation();
@@ -128,24 +129,16 @@ export default function Chatbot() {
     setIsTyping(true);
 
     try {
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          let botText = t('chatbotResponse');
-          if (userMessage.attachedFiles && userMessage.attachedFiles.length > 0) {
-            const fileNames = userMessage.attachedFiles.map(f => f.name).join(', ');
-            botText = `I've received your files: ${fileNames}. ${botText}`;
-          }
-          const botMessage = {
-            id: Date.now(),
-            text: botText,
-            sender: 'bot',
-            timestamp: new Date(),
-            translationKey: 'chatbotResponse'
-          };
-          setMessages(prev => [...prev, botMessage]);
-          resolve();
-        }, 1000);
-      });
+      const res = await api.getAIResponse(inputMessage);
+      console.log(res);
+      const botMessage = {
+          id: Date.now(),
+          text: res.data,
+          sender: 'bot',
+          timestamp: new Date(),
+          translationKey: 'chatbotResponse'
+        };
+        setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage = {
@@ -161,29 +154,36 @@ export default function Chatbot() {
     }
   };
 
-  // const handleSendMessage = async () => {
-  //   if (!inputMessage.trim()) return;
+  //  const handleSendMessage = async () => {
+  //   if (!inputMessage.trim() && attachedFiles.length === 0) return;
 
   //   const userMessage = {
   //     id: messages.length + 1,
   //     text: inputMessage,
   //     sender: 'user',
-  //     timestamp: new Date()
+  //     timestamp: new Date(),
+  //     attachedFiles: attachedFiles
   //   };
 
   //   setMessages(prev => [...prev, userMessage]);
   //   setInputMessage('');
+  //   setAttachedFiles([]);
   //   setIsTyping(true);
 
   //   try {
-  //     // Simulated response for demo - replace with your actual API call
   //     await new Promise((resolve) => {
   //       setTimeout(() => {
+  //         let botText = t('chatbotResponse');
+  //         if (userMessage.attachedFiles && userMessage.attachedFiles.length > 0) {
+  //           const fileNames = userMessage.attachedFiles.map(f => f.name).join(', ');
+  //           botText = `I've received your files: ${fileNames}. ${botText}`;
+  //         }
   //         const botMessage = {
-  //           id: Date.now(), 
-  //           text: "Thank you for your message! I'm here to help you with your tasks and questions.",
+  //           id: Date.now(),
+  //           text: botText,
   //           sender: 'bot',
-  //           timestamp: new Date()
+  //           timestamp: new Date(),
+  //           translationKey: 'chatbotResponse'
   //         };
   //         setMessages(prev => [...prev, botMessage]);
   //         resolve();
@@ -193,15 +193,17 @@ export default function Chatbot() {
   //     console.error('Chatbot error:', error);
   //     const errorMessage = {
   //       id: Date.now(),
-  //       text: "Sorry, I'm having trouble connecting right now. Please try again later.",
+  //       text: t('chatbotError'),
   //       sender: 'bot',
-  //       timestamp: new Date()
+  //       timestamp: new Date(),
+  //       translationKey: 'chatbotError'
   //     };
   //     setMessages(prev => [...prev, errorMessage]);
   //   } finally {
   //     setIsTyping(false); 
   //   }
   // };
+
   
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -310,13 +312,11 @@ export default function Chatbot() {
         ref={chatButtonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-8 right-8 p-1 bg-gray-700 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300 border-2 border-blue-600 z-40 ${
-          isOpen ? 'scale-110' : ''
-        }`}
+          isOpen ? 'scale-110' : ''}`}
       >
-        <div
-          className={`transition-all duration-500 ease-in-out transform ${
+        <div className={`transition-all duration-500 ease-in-out transform ${
             isOpen ? 'rotate-180 opacity-100 scale-100' : 'rotate-0 opacity-90 scale-95'}`}
-          >
+        >
           {!isOpen ? (
             <BotIcon w={45} h={45} />
           ) : (
@@ -328,29 +328,41 @@ export default function Chatbot() {
       {/* Chat Window */}
       {isOpen && (
         <div 
-          className={`fixed bg-white rounded-3xl shadow-2xl flex flex-col z-50 overflow-hidden transition-all duration-300  animate-chatPopIn ${
-            isMaximized 
-              ? 'inset-4' 
-              : 'bottom-24 right-8 w-[380px] h-[450px]'
+          className={`fixed bg-white shadow-2xl flex flex-col z-50 overflow-hidden transition-all duration-300 animate-chatPopIn ${
+            isMaximized
+              ? 'inset-0 rounded-none'
+              : 'bottom-24 right-8 w-[380px] h-[450px] rounded-3xl'
           }`}
         >
-          <div className="w-full h-full bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-            {/* Chat Header */}
-            <div className=" bg-blue-500 p-2 flex items-center justify-between cursor-move">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white ml-1.5 rounded-full flex items-center justify-center">
-                  <BotIcon w={30} h={30} />
+            <div className={`w-full  bg-white shadow-2xl flex flex-col overflow-hidden`}>
+              {/* Chat Header */}
+              <div className=" bg-blue-500 p-2 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Bot Icon */}
+                  <div className="w-10 h-10 bg-white ml-1.5 rounded-full flex items-center justify-center">
+                    <BotIcon w={30} h={30} />
+                  </div>
+                  <h3 className="font-semibold text-white text-lg">Chat With Paxie</h3>
                 </div>
-                <h3 className="font-semibold text-white text-lg">Chat With Paxie</h3>
+                <div className="flex items-center gap-1">
+                  {/* Maximize Button */}
+                  <button
+                    onClick={() => setIsMaximized(!isMaximized)}
+                    className="text-white hover:bg-blue-600 rounded-lg p-1 transition-colors"
+                    title={isMaximized ? "Restore" : "Maximize"}
+                  >
+                    <Maximize2 className="w-5 h-5" />
+                  </button>
+                  {/* Minimize Button */}
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="text-white hover:bg-blue-600 rounded-lg p-1 transition-colors"
+                    title="Minimize"
+                  >
+                    <Minus className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
-              <h3 className="font-semibold text-white text-lg">{t('chatbotHeader')}</h3>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-white hover:bg-blue-600 rounded-lg p-1 transition-colors"
-            >
-              <Minus className="w-6 h-6" />
-            </button>
           </div>
 
           {/* Messages */}
@@ -360,14 +372,19 @@ export default function Chatbot() {
                 key={message.id}
                 className={`flex mb-4 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`max-w-[85%] p-4 rounded-2xl ${
+                {(isMaximized && message.sender != 'user') && 
+                  <div className="w-10 h-10 mt-auto mr-2 bg-white rounded-full flex items-center justify-center">
+                  <BotIcon w={30} h={30} />
+                </div>}
+
+                <div className={`max-w-[85%] p-4 rounded-2xl ${
                     message.sender === 'user'
                       ? 'bg-blue-500 text-white rounded-br-none'
                       : 'bg-white text-gray-700 rounded-bl-none shadow-sm'
                   }`}
                 >
                   <p className="text-sm whitespace-pre-line leading-relaxed">{message.text}</p>
+
                   {message.attachedFiles && message.attachedFiles.length > 0 && (
                     <div className="mt-2">
                       {message.attachedFiles.map((file, idx) => (
@@ -383,15 +400,20 @@ export default function Chatbot() {
                     </div>
                   )}
                 </div>
+                {(isMaximized && message.sender === 'user') &&
+                    <div className="w-10 h-10 mt-auto ml-2 text-gray-400 bg-white rounded-full flex items-center justify-center">
+                    <User w={30} h={30} />
+                  </div>}
               </div>
+              
             ))}
 
               {isTyping && (
                 <div className="flex justify-start mb-4">
-                   <div className="w-10 h-10 bg-white ml-1.5 rounded-full flex items-center justify-center">
-                      <BotIcon w={30} h={30} />
-                    </div>
-                  <div className="w-10 h-10 mt-auto mr-2 bg-white rounded-full flex items-center justify-center">
+                  {isMaximized && <div className="w-10 h-10 mt-auto mr-2 bg-white rounded-full flex items-center justify-center">
+                    <BotIcon w={30} h={30} />
+                  </div>}
+                  <div className="min-w-16 h-10 mt-auto mr-2 bg-white rounded-full flex items-center justify-center">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -406,7 +428,7 @@ export default function Chatbot() {
 
           {/* Attached Files */}
           {attachedFiles.length > 0 && (
-            <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
+            <div className="px-4 py-2 bg-gray-100 border-t border-gray-200">
               <div className="text-xs text-gray-500 mb-1">Attached files:</div>
               {attachedFiles.map((file, index) => (
                 <div key={index} className="text-sm text-gray-700 flex items-center gap-1">
@@ -425,6 +447,7 @@ export default function Chatbot() {
             onDrop={handleDrop}
           >
             <div className="flex gap-2 items-center bg-gray-100 rounded-full px-4 py-2">
+              {/* File Upload Button */}
               <button
                 onClick={handleAttachClick}
                 className="p-1 hover:bg-gray-200 rounded-full transition-colors"
@@ -432,6 +455,7 @@ export default function Chatbot() {
               >
                 <Paperclip className="w-4 h-4 text-gray-500" />
               </button>
+              {/* Message Text Box */}
               <input
                 type="text"
                 value={inputMessage}
@@ -441,12 +465,12 @@ export default function Chatbot() {
                 className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                 disabled={isTyping}
               />
-              {inputMessage.trim() ? (
+              {(inputMessage.trim() || attachedFiles.length > 0) ? (
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isTyping}
+                  disabled={((!inputMessage.trim() && attachedFiles.length === 0) || isTyping)}
                   className={`p-2 rounded-full transition-colors ${
-                    !inputMessage.trim() || isTyping
+                    ((!inputMessage.trim() && attachedFiles.length === 0) || isTyping)
                       ? 'bg-gray-300 cursor-not-allowed'
                       : 'bg-blue-500 hover:bg-blue-600'
                   }`}
