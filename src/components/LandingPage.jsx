@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowRight,
   User,
@@ -11,6 +11,8 @@ import {
   Menu,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import Globe from "../assets/Globe.png";
 import NpaxImage from "../assets/npax-white.png";
 import nPaxImage from "../assets/npax-logo.png";
@@ -35,8 +37,38 @@ import Cebu from "../assets/cebu.png";
 import Chatbot from "./Chatbot.jsx";
 
 export default function LandingPage() {
+  const { t } = useTranslation();
   const [selectedLocation, setSelectedLocation] = useState("manila");
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isTransparent, setIsTransparent] = useState(true);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsNavbarVisible(false);
+      } else {
+        setIsNavbarVisible(true);
+      }
+      setIsTransparent(currentScrollY < window.innerHeight * 1.15);
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
+  const textColor = "text-gray-700";
+  const hoverColor = "hover:text-blue-600";
+  const buttonTextColor = "text-gray-700";
+  const buttonBorderColor = "border-gray-700";
+  const buttonHoverBg = "hover:bg-gray-700 hover:text-white";
+  const mobileBg = "bg-white shadow-lg";
+  const mobileTextColor = "text-gray-700";
+  const mobileHoverColor = "hover:text-blue-600";
 
   return (
     <>
@@ -52,7 +84,13 @@ export default function LandingPage() {
         }}
       >
         {/* Navigation */}
-        <nav className="relative z-20 flex items-center justify-between px-8 py-3 text-sm">
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 ${
+            isTransparent ? "bg-transparent" : "bg-white shadow-md"
+          } flex items-center justify-between px-8 py-3 text-sm transition-transform duration-300 ${
+            isNavbarVisible ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
@@ -65,18 +103,17 @@ export default function LandingPage() {
           </div>
 
           {/* Navigation Links */}
-          <div className="flex items-center gap-8 text-gray-500">
-            <Link
-              to="/AboutUs"
-              className="text-gray-600 hover:text-blue-300 transition"
-            >
-              ABOUT US
+          <div className={`lg:flex hidden items-center gap-8 ${textColor}`}>
+            <Link to="/AboutUs" className={` ${hoverColor} transition`}>
+              {t('aboutUs')}
             </Link>
 
             {/* SOFTWARE PRODUCTS & SERVICES Dropdown */}
             <div className="relative group">
-              <button className="hover:text-blue-300 transition flex items-center gap-1">
-                SOFTWARE PRODUCTS AND SERVICES
+              <button
+                className={`${hoverColor} transition flex items-center gap-1`}
+              >
+                {t('softwareProducts')}
                 <ChevronDown className="w-4 h-4" />
               </button>
 
@@ -93,14 +130,14 @@ export default function LandingPage() {
                   </h3>
                   <div className="space-y-2 text-sm text-gray-500">
                     <a
-                      href="advance_analytics.php"
+                      href="https://www.n-pax.com/advance_analytics.php"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200 
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Advanced Analytics Solutions
                     </a>
                     <a
-                      href="motionboard.php"
+                      href="https://www.n-pax.com/motionboard.php"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
@@ -162,8 +199,10 @@ export default function LandingPage() {
 
             {/* INSIGHTS AND BLOGS (Mega Dropdown) */}
             <div className="relative group">
-              <button className="hover:text-blue-300 transition flex items-center gap-1 ">
-                INSIGHTS AND BLOGS
+              <button
+                className={`${hoverColor} transition flex items-center gap-1 `}
+              >
+                {t('insightsBlogs')}
                 <ChevronDown className="w-4 h-4" />
               </button>
               {/* Full-Width Mega Dropdown */}
@@ -236,21 +275,95 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <Link
-              to="/Career"
-              className="text-gray hover:text-blue-300 transition"
-            >
-              CAREERS
+            <Link to="/Career" className={` ${hoverColor} transition`}>
+              {t('careers')}
             </Link>
             <a
               href="#contact"
-              className="hover:text-blue-300 transition-colors uppercase text-sm tracking-wide"
+              className={`${hoverColor} transition-colors uppercase text-sm tracking-wide`}
             >
-              Contact Us
+              {t('contactUs')}
             </a>
-            <button className="text-white border border-white px-4 py-2 hover:bg-white hover:text-slate-800 transition-all uppercase text-sm tracking-wide">
-              Language
-            </button>
+            <div className="relative">
+              <button
+                className={`${buttonTextColor} ${buttonBorderColor} px-4 py-2 ${buttonHoverBg} transition-all uppercase text-sm tracking-wide`}
+                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+              >
+                {t('language')}
+              </button>
+              {isLanguageDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-md z-60">
+                  <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('en'); setIsLanguageDropdownOpen(false); }}>{t('english')}</button>
+                  <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('ja'); setIsLanguageDropdownOpen(false); }}>{t('japanese')}</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Responsive Nav Link */}
+          <div className="lg:hidden flex items-center">
+            <div className="relative group">
+              <button
+                className={`${hoverColor} transition flex items-center gap-1`}
+              >
+                <Menu className={`w-6 h-6 ${textColor}`} />
+              </button>
+
+              <div
+                className={`absolute right-0  mt-2 rounded-md ${mobileBg}
+                overflow-hidden max-h-0 opacity-0 invisible
+                -translate-y-2  w-[88vw] text-center
+                group-hover:max-h-[100vh] group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+                transition-all duration-500 ease-out`}
+              >
+                <div className="p-5 flex flex-col gap-4">
+                  <Link
+                    to="/AboutUs"
+                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
+                  >
+                    {t('aboutUs')}
+                  </Link>
+                  <a
+                    href="#contact"
+                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
+                  >
+                    {t('softwareProducts')}
+                  </a>
+                  <a
+                    href="#contact"
+                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
+                  >
+                    {t('insightsBlogs')}
+                  </a>
+                  <Link
+                    to="/Career"
+                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
+                  >
+                    {t('careers')}
+                  </Link>
+                  <a
+                    href="#contact"
+                    className={`${mobileTextColor} ${mobileHoverColor} transition`}
+                  >
+                    {t('contactUs')}
+                  </a>
+                  <div className="relative" onMouseEnter={() => setIsLanguageDropdownOpen(true)} onMouseLeave={() => setIsLanguageDropdownOpen(false)}>
+                    <button
+                      className={`${buttonTextColor} ${buttonBorderColor} px-4 py-2 ${buttonHoverBg} transition-all uppercase text-sm tracking-wide`}
+                      onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                    >
+                      {t('language')}
+                    </button>
+                    {isLanguageDropdownOpen && (
+                      <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 shadow-xl rounded-md z-60">
+                        <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('en'); setIsLanguageDropdownOpen(false); }}>{t('english')}</button>
+                        <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left" onClick={() => { i18n.changeLanguage('ja'); setIsLanguageDropdownOpen(false); }}>{t('japanese')}</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Responsive Nav Link */}
@@ -296,15 +409,13 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero Content */}
-        <div className="relative z-10 container mx-auto px-8 py-16 mt-20 grid md:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 container mx-auto px-8 py-16 mt-28 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <h1 className="text-4xl md:text-4xl font-bold text-gray-700 leading-tight">
-              Be future-proof with our <br />
-              <span className="text-gray-700">Amazing Solutions™</span>
+              {t('heroTitle')}
             </h1>
             <p className="text-lg text-gray-700 leading-relaxed">
-              As trusted by our partners worldwide, our end-to-end business IT
-              solutions will help you reach your organization's next milestones.
+              {t('heroSubtitle')}
             </p>
           </div>
         </div>
@@ -315,11 +426,10 @@ export default function LandingPage() {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-gray-500 text-sm font-semibold tracking-wider uppercase mb-2">
-            OUR SOLUTIONS
+            {t('ourSolutions')}
           </h2>
           <p className="text-2xl text-gray-700">
-            AMAZING THINGS MADE POSSIBLE BY{" "}
-            <span className="font-bold text-gray-900">GREAT PEOPLE™</span>
+            {t('amazingThings')}
           </p>
         </div>
 
@@ -330,12 +440,10 @@ export default function LandingPage() {
             {/* Companion to HR Management */}
             <div>
               <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                Companion to HR Management
+                {t('companionHR')}
               </h3>
               <p className="text-gray-600 mb-4 leading-relaxed">
-                Streamline HR process using an end-to-end packaged solution.
-                Fast and accurate payroll, customizable to business compliance,
-                integratable with 100% support.
+                {t('hrDescription')}
               </p>
               <button
                 onClick={() =>
@@ -343,7 +451,7 @@ export default function LandingPage() {
                 }
                 className="flex items-center text-blue-600 font-semibold hover:text-blue-700 border-b-2 border-transparent hover:border-blue-600 transition-all duration-300"
               >
-                EXPLORE SOLUTION
+                {t('exploreSolution')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </button>
             </div>
@@ -357,10 +465,10 @@ export default function LandingPage() {
               </div>
               <div>
                 <h4 className="text-xl font-bold text-gray-900 mb-2">
-                  Talent Management
+                  {t('talentManagement')}
                 </h4>
                 <p className="text-gray-600 leading-relaxed">
-                  Secure business future for a new generation of management.
+                  {t('talentDescription')}
                 </p>
               </div>
             </div>
@@ -374,11 +482,10 @@ export default function LandingPage() {
               </div>
               <div>
                 <h4 className="text-xl font-bold text-gray-900 mb-2">
-                  Advance Business Intelligence
+                  {t('advancedBI')}
                 </h4>
                 <p className="text-gray-600 leading-relaxed">
-                  Pinpoint and identify performance trends before they impact
-                  your business.
+                  {t('biDescription')}
                 </p>
               </div>
             </div>
@@ -408,13 +515,10 @@ export default function LandingPage() {
         {/* Right Content */}
         <div className="lg:w-1/2 space-y-6">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            Compact Global Accounting Solution
+            {t('compactAccounting')}
           </h3>
           <p className="text-gray-600 leading-relaxed mb-4">
-            Effectively manage meticulous financial information with a
-            comprehensive computerized accounting solution. Ensure statutory
-            compliance, avoid penalty and charges. Inclusive with standard ERP
-            solution.
+            {t('accountingDescription')}
           </p>
           <button
             onClick={() =>
@@ -422,7 +526,7 @@ export default function LandingPage() {
             }
             className="flex items-center text-blue-600 font-semibold hover:text-blue-700 border-b-2 border-transparent hover:border-blue-600 transition-all duration-300"
           >
-            EXPLORE SOLUTION
+            {t('exploreSolution')}
             <ArrowRight className="ml-2 w-5 h-5" />
           </button>
         </div>
@@ -445,18 +549,16 @@ export default function LandingPage() {
           <div className="absolute right-[-10%] top-[-30%] w-48 h-48 bg-yellow-400 rounded-full z-0 opacity-80 lg:block hidden" />
 
           <h2 className="relative text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-4 z-10">
-            Employee Time Tracking <br />
-            <span className="text-black">FREE FOR 10 USERS</span>
+            {t('employeeTimeTracking')} <br />
+            <span className="text-black">{t('freeFor10Users')}</span>
           </h2>
 
           <p className="text-gray-700 text-lg font-semibold mb-2 relative z-10">
-            Create and Monitor Your Teams.
+            {t('timeTrackingSubtitle')}
           </p>
 
           <p className="text-gray-600 mb-6 max-w-md relative z-10">
-            Unli Users, max of 50 job titles, 20 shifts, 50 holidays, 10
-            workgroups, track from 100 locations. P75. Timekeeping device also
-            available.
+            {t('timeTrackingDescription')}
           </p>
 
           {/* Button perfectly centered */}
@@ -467,7 +569,7 @@ export default function LandingPage() {
               }
               className="px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition"
             >
-              LEARN MORE
+              {t('learnMore')}
             </button>
           </div>
         </div>
@@ -478,11 +580,10 @@ export default function LandingPage() {
         {/* Left Content */}
         <div className="max-w-xl text-left space-y-6">
           <h3 className="text-3xl font-bold text-gray-900">
-            Transforming Data into Amazing Insights
+            {t('transformingData')}
           </h3>
           <p className="text-gray-600 leading-relaxed">
-            Aim to make predictions that will give your a field of vision for
-            the future of your business beyond human capabilities.
+            {t('insightsDescription')}
           </p>
           <button
             onClick={() =>
@@ -490,7 +591,7 @@ export default function LandingPage() {
             }
             className="flex items-center text-blue-600 font-semibold hover:text-blue-700 border-b-2 border-transparent hover:border-blue-600 transition-all duration-300"
           >
-            SEE SERVICE DETAILS
+            {t('seeServiceDetails')}
             <ArrowRight className="ml-2 w-5 h-5" />
           </button>
         </div>
@@ -518,19 +619,21 @@ export default function LandingPage() {
         {/* Right Content */}
         <div className="lg:w-1/2 space-y-6">
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            Digital Transformation
+            {t('digitalTransformation')}
           </h3>
           <p className="text-gray-600 leading-relaxed mb-4">
-            Elevating the business model and process through an innovative
-            integrated approach driven by strategic industry experts.
+            {t('digitalDescription')}
           </p>
           <button
             onClick={() =>
-              window.open("https://www.n-pax.com/digital_transformation", "_blank")
+              window.open(
+                "https://www.n-pax.com/digital_transformation",
+                "_blank"
+              )
             }
             className="flex items-center text-blue-600 font-semibold hover:text-blue-700 border-b-2 border-transparent hover:border-blue-600 transition-all duration-300"
           >
-            SEE SERVICE DETAILS
+            {t('seeServiceDetails')}
             <ArrowRight className="ml-2 w-5 h-5" />
           </button>
         </div>
@@ -540,7 +643,7 @@ export default function LandingPage() {
       <div className="relative z-10 container mx-auto px-8 py-16 bg-white">
         <div className="bg-gray-100 py-24 px-8 lg:px-16 mt-24">
           <h2 className="text-center text-2xl font-semibold text-gray-700 mb-12 max-w-4xl mx-auto">
-            INCLUSIVE TO:
+            {t('inclusiveTo')}
           </h2>
 
           {/* Categories with Icons */}
@@ -551,7 +654,7 @@ export default function LandingPage() {
                 alt="Manufacturing or Production"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">Manufacturing or Production</p>
+              <p className="text-gray-600">{t('manufacturing')}</p>
             </div>
             <div className="text-center">
               <img
@@ -559,7 +662,7 @@ export default function LandingPage() {
                 alt="Local or International"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">Local or International</p>
+              <p className="text-gray-600">{t('localInternational')}</p>
             </div>
             <div className="text-center">
               <img
@@ -567,7 +670,7 @@ export default function LandingPage() {
                 alt="Product or Services Providers"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">Product or Services Providers</p>
+              <p className="text-gray-600">{t('productServices')}</p>
             </div>
             <div className="text-center">
               <img
@@ -575,7 +678,7 @@ export default function LandingPage() {
                 alt="SMB, SME or Large Enterprise"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">SMB, SME or Large Enterprise</p>
+              <p className="text-gray-600">{t('smbSme')}</p>
             </div>
             <div className="text-center">
               <img
@@ -583,7 +686,7 @@ export default function LandingPage() {
                 alt="Government or Public Sector"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">Government or Public Sector</p>
+              <p className="text-gray-600">{t('government')}</p>
             </div>
             <div className="text-center">
               <img
@@ -591,7 +694,7 @@ export default function LandingPage() {
                 alt="Logistics or Distribution"
                 className="mx-auto mb-4 w-16 h-16 object-contain"
               />
-              <p className="text-gray-600">Logistics or Distribution</p>
+              <p className="text-gray-600">{t('logistics')}</p>
             </div>
           </div>
 
@@ -603,19 +706,12 @@ export default function LandingPage() {
               className="absolute top-2 left-1/2 transform -translate-x-1/2 w-20 h-20"
             />
             <blockquote className="text-gray-700 italic mb-4 pt-20">
-              "N-PAX has been a great partner for us for over a decade. Their
-              continued passion in delivering excellent quality personnel and
-              services has been outstanding. Every individual that I have dealt
-              with at N-PAX has proven to be highly skilled, creative, effective
-              communicators, dedicated and professionalism that's unmatched in
-              the market. Their low levels of attrition is a direct result of a
-              great company culture that embraces communication and emphasis on
-              employee work-life balance."
+              {t('testimonialText')}
             </blockquote>
             <p className="font-semibold text-gray-900">
-              Philip Alexander Conde
+              {t('testimonialName')}
             </p>
-            <p className="text-gray-600">VP Technology, APAC</p>
+            <p className="text-gray-600">{t('testimonialTitle')}</p>
             <div className="flex justify-center mt-4">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 -mb-16">
                 <img
@@ -636,11 +732,11 @@ export default function LandingPage() {
           <blockquote className="blockquote">
             <p>
               <span className="text-3xl font-semibold text-gray-700">
-                BLOGS AND INSIGHTS
+                {t('blogsTitle')}
               </span>
               <br />
               <span className="text-2xl">
-                <strong>CURRENT</strong> Updates
+                <strong>{t('currentUpdates')}</strong>
               </span>
             </p>
           </blockquote>
@@ -656,16 +752,16 @@ export default function LandingPage() {
               alt="NPAX musical"
             />
             <div className="p-6">
-              <p className="text-lg font-semibold">NPAX musical</p>
-              <p className="text-gray-300">Tue October 04, 2022</p>
+              <p className="text-lg font-semibold">{t('npaxMusicalTitle')}</p>
+              <p className="text-gray-300">{t('npaxMusicalDate')}</p>
             </div>
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="update/news.php?p_id=28"
+                  href="https://www.n-pax.com/update/news.php?p_id=28"
                   className="text-white hover:text-gray-300"
                 >
-                  View More
+                  {t('viewMore')}
                 </a>
               </small>
             </div>
@@ -680,16 +776,16 @@ export default function LandingPage() {
               alt="B-EN-G Partnership"
             />
             <div className="p-6">
-              <p className="text-lg font-semibold">B-EN-G Partnership</p>
-              <p className="text-gray-300">Tue September 29, 2020</p>
+              <p className="text-lg font-semibold">{t('bengPartnershipTitle')}</p>
+              <p className="text-gray-300">{t('bengPartnershipDate')}</p>
             </div>
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="update/news.php?p_id=17"
+                  href="https://www.n-pax.com/update/news.php?p_id=17"
                   className="text-white hover:text-gray-300"
                 >
-                  View More
+                  {t('viewMore')}
                 </a>
               </small>
             </div>
@@ -705,17 +801,17 @@ export default function LandingPage() {
             />
             <div className="p-6">
               <p className="text-lg font-semibold">
-                Philippine HR Congress 2019
+                {t('hrCongressTitle')}
               </p>
-              <p className="text-gray-300">Tue September 29, 2020</p>
+              <p className="text-gray-300">{t('hrCongressDate')}</p>
             </div>
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="update/news.php?p_id=15"
+                  href="https://www.n-pax.com/update/news.php?p_id=15"
                   className="text-white hover:text-gray-300"
                 >
-                  View More
+                  {t('viewMore')}
                 </a>
               </small>
             </div>
@@ -726,13 +822,19 @@ export default function LandingPage() {
 
       {/* See More Button */}
       <div className="flex justify-center mt-4">
-        <button className="mt-5 px-6 py-3 bg-gray-900 text-white rounded-full font-semibold hover:bg-gray-800 transition">
-          SEE MORE
+        <button
+          onClick={() => window.open("https://www.n-pax.com/update", "_blank")}
+          className="mt-5 px-6 py-3 bg-gray-900 text-white rounded-full font-semibold hover:bg-gray-800 transition"
+        >
+          {t('seeMoreButton')}
         </button>
       </div>
 
       {/* Contact / Consultation Section */}
-      <section className="mt-24 mb-10 container p-5 text-center animated fadeInUp">
+      <section
+        id="contact"
+        className="mt-24 mb-10 container p-5 text-center animated fadeInUp"
+      >
         <div className="grid md:grid-cols-2 gap-0 max-w-4xl mx-auto">
           {/* Left Column: Location Tabs and Map */}
           <div className="border p-5 rounded-lg shadow-md">
@@ -745,7 +847,7 @@ export default function LandingPage() {
                 }`}
                 onClick={() => setSelectedLocation("manila")}
               >
-                MANILA
+                {t('manilaTab')}
               </button>
               <button
                 className={`px-4 py-2 ml-2 ${
@@ -755,7 +857,7 @@ export default function LandingPage() {
                 }`}
                 onClick={() => setSelectedLocation("cebu")}
               >
-                CEBU
+                {t('cebuTab')}
               </button>
             </div>
 
@@ -774,56 +876,52 @@ export default function LandingPage() {
             )}
             {selectedLocation === "manila" ? (
               <p className="text-sm text-gray-600">
-                Unit 1702, One Global Place 5th Avenue, cor 25th BGC Taguig
-                City, Philippines
+                {t('manilaAddress')}
               </p>
             ) : (
-              <p className="text-sm text-gray-600">Cebu Office Address</p>
+              <p className="text-sm text-gray-600">{t('cebuAddress')}</p>
             )}
 
             <h3 className="text-xl font-bold mt-4 mb-2">
-              BOOK A FREE CONSULTATION WITH OUR EXPERTS
+              {t('bookConsultationTitle')}
             </h3>
             <p className="text-gray-700 text-sm">
-              Whether you're a corporate or public sector company needing IT
-              assistance or a highly scalable digital solution tailored to your
-              business model, please message us below and we'll get in touch
-              shortly!
+              {t('consultationDescription')}
             </p>
           </div>
 
           {/* Right Column: Contact Form */}
           <div className="bg-gray-100 p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-bold mb-4">
-              TELL US WHAT YOU'RE LOOKING FOR!
+              {t('tellUsTitle')}
             </h3>
             <form className="flex flex-col space-y-3">
               <input
                 type="text"
-                placeholder="Enter your Name"
+                placeholder={t('enterName')}
                 className="border p-2 rounded-md focus:ring-2 focus:ring-yellow-400"
                 required
               />
               <input
                 type="text"
-                placeholder="Company"
+                placeholder={t('companyPlaceholder')}
                 className="border p-2 rounded-md focus:ring-2 focus:ring-yellow-400"
                 required
               />
               <input
                 type="email"
-                placeholder="Enter a valid email address"
+                placeholder={t('emailPlaceholder')}
                 className="border p-2 rounded-md focus:ring-2 focus:ring-yellow-400"
                 required
               />
               <input
                 type="tel"
-                placeholder="Contact Number"
+                placeholder={t('contactNumber')}
                 className="border p-2 rounded-md focus:ring-2 focus:ring-yellow-400"
                 required
               />
               <textarea
-                placeholder="Message"
+                placeholder={t('messagePlaceholder')}
                 className="border p-2 rounded-md focus:ring-2 focus:ring-yellow-400"
                 rows="4"
                 required
@@ -833,7 +931,7 @@ export default function LandingPage() {
                 type="submit"
                 className="bg-yellow-400 text-gray-800 font-semibold py-2 rounded-full hover:bg-yellow-500 transition"
               >
-                SUBMIT
+                {t('submitButton')}
               </button>
             </form>
           </div>
@@ -841,31 +939,31 @@ export default function LandingPage() {
       </section>
 
       {/* Footer Section */}
-      <footer className="bg-gray-900 text-gray-200 py-10 mt-10">
+      <footer className="bg-gray-900 text-gray-200 py-4 mt-10">
         <div className="container mx-auto grid md:grid-cols-3 gap-10 px-5">
           {/* SERVICES */}
           <div className="ml-16">
             {" "}
             {/* moved to the right */}
-            <h4 className="font-bold text-white mb-3">SERVICES</h4>
+            <h4 className="font-bold text-white mb-3">{t('servicesTitle')}</h4>
             <ul className="space-y-2 text-sm ml-12">
               <li className="hover:text-white transition-colors cursor-pointer">
-                Business Intelligence
+                {t('businessIntelligence')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Business Analytics
+                {t('businessAnalytics')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Data Dashboarding
+                {t('dataDashboarding')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Software Development
+                {t('softwareDevelopment')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                IT Maintenance and Management
+                {t('itMaintenance')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                IOT
+                {t('iot')}
               </li>
             </ul>
           </div>
@@ -874,19 +972,19 @@ export default function LandingPage() {
           <div className="ml-16">
             {" "}
             {/* moved to the right */}
-            <h4 className="font-bold text-white mb-3">SOLUTIONS</h4>
+            <h4 className="font-bold text-white mb-3">{t('solutionsTitle')}</h4>
             <ul className="space-y-2 text-sm ml-12">
               <li className="hover:text-white transition-colors cursor-pointer">
-                Computerized Accounting System with Compact ERP Solution
+                {t('accountingSystem')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                HRIS and Payroll Calculation System
+                {t('hrisPayroll')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Manufacturing ERP System
+                {t('manufacturingErp')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Free Timekeeping Tool
+                {t('freeTimekeeping')}
               </li>
             </ul>
           </div>
@@ -895,24 +993,22 @@ export default function LandingPage() {
           <div className="ml-16">
             {" "}
             {/* moved to the right */}
-            <h4 className="font-bold text-white mb-3">COMPANY</h4>
+            <h4 className="font-bold text-white mb-3">{t('companyTitle')}</h4>
             <ul className="space-y-2 text-sm ml-12">
               <li className="hover:text-white transition-colors cursor-pointer">
-                About Us
+                {t('aboutUsFooter')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Career
+                {t('careerFooter')}
               </li>
               <li className="hover:text-white transition-colors cursor-pointer">
-                Blogs and Industry Insights
+                {t('blogsIndustry')}
               </li>
             </ul>
             <div className="mt-5 space-y-2 text-sm ml-12">
-              <h4 className="font-bold text-white mb-1">PRIVACY NOTICE</h4>
+              <h4 className="font-bold text-white mb-1">{t('privacyNotice')}</h4>
               <p className="text-sm">
-                © {currentYear} NOPAX GROUP.
-                <br />
-                All Rights Reserved
+                {t('copyright', { year: currentYear })}
               </p>
             </div>
             {/* Social Media + Logo */}
@@ -954,7 +1050,7 @@ export default function LandingPage() {
         </div>
         {/* Bottom Language Row */}
         <div className="border-t border-gray-700 mt-10 pt-4 pl-5 text-sm text-gray-400 text-left">
-          🌐 English (Philippines)
+          {t('englishPhilippines')}
         </div>
       </footer>
 
