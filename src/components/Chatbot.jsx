@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Send, MessageCircle, Minus, ArrowBigDown, ChevronDown, ChevronUp, Mic, Paperclip, Maximize2, User } from 'lucide-react';
+import { X, Send, MessageCircle, Minus, ArrowBigDown, ChevronDown, ChevronUp, Mic, Paperclip, Maximize2, User, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import BotIcon from './BotIcon';
@@ -434,8 +434,12 @@ export default function Chatbot() {
                 <div key={index} className="text-sm text-gray-700 flex items-center gap-1">
                   <Paperclip className="w-3 h-3" />
                   {file.name}
+                   <button onClick={() => setAttachedFiles([])} className=" ml-2transition-all ease-in-out hover:scale-110">
+                      <XCircle className='text-gray-400'/>
+                    </button>
                 </div>
               ))}
+             
             </div>
           )}
 

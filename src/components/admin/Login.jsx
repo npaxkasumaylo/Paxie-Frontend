@@ -23,8 +23,8 @@ export default function Login() {
     try {
       const res = await api.login({UserName: username, Password: password});
 
-      localStorage.setItem("authToken", res.data.token);
-      localStorage.setItem("currentUser", JSON.stringify(res.data.user));
+      // localStorage.setItem("authToken", res.data.token);
+      // localStorage.setItem("currentUser", JSON.stringify(res.data.user));
       setLoading(false);
       navigate("/admin/home");
 
