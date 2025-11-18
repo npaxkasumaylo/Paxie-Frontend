@@ -1,24 +1,22 @@
 import { CircleX, FileText, LoaderCircle } from "lucide-react";
 import { useState } from "react";
+import { api } from "../../api/api";
 
-export default function JobOpenings({jobs, networkError, getAllDocuments, notify}){
+export default function JobOpenings({jobs, networkError, getAllJobs, notify}){
   const [deleting, setDeleting] = useState(false);
   const [currentId, setCurrentId] = useState(null);
 
- 	const handleJobDelete = async (id) => {
-			setCurrentId(documentId);
-      setDeleting(true);
-      if (!window.confirm("Are you sure you want to delete this document?")) {
-        return;
-      }
+ 	const handleJobDelete = async (jobId) => {
+			setCurrentId(jobId);
+      setDeleting(true)
+      
 
       try {
-        await api.deleteDocument(documentId);
-        console.log("Document deleted successfully!");
-        notify("Document deleted successfully!", "success")
+        await api.removeJob(jobId);
+        notify("Job deleted successfully!", "success")
         setDeleting(false);
         setCurrentId(null);
-        getAllDocuments();
+        getAllJobs();
       } catch (e) {
         console.error("Error deleting document:", e);
         setDeleting(false);
@@ -40,7 +38,7 @@ export default function JobOpenings({jobs, networkError, getAllDocuments, notify
 										<div key={item.id} className="flex mt-2.5 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 cursor-pointer">
 											<FileText className="mr-2 text-white/90" />
 											<p className="text-white/90">{item.jobTitle}</p>
-											<button onClick={handleJobDelete(item.id)} className="ml-auto" disabled={deleting}>
+											<button onClick={() => handleJobDelete(item.id)} className="ml-auto" disabled={deleting}>
 												{deleting && currentId === item.id ? (
 													<LoaderCircle className="text-white/90 animate-spin"/>
 												) : (
@@ -54,7 +52,7 @@ export default function JobOpenings({jobs, networkError, getAllDocuments, notify
 							{ networkError ? (
 								<p className="text-red-500 text-sm mt-2 font-medium text-center">{networkError}</p>
 								) : (
-									<p className="text-white/90 mt-4 text-center">No documents uploaded yet.</p>
+									<p className="text-white/90 mt-4 text-center">No job openings available.</p>
 								)}
 									</>
 								)}

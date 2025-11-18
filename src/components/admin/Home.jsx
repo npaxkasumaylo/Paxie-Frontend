@@ -211,7 +211,7 @@ export default function Home() {
 						}
 
 						{!uploadFile &&
-							<AddNewJob getAllJobs={getAllJobs} />
+							<AddNewJob getAllJobs={getAllJobs} notify={notify} />
 						}
 						
 					</div>
@@ -251,7 +251,7 @@ export default function Home() {
 					</div>
 					
 					{/* Job Openings */}
-					<JobOpenings jobs={jobs} networkError={networkError} getAllDocuments={getAllDocuments} notify={notify} />
+					<JobOpenings jobs={jobs} networkError={networkError} getAllJobs={getAllJobs} notify={notify} />
 
 				</div>
 				
