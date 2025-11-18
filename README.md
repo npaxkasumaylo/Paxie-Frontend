@@ -9,6 +9,7 @@ PAXIE is a real-time AI chat assistant built for N-Pax website, featuring a resp
 - AI-powered real-time responses
 - User-friendly input and message display
 - Able to minimize and maximize chat interface
+- Upload resume in the chatbot for job opportunities
 
 ### Admin User
 - Responsive admin interface
@@ -26,6 +27,8 @@ PAXIE is a real-time AI chat assistant built for N-Pax website, featuring a resp
 - `axios` – for HTTP requests to the backend API
 - `react-router-dom` – for routing (if multi-page)
 - `react-toastify` - for display errr or success message
+- `react-pdftotext` - for extracting text from pdf
+- `react-i18next`
 - Node.js 18+ and npm 9+ recommended
 
 ## Installation

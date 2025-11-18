@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import BotIcon from './BotIcon';
 import { api } from '../api/api';
+import pdfToText from 'react-pdftotext';
+import { toast } from 'react-toastify';
+import Toast from './Toast';
 
 export default function Chatbot() {
   const { t } = useTranslation();
@@ -14,7 +17,7 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [helpText, setHelpText] = useState('');
   const [showHelp, setShowHelp] = useState(true);
-  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [attachedFile, setAttachedFile] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -64,12 +67,10 @@ export default function Chatbot() {
 
       return () => clearInterval(interval);
     } else if (!isOpen && !showHelp) {
-      // Update help text when language changes but help is not showing
       setHelpText(t('chatbotHelpMessage'));
     }
   }, [isOpen, showHelp, t]);
 
-  // Re-translate existing bot messages when language changes
   useEffect(() => {
     const handleLanguageChange = () => {
       setMessages(prevMessages =>
@@ -113,24 +114,36 @@ export default function Chatbot() {
   }, []);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() && attachedFiles.length === 0) return;
+    if (!inputMessage.trim() && !attachedFile) return;
 
     const userMessage = {
       id: messages.length + 1,
       text: inputMessage,
       sender: 'user',
       timestamp: new Date(),
-      attachedFiles: attachedFiles
+      attachedFile: attachedFile
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
-    setAttachedFiles([]);
+    setAttachedFile(null);
     setIsTyping(true);
 
+    var text = "";
+    await pdfToText(attachedFile)
+    .then((txt) => text = txt)
+    .catch((error) => console.error("Failed to extract text from pdf"));
+
     try {
-      const res = await api.getAIResponse(inputMessage);
-      console.log(res);
+      var res = "";
+      if(attachedFile) {
+         res = await api.getAIResponse(inputMessage + " Uploaded Resume: " + text);
+        //  console.log(res);
+      } else {
+        res = await api.getAIResponse(inputMessage);
+        // console.log(res);
+      }
+      
       const botMessage = {
           id: Date.now(),
           text: res.data,
@@ -139,6 +152,7 @@ export default function Chatbot() {
           translationKey: 'chatbotResponse'
         };
         setMessages(prev => [...prev, botMessage]);
+        setAttachedFile(null);
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage = {
@@ -153,57 +167,6 @@ export default function Chatbot() {
       setIsTyping(false); 
     }
   };
-
-  //  const handleSendMessage = async () => {
-  //   if (!inputMessage.trim() && attachedFiles.length === 0) return;
-
-  //   const userMessage = {
-  //     id: messages.length + 1,
-  //     text: inputMessage,
-  //     sender: 'user',
-  //     timestamp: new Date(),
-  //     attachedFiles: attachedFiles
-  //   };
-
-  //   setMessages(prev => [...prev, userMessage]);
-  //   setInputMessage('');
-  //   setAttachedFiles([]);
-  //   setIsTyping(true);
-
-  //   try {
-  //     await new Promise((resolve) => {
-  //       setTimeout(() => {
-  //         let botText = t('chatbotResponse');
-  //         if (userMessage.attachedFiles && userMessage.attachedFiles.length > 0) {
-  //           const fileNames = userMessage.attachedFiles.map(f => f.name).join(', ');
-  //           botText = `I've received your files: ${fileNames}. ${botText}`;
-  //         }
-  //         const botMessage = {
-  //           id: Date.now(),
-  //           text: botText,
-  //           sender: 'bot',
-  //           timestamp: new Date(),
-  //           translationKey: 'chatbotResponse'
-  //         };
-  //         setMessages(prev => [...prev, botMessage]);
-  //         resolve();
-  //       }, 1000);
-  //     });
-  //   } catch (error) {
-  //     console.error('Chatbot error:', error);
-  //     const errorMessage = {
-  //       id: Date.now(),
-  //       text: t('chatbotError'),
-  //       sender: 'bot',
-  //       timestamp: new Date(),
-  //       translationKey: 'chatbotError'
-  //     };
-  //     setMessages(prev => [...prev, errorMessage]);
-  //   } finally {
-  //     setIsTyping(false); 
-  //   }
-  // };
-
   
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -256,18 +219,28 @@ export default function Chatbot() {
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    // Filter for pdf, doc, docx
-    const validFiles = files.filter(file => {
-      const ext = file.name.split('.').pop().toLowerCase();
-      return ['pdf', 'doc', 'docx'].includes(ext);
-    });
-    setAttachedFiles(prev => [...prev, ...validFiles]);
-    // Reset input
-    e.target.value = '';
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type === "application/pdf") {
+        setAttachedFile(file);
+      } else {
+        notify("Wrong file type.", "warning");
+      }
+    }
   };
 
+    const notify = (msg, status) => {
+        if (status === "success") {
+          toast.success(msg);
+        } else if (status === "error") {
+          toast.error(msg);
+        } else if (status === "warning") {
+          toast.info(msg);
+        }
+      };
+
   const handleFileClick = (file) => {
+    if (!file) return;
     const url = URL.createObjectURL(file);
     window.open(url, '_blank');
   };
@@ -285,16 +258,14 @@ export default function Chatbot() {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    const files = Array.from(e.dataTransfer.files);
-    const validFiles = files.filter(file => {
+    const file = e.dataTransfer.files[0];
+    if (file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      return ['pdf', 'doc', 'docx'].includes(ext);
-    });
-    if (validFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...validFiles]);
+      if (['pdf'].includes(ext)) {
+        setAttachedFile(file);
+      }
     }
   };
-
   return (
     <>
       {/* Floating Help Message */}
@@ -385,18 +356,15 @@ export default function Chatbot() {
                 >
                   <p className="text-sm whitespace-pre-line leading-relaxed">{message.text}</p>
 
-                  {message.attachedFiles && message.attachedFiles.length > 0 && (
+                  {message.attachedFile && (
                     <div className="mt-2">
-                      {message.attachedFiles.map((file, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleFileClick(file)}
-                          className={`text-xs ${message.sender === 'user' ? 'text-blue-100 hover:text-blue-200' : 'text-gray-600 hover:text-gray-800'} flex items-center gap-1 cursor-pointer underline`}
-                        >
-                          <Paperclip className="w-3 h-3" />
-                          {file.name}
-                        </button>
-                      ))}
+                      <button
+                        onClick={() => handleFileClick(message.attachedFile)}
+                        className={`text-xs ${message.sender === 'user' ? 'text-blue-100 hover:text-blue-200' : 'text-gray-600 hover:text-gray-800'} flex items-center gap-1 cursor-pointer underline`}
+                      >
+                        <Paperclip className="w-3 h-3" />
+                        {message.attachedFile.name}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -426,22 +394,17 @@ export default function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Attached Files */}
-          {attachedFiles.length > 0 && (
-            <div className="px-4 py-2 bg-gray-100 border-t border-gray-200">
-              <div className="text-xs text-gray-500 mb-1">Attached files:</div>
-              {attachedFiles.map((file, index) => (
-                <div key={index} className="text-sm text-gray-700 flex items-center gap-1">
+          {/* Attached File */}
+            {attachedFile && <div className="px-4 py-2 bg-gray-100 border-t border-gray-200">
+              <div className="text-xs text-gray-500 mb-1">Attached file:</div>
+                <div className="text-sm text-gray-700 flex items-center gap-1">
                   <Paperclip className="w-3 h-3" />
-                  {file.name}
-                   <button onClick={() => setAttachedFiles([])} className=" ml-2transition-all ease-in-out hover:scale-110">
+                  {attachedFile.name}
+                   <button onClick={() => setAttachedFile(null)} className=" ml-2 transition-all ease-in-out hover:scale-110">
                       <XCircle className='text-gray-400'/>
                     </button>
                 </div>
-              ))}
-             
-            </div>
-          )}
+            </div>}
 
           {/* Input */}
           <div
@@ -469,12 +432,12 @@ export default function Chatbot() {
                 className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                 disabled={isTyping}
               />
-              {(inputMessage.trim() || attachedFiles.length > 0) ? (
+              {(inputMessage.trim() || attachedFile) ? (
                 <button
                   onClick={handleSendMessage}
-                  disabled={((!inputMessage.trim() && attachedFiles.length === 0) || isTyping)}
+                  disabled={((!inputMessage.trim() && !attachedFile) || isTyping)}
                   className={`p-2 rounded-full transition-colors ${
-                    ((!inputMessage.trim() && attachedFiles.length === 0) || isTyping)
+                    ((!inputMessage.trim() && !attachedFile) || isTyping)
                       ? 'bg-gray-300 cursor-not-allowed'
                       : 'bg-blue-500 hover:bg-blue-600'
                   }`}
@@ -501,11 +464,13 @@ export default function Chatbot() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept=".pdf,.doc,.docx"
-              multiple
+              accept=".pdf"
               style={{ display: 'none' }}
             />
           </div>
+
+          <Toast />
+          
         </div>
       )}
     </>

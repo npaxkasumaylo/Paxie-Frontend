@@ -69,12 +69,12 @@ export default function Home() {
 			if (file.type === "application/pdf") {
 				docType = 0; // PDF
 			} 
-			else if (file.type === "application/msword" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-				docType = 1; // Word Document
-			} 
-			else if (file.type === "application/vnd.ms-excel" || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-				docType = 2; // Excel Spreadsheet
-			} 
+			// else if (file.type === "application/msword" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+			// 	docType = 1; // Word Document
+			// } 
+			// else if (file.type === "application/vnd.ms-excel" || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+			// 	docType = 2; // Excel Spreadsheet
+			// } 
 			// else if (file.type === "text/plain") {
 			// 	docType = 3; // Text
 			// } 
@@ -95,7 +95,7 @@ export default function Home() {
 				};
 
 				const res = await api.addDocument(document);
-				const aiRes = await api.addAIDocument(res.data.id);
+				await api.addAIDocument(res.data.id);
 
 				setUploading(false);
 				setFile(null);
@@ -170,7 +170,7 @@ export default function Home() {
 									<input 
 										onChange={(e) => setFile(e.target.files[0])}
 										type="file" 
-										accept=".pdf, .docs, .docx, .xls, .xlsx"
+										accept=".pdf"
 										className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
 									/>
 									
