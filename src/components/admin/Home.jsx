@@ -17,6 +17,7 @@ export default function Home() {
   const [error, setError] = useState("");
 	const [networkError, setNetworkError] = useState("");
   const [file, setFile] = useState(null);
+	const [docInfo, setDocInfo] = useState(0);
   const navigate = useNavigate();
 	const [documents, setDocuments] = useState([]);
   const [currentId, setCurrentId] = useState(null);
@@ -25,11 +26,11 @@ export default function Home() {
 
 
     useEffect(() => {
-			setTimeout(() => {
-					getAllDocuments();
-					getAllJobs()
-					setLoading(false);
-			}, 500); 
+		setTimeout(() => {
+				getAllDocuments();
+				getAllJobs()
+				setLoading(false);
+		}, 500); 
     },[]);
 
 		const notify = (msg, status) => {
@@ -92,6 +93,7 @@ export default function Home() {
 					DocumentType: docType,
 					Data: base64String,
 					Uploaded: new Date().toISOString(),
+					DocumentInformation: docInfo
 				};
 
 				const res = await api.addDocument(document);
@@ -117,6 +119,7 @@ export default function Home() {
 
 			try {
 				await api.deleteDocument(documentId);
+				await api.deleteAIDocument(documentId);
 				console.log("Document deleted successfully!");
 				notify("Document deleted successfully!", "success")
 				setDeleting(false);
@@ -140,6 +143,8 @@ export default function Home() {
 				setLoading(false);
 			}		
 		}
+
+		console.log(docInfo)
 
     return (
 		<>
@@ -166,7 +171,7 @@ export default function Home() {
 							<div className="flex-row justify-between gap-6">
 								
 								{/* Upload Input */}
-								<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-52 hover:bg-white/10 cursor-pointer">
+								<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
 									<input 
 										onChange={(e) => setFile(e.target.files[0])}
 										type="file" 
@@ -182,6 +187,15 @@ export default function Home() {
 									) : (
 										<div className="text-white/90 mt-4">Click to upload or drag and drop</div>
 									)}
+								</div>
+									
+								<div className="mt-4 w-full">
+									<select value={docInfo} onChange={(e) => setDocInfo(Number(e.target.value))} className="text-md rounded-md px-2 py-1 w-full">
+										<option value={0}>Company Profile</option>
+										<option value={1}>Company Management</option>
+										<option value={2}>Product/Service Profile</option>
+										<option value={3}>Policy Profile</option>
+									</select>
 								</div>
 
 								{/* Upload Button */}

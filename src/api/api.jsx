@@ -38,7 +38,7 @@ export const api = {
   // AI API
   getAIResponse: (query) => axios.post(`http://127.0.0.1:8000/chatbot-ai?query=${ query }`),
   addAIDocument: (id) => axios.post(`http://127.0.0.1:8000/newDocument?id=${id}`),
-
+  deleteAIDocument: (id) => axios.delete(`http://127.0.0.1:8000/deleteDocument?id=${id}`)
 
 };
 
