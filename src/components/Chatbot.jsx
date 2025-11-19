@@ -148,15 +148,12 @@ export default function Chatbot() {
         .catch((error) => console.error("Failed to extract text from pdf"));
     }
 
-    const formattedMessages = messages.map(m => m.sender + ':' + m.text).join(" || ");
     try {
       var res = "";
       if(currentFile) {
-        console.log(inputMessage + " || Uploaded Resume: " + text + " || Previous Messages: " + formattedMessages)
-         res = await api.getAIResponse(inputMessage + " || Uploaded Resume: " + text + " || Previous Messages: " + formattedMessages);
+         res = await api.getAIResponse(inputMessage + " || Uploaded Resume: " + text);
       } else {
-        console.log(inputMessage + " Previous Messages: " + formattedMessages)
-        res = await api.getAIResponse(inputMessage + " || Previous Messages: " + formattedMessages);
+        res = await api.getAIResponse(inputMessage);
       }
       
       const botMessage = {
