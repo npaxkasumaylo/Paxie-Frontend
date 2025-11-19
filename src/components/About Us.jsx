@@ -25,7 +25,7 @@ export default function AboutUs() {
       {/* Content */}
       <div className="relative z-10">
         {/* Navigation */}
-        <nav className="relative flex items-center justify-between px-8 py-3 text-sm">
+        <nav className="z-20 relative flex items-center justify-between px-8 py-3 text-sm">
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/">

@@ -35,6 +35,11 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
+  //Store conversation history in the local storage
+  useEffect(() => {
+    localStorage.setItem("messages", JSON.stringify(messages));
+  }, [messages])
+
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = {
@@ -93,6 +98,8 @@ export default function Chatbot() {
     };
   }, [t]);
 
+  
+
   // Handle click outside to close chat
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -113,15 +120,16 @@ export default function Chatbot() {
     };
   }, []);
 
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !attachedFile) return;
 
+    const currentFile = attachedFile;
+
     const userMessage = {
-      id: messages.length + 1,
       text: inputMessage,
       sender: 'user',
-      timestamp: new Date(),
-      attachedFile: attachedFile
+      attachedFile: currentFile
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -129,38 +137,38 @@ export default function Chatbot() {
     setAttachedFile(null);
     setIsTyping(true);
 
-    var text = "";
-    await pdfToText(attachedFile)
-    .then((txt) => text = txt)
-    .catch((error) => console.error("Failed to extract text from pdf"));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
+    var text = "";
+    if (currentFile) {
+      await pdfToText(currentFile)
+        .then((txt) => text = txt)
+        .catch((error) => console.error("Failed to extract text from pdf"));
+    }
+
+    const formattedMessages = messages.map(m => m.sender + ':' + m.text).join(" || ");
     try {
       var res = "";
-      if(attachedFile) {
-         res = await api.getAIResponse(inputMessage + " Uploaded Resume: " + text);
-        //  console.log(res);
+      if(currentFile) {
+        console.log(inputMessage + " || Uploaded Resume: " + text + " || Previous Messages: " + formattedMessages)
+         res = await api.getAIResponse(inputMessage + " || Uploaded Resume: " + text + " || Previous Messages: " + formattedMessages);
       } else {
-        res = await api.getAIResponse(inputMessage);
-        // console.log(res);
+        console.log(inputMessage + " Previous Messages: " + formattedMessages)
+        res = await api.getAIResponse(inputMessage + " || Previous Messages: " + formattedMessages);
       }
       
       const botMessage = {
-          id: Date.now(),
           text: res.data,
           sender: 'bot',
-          timestamp: new Date(),
-          translationKey: 'chatbotResponse'
         };
         setMessages(prev => [...prev, botMessage]);
-        setAttachedFile(null);
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage = {
-        id: Date.now(),
         text: t('chatbotError'),
         sender: 'bot',
-        timestamp: new Date(),
-        translationKey: 'chatbotError'
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {

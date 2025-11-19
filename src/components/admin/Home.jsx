@@ -17,7 +17,7 @@ export default function Home() {
   const [error, setError] = useState("");
 	const [networkError, setNetworkError] = useState("");
   const [file, setFile] = useState(null);
-	const [docInfo, setDocInfo] = useState(0);
+	const [docInfo, setDocInfo] = useState(null);
   const navigate = useNavigate();
 	const [documents, setDocuments] = useState([]);
   const [currentId, setCurrentId] = useState(null);
@@ -26,12 +26,16 @@ export default function Home() {
 
 
     useEffect(() => {
-		setTimeout(() => {
-				getAllDocuments();
-				getAllJobs()
-				setLoading(false);
-		}, 500); 
+			setTimeout(() => {
+				initializeData();
+			}, 500)
     },[]);
+
+		const initializeData = async () => {
+			await getAllDocuments();
+			await getAllJobs();
+			setLoading(false);
+		};
 
 		const notify = (msg, status) => {
 			if (status === "success") {
@@ -50,7 +54,6 @@ export default function Home() {
 			} catch (e) {
 				if(e.status == 401) {navigate("/admin/login");}
 				setNetworkError("Something went wrong. Try again later.");
-				setLoading(false);
 			}
     };
 
@@ -58,12 +61,13 @@ export default function Home() {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
 				return;
+			} else if (docInfo == null) {
+				notify("Please select a document type.", "warning");
+				return;
 			}
 
 			setUploading(true);
 			setError("");
-
-			if (!file) return;
 
 			var docType;
 
@@ -118,8 +122,9 @@ export default function Home() {
 			}
 
 			try {
-				await api.deleteDocument(documentId);
+				
 				await api.deleteAIDocument(documentId);
+				await api.deleteDocument(documentId);
 				console.log("Document deleted successfully!");
 				notify("Document deleted successfully!", "success")
 				setDeleting(false);
@@ -140,11 +145,8 @@ export default function Home() {
 			} catch(e){
 				if(e.status == 401) { navigate("/admin/login");}
 				setNetworkError("Something went wrong. Try again later.");
-				setLoading(false);
 			}		
 		}
-
-		console.log(docInfo)
 
     return (
 		<>
@@ -190,11 +192,16 @@ export default function Home() {
 								</div>
 									
 								<div className="mt-4 w-full">
-									<select value={docInfo} onChange={(e) => setDocInfo(Number(e.target.value))} className="text-md rounded-md px-2 py-1 w-full">
-										<option value={0}>Company Profile</option>
-										<option value={1}>Company Management</option>
-										<option value={2}>Product/Service Profile</option>
-										<option value={3}>Policy Profile</option>
+									<select 
+										value={docInfo} 
+										onChange={(e) => setDocInfo(Number(e.target.value))} 
+										className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
+									>
+										<option className="text-gray-800" value={null}>Choose document type</option>
+										<option className="text-gray-800" value={0}>Company Profile</option>
+										<option className="text-gray-800" value={1}>Company Management</option>
+										<option className="text-gray-800" value={2}>Product/Service Profile</option>
+										<option className="text-gray-800" value={3}>Policy Profile</option>
 									</select>
 								</div>
 

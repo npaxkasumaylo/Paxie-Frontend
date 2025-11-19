@@ -99,7 +99,7 @@ export default function LandingPage() {
           </div>
 
           {/* Navigation Links */}
-          <div className="flex items-center gap-8 text-gray-500">
+          <div className="lg:flex hidden items-center gap-8 text-gray-500">
             <Link
               to="/AboutUs"
               className="text-gray-600 hover:text-blue-300 transition"
@@ -284,7 +284,7 @@ export default function LandingPage() {
             </a>
             <div className="relative">
               <button
-                className={`${buttonTextColor} ${buttonBorderColor} px-4 py-2 ${buttonHoverBg} transition-all uppercase text-sm tracking-wide`}
+                className={`${buttonTextColor} ${buttonBorderColor} px-4 py-2 ${buttonHoverBg} transition-all uppercase text-sm tracking-wide border border-white text-white`}
                 onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
               >
                 {t('language')}
