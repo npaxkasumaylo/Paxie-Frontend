@@ -171,9 +171,10 @@ export default function Chatbot() {
       var res = "";
       if(currentFile) {
         // console.log(userId)
-         res = await api.getAIResponse(inputMessage + " || Uploaded File: " + text);
+        var query = inputMessage + " || Uploaded File: " + text;
+         res = await api.getAIResponse(query, userId);
       } else {
-        res = await api.getAIResponse(inputMessage);
+        res = await api.getAIResponse(inputMessage, userId);
       }
       
       const botMessage = {
