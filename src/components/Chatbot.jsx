@@ -28,8 +28,22 @@ export default function Chatbot() {
   const recognitionRef = useRef(null);
 
   useEffect(() => {
-    const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
-    setMessages(chatHistory)
+    
+  })
+
+  useEffect(() => {
+    if (localStorage.getItem("npax-ref") == null ) {
+      const greeting = {
+        id: 1,
+        text: t('chatbotGreeting'),
+        sender: 'bot',
+      };
+      localStorage.setItem("npax-ref", JSON.stringify([greeting]))
+    } else {
+       const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
+        setMessages(chatHistory)
+    }
+   
   }, [setMessages])
 
   
@@ -159,7 +173,6 @@ export default function Chatbot() {
         // console.log(userId)
          res = await api.getAIResponse(inputMessage + " || Uploaded File: " + text);
       } else {
-        console.log(lastResponse);
         res = await api.getAIResponse(inputMessage);
       }
       
