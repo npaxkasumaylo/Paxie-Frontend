@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import nPaxImage from "../../assets/npax-white.png";
 import BotIcon from "../BotIcon";
+import { api } from "../../api/api";
 
 
 export default function AdminNavBar() {
 	const navigate = useNavigate();
 
-	const handleLogout = () => {
-		// localStorage.removeItem("authToken");
-		// localStorage.removeItem("currentUser");
+	const handleLogout = async () => {
+		await api.logout();
 		navigate("/admin/login");
 	}
 

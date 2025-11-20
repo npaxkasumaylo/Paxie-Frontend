@@ -31,8 +31,8 @@ export default function Login() {
 
     } catch (err) {
       const error = err.response || err;
-      console.log(err);
-      setError(error.data ? error.data: error.message + " Please try again."); 
+      console.error(err);
+      setError("Something is wrong. Please try again later."); 
       setLoading(false);
     }
 

@@ -27,6 +27,13 @@ export default function Chatbot() {
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
 
+  useEffect(() => {
+    const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
+    setMessages(chatHistory)
+  }, [setMessages])
+
+  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -35,19 +42,12 @@ export default function Chatbot() {
     scrollToBottom();
   }, [messages]);
 
-  //Store conversation history in the local storage
-  useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages])
-
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = {
         id: 1,
         text: t('chatbotGreeting'),
         sender: 'bot',
-        timestamp: new Date(),
-        translationKey: 'chatbotGreeting'
       };
       setMessages([greeting]);
     }
@@ -120,19 +120,24 @@ export default function Chatbot() {
     };
   }, []);
 
-
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !attachedFile) return;
 
     const currentFile = attachedFile;
+    const userId = crypto.randomUUID();
 
     const userMessage = {
+      id: userId,
       text: inputMessage,
       sender: 'user',
       attachedFile: currentFile
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => {
+      const updated = [...prev, userMessage]
+      localStorage.setItem("npax-ref", JSON.stringify(updated));
+      return updated;
+    });
     setInputMessage('');
     setAttachedFile(null);
     setIsTyping(true);
@@ -151,23 +156,35 @@ export default function Chatbot() {
     try {
       var res = "";
       if(currentFile) {
-         res = await api.getAIResponse(inputMessage + " || Uploaded Resume: " + text);
+        // console.log(userId)
+         res = await api.getAIResponse(inputMessage + " || Uploaded File: " + text);
       } else {
+        console.log(lastResponse);
         res = await api.getAIResponse(inputMessage);
       }
       
       const botMessage = {
+          id: crypto.randomUUID(),
           text: res.data,
           sender: 'bot',
         };
-        setMessages(prev => [...prev, botMessage]);
+        setMessages(prev => {
+          const updated = [...prev, botMessage]
+          localStorage.setItem("npax-ref", JSON.stringify(updated));
+          return updated;
+        });
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage = {
         text: t('chatbotError'),
         sender: 'bot',
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => {
+        const updated = [...prev, errorMessage];
+        localStorage.setItem("npax-ref", JSON.stringify(updated));
+        return updated;
+      });
+      
     } finally {
       setIsTyping(false); 
     }

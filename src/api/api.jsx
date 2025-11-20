@@ -25,6 +25,7 @@ export default Api;
 export const api = {
   //AUTH API
   login: (credentials) => Api.post("/Auth/Login", credentials),
+  logout: () => Api.post("/Auth/Logout"),
   //register: (newAdmin) => Api.post("/Auth/CreateAdmin", newAdmin),
 
   // DOCUMENTS API
