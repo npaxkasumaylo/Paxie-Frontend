@@ -3,9 +3,9 @@ import axios from "axios";
 // backend url: http://localhost:5255
 
 const BASE_URL = import.meta.env.VITE_API_URL;
-const AI_URL = import.meta.env.AI_API_URL;
+// const AI_URL = import.meta.env.AI_API_URL;
+const AI_URL = "http://127.0.0.1:8000";
 
-console.log(AI_URL);
 
 const Api = axios.create({baseURL: `${BASE_URL}/api`,
   withCredentials: true,
@@ -39,9 +39,11 @@ export const api = {
   removeJob: (jobId) => Api.put(`Jobs/UpdateJobOpeningStatus/${jobId}`),
 
   // AI API
-  getAIResponse: (query, id) => axios.post(`http://127.0.0.1:8000/chatbot-ai?query=${query}&id=${id}`),
-  addAIDocument: (id) => axios.post(`http://127.0.0.1:8000/newDocument?id=${id}`),
-  deleteAIDocument: (id) => axios.delete(`http://127.0.0.1:8000/deleteDocument?id=${id}`)
+  getAIResponse: (query, id) => axios.post(`${AI_URL}/chatbot-ai?query=${query}&id=${id}`),
+  addAIDocument: (id) => axios.post(`${AI_URL}/newDocument?id=${id}`),
+  deleteAIDocument: (id) => axios.delete(`${AI_URL}/deleteDocument?id=${id}`),
+  deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`)
+
 
 };
 

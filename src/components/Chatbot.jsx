@@ -20,6 +20,7 @@ export default function Chatbot() {
   const [attachedFile, setAttachedFile] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const convoId = useState(crypto.randomUUID());
 
   const messagesEndRef = useRef(null);
   const chatWindowRef = useRef(null);
@@ -27,9 +28,23 @@ export default function Chatbot() {
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
 
-  useEffect(() => {
-    
-  })
+ useEffect(() => {
+  const handleBeforeUnload = () => {
+    localStorage.removeItem("npax-ref");
+    deleteSession();
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+}, []);
+
+  const deleteSession = async () => {
+     await api.deleteSession(convoId);
+  }
+
 
   useEffect(() => {
     if (localStorage.getItem("npax-ref") == null ) {
@@ -37,6 +52,7 @@ export default function Chatbot() {
         id: 1,
         text: t('chatbotGreeting'),
         sender: 'bot',
+        convoId: convoId
       };
       localStorage.setItem("npax-ref", JSON.stringify([greeting]))
     } else {
@@ -144,7 +160,8 @@ export default function Chatbot() {
       id: userId,
       text: inputMessage,
       sender: 'user',
-      attachedFile: currentFile
+      attachedFile: currentFile,
+      convoId: convoId
     };
 
     setMessages(prev => {
@@ -172,15 +189,18 @@ export default function Chatbot() {
       if(currentFile) {
         // console.log(userId)
         var query = inputMessage + " || Uploaded File: " + text;
-         res = await api.getAIResponse(query, userId);
+         res = await api.getAIResponse(query, convoId);
       } else {
-        res = await api.getAIResponse(inputMessage, userId);
+        res = await api.getAIResponse(inputMessage, convoId);
       }
       
       const botMessage = {
           id: crypto.randomUUID(),
           text: res.data,
           sender: 'bot',
+          userId: userId,
+          convoId: convoId
+
         };
         setMessages(prev => {
           const updated = [...prev, botMessage]
