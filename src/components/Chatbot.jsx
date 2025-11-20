@@ -20,7 +20,7 @@ export default function Chatbot() {
   const [attachedFile, setAttachedFile] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const convoId = useState(crypto.randomUUID());
+  const [convoId, setConvoId] = useState(crypto.randomUUID());
 
   const messagesEndRef = useRef(null);
   const chatWindowRef = useRef(null);
@@ -59,10 +59,8 @@ export default function Chatbot() {
        const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
         setMessages(chatHistory)
     }
-   
   }, [setMessages])
 
-  
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -71,17 +69,6 @@ export default function Chatbot() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      const greeting = {
-        id: 1,
-        text: t('chatbotGreeting'),
-        sender: 'bot',
-      };
-      setMessages([greeting]);
-    }
-  }, [isOpen, messages.length, t]);
 
   useEffect(() => {
     if (!isOpen && showHelp) {
@@ -128,27 +115,6 @@ export default function Chatbot() {
     };
   }, [t]);
 
-  
-
-  // Handle click outside to close chat
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        chatWindowRef.current &&
-        !chatWindowRef.current.contains(event.target) &&
-        chatButtonRef.current &&
-        !chatButtonRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !attachedFile) return;
@@ -160,15 +126,18 @@ export default function Chatbot() {
       id: userId,
       text: inputMessage,
       sender: 'user',
-      attachedFile: currentFile,
+      attachedFile: currentFile
+        ? { name: currentFile.name, size: currentFile.size, type: currentFile.type }
+        : null,
       convoId: convoId
     };
 
     setMessages(prev => {
-      const updated = [...prev, userMessage]
+      const updated = [...prev, userMessage];
       localStorage.setItem("npax-ref", JSON.stringify(updated));
       return updated;
     });
+
     setInputMessage('');
     setAttachedFile(null);
     setIsTyping(true);
@@ -188,9 +157,11 @@ export default function Chatbot() {
       var res = "";
       if(currentFile) {
         // console.log(userId)
-        var query = inputMessage + " || Uploaded File: " + text;
+        const query = inputMessage + " || Uploaded File: " + text;
+        console.log(query, convoId)
          res = await api.getAIResponse(query, convoId);
       } else {
+        console.log(inputMessage, convoId)
         res = await api.getAIResponse(inputMessage, convoId);
       }
       
@@ -198,7 +169,6 @@ export default function Chatbot() {
           id: crypto.randomUUID(),
           text: res.data,
           sender: 'bot',
-          userId: userId,
           convoId: convoId
 
         };
