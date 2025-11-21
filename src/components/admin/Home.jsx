@@ -61,7 +61,9 @@ export default function Home() {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
 				return;
-			} else if (docInfo == null) {
+			} 
+			
+			if (docInfo == null) {
 				notify("Please select a document type.", "warning");
 				return;
 			}
@@ -105,6 +107,7 @@ export default function Home() {
 
 				setUploading(false);
 				setFile(null);
+				setDocInfo(null);
 				notify("Successfully uploaded file!", "success")
 				getAllDocuments();
 
@@ -157,7 +160,7 @@ export default function Home() {
     return (
 		<>
 		{ !loading ? (
-			<div className="flex flex-col min-h-screen bg-[url('/adminBG.png')] bg-cover bg-center select-none">
+			<div className="flex flex-col min-h-screen bg-[url('/adminBG.jpg')] bg-cover bg-center select-none">
 
 			 	<AdminNavBar />
 
@@ -200,6 +203,7 @@ export default function Home() {
 								<div className="mt-4 w-full">
 									<select 
 										value={docInfo} 
+										disabled={!file ? true : false }
 										onChange={(e) => setDocInfo(Number(e.target.value))} 
 										className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
 									>

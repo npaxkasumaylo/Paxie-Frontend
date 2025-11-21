@@ -39,7 +39,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/adminBG.png')] select-none">
+    <div className="min-h-screen flex items-center justify-center bg-[url('/adminBG.jpg')] select-none">
       <div className="w-full max-w-md mx-4 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl p-8">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center rounded-full">
