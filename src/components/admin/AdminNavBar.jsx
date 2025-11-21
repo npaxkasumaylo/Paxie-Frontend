@@ -8,8 +8,15 @@ export default function AdminNavBar() {
 	const navigate = useNavigate();
 
 	const handleLogout = async () => {
-		await api.logout();
-		navigate("/admin/login");
+		try {
+			await api.logout();
+			navigate("/admin/login");
+		} catch (e) {
+			if(e.response.data.isLogout) {
+				navigate("/admin/login");
+			}
+		}
+		
 	}
 
 	return (

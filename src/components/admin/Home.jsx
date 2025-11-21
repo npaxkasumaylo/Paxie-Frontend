@@ -1,7 +1,7 @@
 import { CircleX, FileText, LoaderCircle, LoaderIcon } from "lucide-react";
 import React, { use, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { convertFileToBytes } from "../../utils/FileConverter";
+import { convertFileToBytes, downloadFileFromBase64 } from "../../utils/FileConverter";
 import { api } from "../../api/api";
 import { Bounce, toast, ToastContainer } from "react-toastify";
 import AdminNavBar from "./AdminNavBar";
@@ -114,34 +114,40 @@ export default function Home() {
 			}
     };
 
-		const handleDelete = (documentId) => async () => {
-			setCurrentId(documentId);
-			setDeleting(true);
-			if (!window.confirm("Are you sure you want to delete this document?")) {
-				return;
-			}
+	const handleDelete = (documentId) => async () => {
+		setCurrentId(documentId);
+		setDeleting(true);
+		if (!window.confirm("Are you sure you want to delete this document?")) {
+			return;
+		}
 
-			try {
-				
-				await api.deleteAIDocument(documentId);
-				await api.deleteDocument(documentId);
-				console.log("Document deleted successfully!");
-				notify("Document deleted successfully!", "success")
-				setDeleting(false);
-				setCurrentId(null);
-				getAllDocuments();
-			} catch (e) {
-				console.error("Error deleting document:", e);
-				setDeleting(false);
-				notify("Failed to delete document.", "error");
-			}
-		};
+		try {
+			
+			await api.deleteAIDocument(documentId);
+			await api.deleteDocument(documentId);
+			console.log("Document deleted successfully!");
+			notify("Document deleted successfully!", "success")
+			setDeleting(false);
+			setCurrentId(null);
+			getAllDocuments();
+		} catch (e) {
+			console.error("Error deleting document:", e);
+			setDeleting(false);
+			notify("Failed to delete document.", "error");
+		}
+	};
 
-		const getAllJobs = async () => {
+	const handleDownload = (document) => {
+		try {
+			downloadFileFromBase64(document.data, document.fileName);
+		} catch (e) {
+			console.error("Error downloading document:", e);
+			notify("Failed to download document.", "error");
+		}
+	};		const getAllJobs = async () => {
 			try {
 				const res = await api.getJobs();
 				setJobs(res.data);
-				console.log(res.data);
 			} catch(e){
 				if(e.status == 401) { navigate("/admin/login");}
 				setNetworkError("Something went wrong. Try again later.");
@@ -247,10 +253,15 @@ export default function Home() {
 							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Document List</h1>
 							{documents && documents.length > 0 ? (
 								documents.map(item => (
-										<div key={item.documentId} className="flex mt-2.5 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 cursor-pointer">
-											<FileText className="mr-2 text-white/90" />
-											<p className="text-white/90">{item.fileName}</p>
-											<button onClick={handleDelete(item.documentId)} className="ml-auto" disabled={deleting}>
+										<div key={item.documentId} className="flex mt-2.5 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200 group">
+											<button 
+												onClick={() => handleDownload(item)}
+												className="flex flex-1 items-center cursor-pointer group-hover:text-white"
+											>
+												<FileText className="mr-2 text-white/90 group-hover:text-white" />
+												<p className="text-white/90 group-hover:text-white truncate">{item.fileName}</p>
+											</button>
+											<button onClick={handleDelete(item.documentId)} className="ml-auto flex-shrink-0" disabled={deleting}>
 												{deleting && currentId === item.documentId ? (
 													<LoaderCircle className="text-white/90 animate-spin"/>
 												) : (

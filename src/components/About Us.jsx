@@ -317,7 +317,7 @@ export default function AboutUs() {
               </div>
               {/* Floating Chatbot */}
               <div className="fixed bottom-8 right-8 z-50">
-                <Chatbot isDark={false} />
+                {/* <Chatbot isDark={false} /> */}
               </div>
             </div>
           </div>
