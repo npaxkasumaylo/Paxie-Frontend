@@ -37,6 +37,7 @@ export default function Home() {
 			setLoading(false);
 		};
 
+
 		const notify = (msg, status) => {
 			if (status === "success") {
 				toast.success(msg);
@@ -47,6 +48,7 @@ export default function Home() {
 			}
 		};
 
+		// Retrieve all documents from the atabase
     const getAllDocuments = async () => {
 			try {
 				const res = await api.getDocuments();
@@ -57,42 +59,43 @@ export default function Home() {
 			}
     };
 
-    const handleUpload = async () => {
+	const handleUpload = async () => {
+			// Validation for empty file
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
 				return;
-			} 
-			
+			}
+
+			// Validation for no chosen docInfo
 			if (docInfo == null) {
 				notify("Please select a document type.", "warning");
+				return;
+			}
+
+			let docType;
+
+			if (file.type === "application/pdf") {
+				docType = 0; // PDF
+			} else {
+				notify("Unsupported File Type", "error");
+				return;
+			}
+
+				const { byteArray, base64String } = await convertFileToBytes(file);
+				
+			
+			// Check uniqueness of documents
+			if (documents 
+					&& documents.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
+					|| documents.some(d => d.data === base64String)) {
+				notify("A document with this filename or content already exists.", "error");
 				return;
 			}
 
 			setUploading(true);
 			setError("");
 
-			var docType;
-
-			if (file.type === "application/pdf") {
-				docType = 0; // PDF
-			} 
-			// else if (file.type === "application/msword" || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-			// 	docType = 1; // Word Document
-			// } 
-			// else if (file.type === "application/vnd.ms-excel" || file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-			// 	docType = 2; // Excel Spreadsheet
-			// } 
-			// else if (file.type === "text/plain") {
-			// 	docType = 3; // Text
-			// } 
-			else {
-				notify("Unsupported File Type", "error");
-				setUploading(false);
-				return;
-			}
-
 			try {
-				const { byteArray, base64String } = await convertFileToBytes(file);
 
 				const document = {
 					FileName: file.name,
@@ -115,7 +118,7 @@ export default function Home() {
 				notify("Upload Failed. Try again later.", "error");
 				setUploading(false);
 			}
-    };
+	};
 
 	const handleDelete = (documentId) => async () => {
 		setCurrentId(documentId);
@@ -147,23 +150,24 @@ export default function Home() {
 			console.error("Error downloading document:", e);
 			notify("Failed to download document.", "error");
 		}
-	};		const getAllJobs = async () => {
-			try {
-				const res = await api.getJobs();
-				setJobs(res.data);
-			} catch(e){
-				if(e.status == 401) { navigate("/admin/login");}
-				setNetworkError("Something went wrong. Try again later.");
-			}		
-		}
+	};		
+	
+	const getAllJobs = async () => {
+		try {
+			const res = await api.getJobs();
+			setJobs(res.data);
+		} catch(e){
+			if(e.status == 401) { navigate("/admin/login");}
+			setNetworkError("Something went wrong. Try again later.");
+		}		
+	}
 
     return (
 		<>
 		{ !loading ? (
 			<div className="flex flex-col min-h-screen bg-[url('/adminBG.jpg')] bg-cover bg-center select-none">
 
-			 	<AdminNavBar />
-
+				<AdminNavBar />
 				<div className="flex flex-col md:flex-row lg:flex-row justify-between gap-5 m-10 ">
 
 					{/* Upload Files */}
@@ -242,7 +246,7 @@ export default function Home() {
 						}
 
 						{!uploadFile &&
-							<AddNewJob getAllJobs={getAllJobs} notify={notify} />
+						<AddNewJob getAllJobs={getAllJobs} notify={notify} jobs={jobs} />
 						}
 						
 					</div>

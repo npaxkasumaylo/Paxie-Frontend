@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { api } from "../../api/api";
 
-export default function AddNewJob({getAllJobs, notify}) {
+export default function AddNewJob({getAllJobs, notify, jobs}) {
 	const [jobTitle, setJobTitle] = useState("");
 	const [jobDescription, setJobDescription] = useState("");
 	const [jobRequirements, setJobRequirements] = useState("");
@@ -11,9 +11,17 @@ export default function AddNewJob({getAllJobs, notify}) {
 		e.preventDefault();
 		setAdding(true);
 
+		// Check uniqueness of a job opening
+		const title = jobTitle.trim();
+		if (jobs && jobs.some(j => j.jobTitle && j.jobTitle.toLowerCase() === title.toLowerCase())) {
+			notify("A job with this title already exists.", "error");
+			setAdding(false);
+			return;
+		}
+
 		try {
 			const res = await api.addJob({
-				JobTitle: jobTitle,
+				JobTitle: title,
 				JobDescription: jobDescription,
 				JobRequirements: jobRequirements,
 				IsActive: true
