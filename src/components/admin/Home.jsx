@@ -23,6 +23,8 @@ export default function Home() {
   const [currentId, setCurrentId] = useState(null);
 	const [jobs, setJobs] = useState([]);
 	const [uploadFile, setUploadFile] = useState(true);
+	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
+	const docInfoArr = ['Company Profile', 'Company Management', 'Product/Service Profile', 'Policy Profile'];
 
 
     useEffect(() => {
@@ -37,7 +39,6 @@ export default function Home() {
 			setLoading(false);
 		};
 
-
 		const notify = (msg, status) => {
 			if (status === "success") {
 				toast.success(msg);
@@ -48,7 +49,6 @@ export default function Home() {
 			}
 		};
 
-		// Retrieve all documents from the atabase
     const getAllDocuments = async () => {
 			try {
 				const res = await api.getDocuments();
@@ -60,13 +60,11 @@ export default function Home() {
     };
 
 	const handleUpload = async () => {
-			// Validation for empty file
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
 				return;
 			}
 
-			// Validation for no chosen docInfo
 			if (docInfo == null) {
 				notify("Please select a document type.", "warning");
 				return;
@@ -96,7 +94,6 @@ export default function Home() {
 			setError("");
 
 			try {
-
 				const document = {
 					FileName: file.name,
 					DocumentType: docType,
@@ -261,22 +258,35 @@ export default function Home() {
 							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Document List</h1>
 							{documents && documents.length > 0 ? (
 								documents.map(item => (
-										<div key={item.documentId} className="flex mt-2.5 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200 group">
+									<div key={item.documentId} className="relative group mt-2.5">
+										<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
 											<button 
 												onClick={() => handleDownload(item)}
-												className="flex flex-1 items-center cursor-pointer group-hover:text-white"
+												className="flex flex-1 items-center cursor-pointer hover:text-white"
 											>
-												<FileText className="mr-2 text-white/90 group-hover:text-white" />
-												<p className="text-white/90 group-hover:text-white truncate">{item.fileName}</p>
+												<FileText className="mr-2 text-white/90 hover:text-white" />
+												<p className="text-white/90 hover:text-white truncate">{item.fileName}</p>
 											</button>
 											<button onClick={handleDelete(item.documentId)} className="ml-auto flex-shrink-0" disabled={deleting}>
 												{deleting && currentId === item.documentId ? (
 													<LoaderCircle className="text-white/90 animate-spin"/>
 												) : (
-													<CircleX size={20} className=" text-white/90 ext-white/90 transition-transform duration-200 hover:scale-125"/>
+													<CircleX size={20} className="text-white/90 transition-transform duration-200 hover:scale-125"/>
 												)}
 											</button>
 										</div>
+
+										{/* Specific details */}
+										<div className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
+											max-h-0 opacity-0 pointer-events-none group-hover:static group-hover:max-h-60 group-hover:opacity-100 group-hover:pointer-events-auto
+											transition-all duration-300 ease-out"
+										>
+											<p className="text-white/90 truncate text-sm"><b>File Format:</b> {docTypeArr[item.documentType]}</p>
+											<p className="text-white/90 truncate text-sm"><b>File Information:</b> {docInfoArr[item.documentInformation]}</p>
+										</div>
+										
+									</div>
+									
 								)) 
 							) : (
 								 <>

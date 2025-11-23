@@ -35,7 +35,8 @@ export default function JobOpenings({jobs, networkError, getAllJobs, notify}){
 							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Job Openings</h1>
 							{jobs && jobs.length > 0 ? (
 								jobs.map(item => (
-										<div key={item.id} className="flex mt-2.5 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 cursor-pointer">
+									<div key={item.id} className=" mt-2.5 relative group" >
+										<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 cursor-pointer">
 											<FileText className="mr-2 text-white/90" />
 											<p className="text-white/90">{item.jobTitle}</p>
 											<button onClick={() => handleJobDelete(item.id)} className="ml-auto" disabled={deleting}>
@@ -46,6 +47,14 @@ export default function JobOpenings({jobs, networkError, getAllJobs, notify}){
 												)}
 											</button>
 										</div>
+										<div className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
+											max-h-0 opacity-0 pointer-events-none group-hover:static group-hover:max-h-60 group-hover:opacity-100 group-hover:pointer-events-auto
+											transition-all duration-300 ease-out"
+										>
+											<p className="text-white/90 text-sm"><b>Description:</b> {item.jobDescription}</p>
+											<p className="text-white/90 text-sm"><b>Requirements:</b> {item.jobRequirements}</p>
+										</div>
+									</div>
 								)) 
 							) : (
 								 <>

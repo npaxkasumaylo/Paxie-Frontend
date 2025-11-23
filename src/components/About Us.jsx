@@ -38,8 +38,7 @@ export default function AboutUs() {
                 <Link to="/AboutUs" className="text-white-600 hover:text-blue-300 transition">
                 ABOUT US
               </Link>
-  
-  
+
               {/* SOFTWARE PRODUCTS & SERVICES Dropdown */}
               <div className="relative group">
                 <button className="hover:text-blue-300 transition flex items-center gap-1">
@@ -58,47 +57,47 @@ export default function AboutUs() {
                       Software Products and Services
                     </h3>
                     <div className="space-y-2 text-sm text-gray-500">
-                      <a href="advance_analytics.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200 
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         Advanced Analytics Solutions
                       </a>
-                      <a href="motionboard.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         BI and Dashboarding
                       </a>
-                      <a href="digital_transformation.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         Digital Transformation Services
                       </a>
-                      <a href="hrc.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         HRIS / Payroll System
                       </a>
-                      <a href="nxpert.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         ERP System
                       </a>
-                      <a href="mcframega.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         Accounting System
                       </a>
-                      <a href="mcframe_iot.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         IoT System
                       </a>
-                      <a href="manage_services.php" 
+                      <a href="#" 
                         className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         Managed IT Services
                       </a>
-                      <a href="https://www.paxyroll.com" 
+                      <a href="#" 
                         className="block hover:text-blue-400 mx-3 transition-all duration-200
                         opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
                         Paxyroll Cloud Timekeeping
@@ -129,7 +128,7 @@ export default function AboutUs() {
                           News and Insights
                         </h3>
                         <a 
-                          href="update/category_news?category=23" 
+                          href="#" 
                           className="py-1.5 border-b text-gray-600 hover:text-blue-500 hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           News & Events
@@ -142,18 +141,18 @@ export default function AboutUs() {
                           Recent Blogs
                         </h3>
                         <a 
-                          href="update/category?category=17" 
+                          href="#" 
                           className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           Advanced Analytics
                         </a>
                         <a 
-                          href="update/category?category=21" 
+                          href="#" 
                           className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           Digital Transformation
                         </a>
-                        <a href="update/category?category=18" 
+                        <a href="#" 
                           className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           Human Resource Information
@@ -165,12 +164,12 @@ export default function AboutUs() {
                         <h3 className="font-semibold text-white text-base mb-2 opacity-0">
                           &nbsp;
                         </h3>
-                        <a href="update/category?category=19" 
+                        <a href="#" 
                           className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           Enterprise Resource Planning
                         </a>
-                        <a href="update/category?category=20" 
+                        <a href="#" 
                           className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                         >
                           Accounting
@@ -209,10 +208,10 @@ export default function AboutUs() {
                   <Link to="/AboutUs" className="text-gray-100 hover:text-blue-400 transition">
                     ABOUT US
                   </Link>
-                  <a href="#contact" className="text-gray-100 hover:text-blue-400 transition">
+                  <a href="#" className="text-gray-100 hover:text-blue-400 transition">
                     SOFTWARE PRODUCTS AND SERVICES
                   </a>
-                  <a href="#contact" className="text-gray-100 hover:text-blue-400 transition">
+                  <a href="#" className="text-gray-100 hover:text-blue-400 transition">
                     INSIGHTS AND BLOGS
                   </a>
                   <Link to="/Career" className="text-gray-100 hover:text-blue-400 transition">

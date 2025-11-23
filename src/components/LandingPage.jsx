@@ -127,63 +127,63 @@ export default function LandingPage() {
                   </h3>
                   <div className="space-y-2 text-sm text-gray-500">
                     <a
-                      href="advance_analytics.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200 
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Advanced Analytics Solutions
                     </a>
                     <a
-                      href="motionboard.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       BI and Dashboarding
                     </a>
                     <a
-                      href="digital_transformation.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Digital Transformation Services
                     </a>
                     <a
-                      href="hrc.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       HRIS / Payroll System
                     </a>
                     <a
-                      href="nxpert.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       ERP System
                     </a>
                     <a
-                      href="mcframega.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Accounting System
                     </a>
                     <a
-                      href="mcframe_iot.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       IoT System
                     </a>
                     <a
-                      href="manage_services.php"
+                      href="#"
                       className="block hover:text-blue-400 border-b mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
                       Managed IT Services
                     </a>
                     <a
-                      href="https://www.paxyroll.com"
+                      href="#"
                       className="block hover:text-blue-400 mx-3 transition-all duration-200
                       opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
                     >
@@ -215,7 +215,7 @@ export default function LandingPage() {
                         News and Insights
                       </h3>
                       <a
-                        href="update/category_news?category=23"
+                        href="#"
                         className="py-1.5 border-b text-gray-600 hover:text-blue-500 hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         News & Events
@@ -228,19 +228,19 @@ export default function LandingPage() {
                         Recent Blogs
                       </h3>
                       <a
-                        href="update/category?category=17"
+                        href="#"
                         className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         Advanced Analytics
                       </a>
                       <a
-                        href="update/category?category=21"
+                        href="#"
                         className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         Digital Transformation
                       </a>
                       <a
-                        href="update/category?category=18"
+                        href="#"
                         className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         Human Resource Information
@@ -253,13 +253,13 @@ export default function LandingPage() {
                         &nbsp;
                       </h3>
                       <a
-                        href="update/category?category=19"
+                        href="#"
                         className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         Enterprise Resource Planning
                       </a>
                       <a
-                        href="update/category?category=20"
+                        href="#"
                         className="border-b py-1.5 text-gray-600 hover:text-blue-500  hover:translate-x-1 transition-all duration-200 text-sm"
                       >
                         Accounting
@@ -315,10 +315,10 @@ export default function LandingPage() {
                   <Link to="/AboutUs" className="text-gray-100 hover:text-blue-400 transition">
                     ABOUT US
                   </Link>
-                  <a href="#contact" className="text-gray-100 hover:text-blue-400 transition">
+                  <a href="#" className="text-gray-100 hover:text-blue-400 transition">
                     SOFTWARE PRODUCTS AND SERVICES
                   </a>
-                  <a href="#contact" className="text-gray-100 hover:text-blue-400 transition">
+                  <a href="#" className="text-gray-100 hover:text-blue-400 transition">
                     INSIGHTS AND BLOGS
                   </a>
                   <Link to="/Career" className="text-gray-100 hover:text-blue-400 transition">
@@ -557,12 +557,6 @@ export default function LandingPage() {
             {t('digitalDescription')}
           </p>
           <button
-            onClick={() =>
-              window.open(
-                "https://www.n-pax.com/digital_transformation",
-                "_blank"
-              )
-            }
             className="flex items-center text-blue-600 font-semibold hover:text-blue-700 border-b-2 border-transparent hover:border-blue-600 transition-all duration-300"
           >
             {t('seeServiceDetails')}
@@ -690,7 +684,7 @@ export default function LandingPage() {
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="https://www.n-pax.com/update/news.php?p_id=28"
+                  href="#"
                   className="text-white hover:text-gray-300"
                 >
                   {t('viewMore')}
@@ -714,7 +708,7 @@ export default function LandingPage() {
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="https://www.n-pax.com/update/news.php?p_id=17"
+                  href="#"
                   className="text-white hover:text-gray-300"
                 >
                   {t('viewMore')}
@@ -740,7 +734,7 @@ export default function LandingPage() {
             <div className="p-4 bg-gray-800 text-center">
               <small className="text-gray-400">
                 <a
-                  href="https://www.n-pax.com/update/news.php?p_id=15"
+                  href="#"
                   className="text-white hover:text-gray-300"
                 >
                   {t('viewMore')}
