@@ -62,11 +62,13 @@ export default function Home() {
 	const handleUpload = async () => {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
+				setDocInfo(null);
 				return;
 			}
 
 			if (docInfo == null) {
 				notify("Please select a document type.", "warning");
+				setDocInfo(null);
 				return;
 			}
 
@@ -76,6 +78,7 @@ export default function Home() {
 				docType = 0; // PDF
 			} else {
 				notify("Unsupported File Type", "error");
+				setDocInfo(null);
 				return;
 			}
 
@@ -87,6 +90,7 @@ export default function Home() {
 					&& documents.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
 					|| documents.some(d => d.data === base64String)) {
 				notify("A document with this filename or content already exists.", "error");
+				setDocInfo(null);
 				return;
 			}
 
@@ -114,6 +118,8 @@ export default function Home() {
 			} catch (e) {
 				notify("Upload Failed. Try again later.", "error");
 				setUploading(false);
+				setFile(null);
+				setDocInfo(null);
 			}
 	};
 
