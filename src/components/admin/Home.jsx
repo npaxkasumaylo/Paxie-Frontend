@@ -114,8 +114,6 @@ export default function Home() {
 			} catch (e) {
 				notify("Upload Failed. Try again later.", "error");
 				setUploading(false);
-				setFile(null);
-				setDocInfo(4);
 			}
 	};
 
@@ -123,6 +121,7 @@ export default function Home() {
 		setCurrentId(documentId);
 		setDeleting(true);
 		if (!window.confirm("Are you sure you want to delete this document?")) {
+			setDeleting(false);
 			return;
 		}
 

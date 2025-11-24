@@ -7,22 +7,25 @@ export default function JobOpenings({jobs, networkError, getAllJobs, notify}){
   const [currentId, setCurrentId] = useState(null);
 
  	const handleJobDelete = async (jobId) => {
-			setCurrentId(jobId);
-      setDeleting(true)
-      
+		setCurrentId(jobId);
+		setDeleting(true)
+		if (!window.confirm("Are you sure you want to delete this job?")) {
+			setDeleting(false)
+			return;
+		} 
 
-      try {
-        await api.removeJob(jobId);
-        notify("Job deleted successfully!", "success")
-        setDeleting(false);
-        setCurrentId(null);
-        getAllJobs();
-      } catch (e) {
-        console.error("Error deleting document:", e);
-        setDeleting(false);
-        notify("Failed to delete document.", "error");
-      }
+		try {
+			await api.removeJob(jobId);
+			notify("Job deleted successfully!", "success")
+			setDeleting(false);
+			setCurrentId(null);
+			getAllJobs();
+		} catch (e) {
+			console.error("Error deleting document:", e);
+			setDeleting(false);
+			notify("Failed to delete document.", "error");
 		}
+	}
 
 
   return (

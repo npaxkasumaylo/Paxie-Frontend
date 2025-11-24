@@ -31,6 +31,7 @@ export default function Chatbot() {
  useEffect(() => {
   const handleBeforeUnload = () => {
     localStorage.removeItem("npax-ref");
+    localStorage.removeItem("convoId")
     deleteSession();
   };
 
@@ -55,6 +56,7 @@ export default function Chatbot() {
         convoId: convoId
       };
       localStorage.setItem("npax-ref", JSON.stringify([greeting]))
+      localStorage.setItem("convoId", convoId);
     } else {
        const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
         setMessages(chatHistory)
