@@ -32,7 +32,11 @@ export default function Login() {
     } catch (err) {
       const error = err.response || err;
       console.error(err);
-      setError("Something is wrong. Please try again later."); 
+      if (error.status === 401) {
+        setError("Invalid username and password. Try again.")
+      } else {
+        setError("Something is wrong. Please try again later."); 
+      }
       setLoading(false);
     }
 
