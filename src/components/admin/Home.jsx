@@ -17,7 +17,7 @@ export default function Home() {
   const [error, setError] = useState("");
 	const [networkError, setNetworkError] = useState("");
   const [file, setFile] = useState(null);
-	const [docInfo, setDocInfo] = useState(null);
+	const [docInfo, setDocInfo] = useState(4);
   const navigate = useNavigate();
 	const [documents, setDocuments] = useState([]);
   const [currentId, setCurrentId] = useState(null);
@@ -62,13 +62,11 @@ export default function Home() {
 	const handleUpload = async () => {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
-				setDocInfo(null);
 				return;
 			}
 
 			if (docInfo == null) {
 				notify("Please select a document type.", "warning");
-				setDocInfo(null);
 				return;
 			}
 
@@ -78,7 +76,6 @@ export default function Home() {
 				docType = 0; // PDF
 			} else {
 				notify("Unsupported File Type", "error");
-				setDocInfo(null);
 				return;
 			}
 
@@ -90,7 +87,6 @@ export default function Home() {
 					&& documents.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
 					|| documents.some(d => d.data === base64String)) {
 				notify("A document with this filename or content already exists.", "error");
-				setDocInfo(null);
 				return;
 			}
 
@@ -111,7 +107,7 @@ export default function Home() {
 
 				setUploading(false);
 				setFile(null);
-				setDocInfo(null);
+				setDocInfo(4);
 				notify("Successfully uploaded file!", "success")
 				getAllDocuments();
 
@@ -119,7 +115,7 @@ export default function Home() {
 				notify("Upload Failed. Try again later.", "error");
 				setUploading(false);
 				setFile(null);
-				setDocInfo(null);
+				setDocInfo(4);
 			}
 	};
 
@@ -214,7 +210,7 @@ export default function Home() {
 										onChange={(e) => setDocInfo(Number(e.target.value))} 
 										className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
 									>
-										<option className="text-gray-800" value={null}>Choose document type</option>
+										<option className="text-gray-800" value={4}>Choose document type</option>
 										<option className="text-gray-800" value={0}>Company Profile</option>
 										<option className="text-gray-800" value={1}>Company Management</option>
 										<option className="text-gray-800" value={2}>Product/Service Profile</option>
