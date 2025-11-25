@@ -467,7 +467,18 @@ export default function Chatbot() {
                 className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                 disabled={isTyping}
               />
-              {(inputMessage.trim() || attachedFile) ? (
+               <button
+                  onClick={handleSendMessage}
+                  disabled={((!inputMessage.trim() && !attachedFile) || isTyping)}
+                  className={`p-2 rounded-full transition-colors ${
+                    ((!inputMessage.trim() && !attachedFile) || isTyping)
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : 'bg-blue-500 hover:bg-blue-600'
+                  }`}
+                >
+                  <Send className="w-4 h-4 text-white" />
+                </button>
+              {/* {(inputMessage.trim() || attachedFile) ? (
                 <button
                   onClick={handleSendMessage}
                   disabled={((!inputMessage.trim() && !attachedFile) || isTyping)}
@@ -493,7 +504,7 @@ export default function Chatbot() {
                 >
                   <Mic className={`w-4 h-4 text-white ${isRecording ? 'animate-pulse' : ''}`} />
                 </button>
-              )}
+              )} */}
             </div>
             <input
               type="file"
