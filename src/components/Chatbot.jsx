@@ -30,6 +30,7 @@ export default function Chatbot() {
   const recognitionRef = useRef(null);
 
  useEffect(() => {
+
   const handleBeforeUnload = () => {
     localStorage.removeItem("npax-ref");
     localStorage.removeItem("convoId")
@@ -47,22 +48,28 @@ export default function Chatbot() {
      await api.deleteSession(convoId);
   }
 
-
   useEffect(() => {
-    if (localStorage.getItem("npax-ref") == null ) {
-      const greeting = {
-        id: 1,
-        text: "Hello! I'm Paxie, your AI assistant. How can I help you today?",
-        sender: 'bot',
-        convoId: convoId
-      };
-      localStorage.setItem("npax-ref", JSON.stringify([greeting]))
-      localStorage.setItem("convoId", convoId);
-    } else {
-       const chatHistory = JSON.parse(localStorage.getItem("npax-ref"));
-        setMessages(chatHistory)
-    }
-  }, [setMessages])
+  const ref = localStorage.getItem("npax-ref");
+
+  if (!ref) {
+    const greeting = {
+      id: 1,
+      text: "Hello! I'm Paxie, your AI assistant. How can I help you today?",
+      sender: "bot",
+      convoId: convoId,
+    };
+
+    const initial = [greeting];
+
+    // Save to localStorage
+    localStorage.setItem("npax-ref", JSON.stringify(initial));
+    localStorage.setItem("convoId", convoId);
+
+    setMessages(initial);
+  } else {
+    setMessages(JSON.parse(ref));
+  }
+}, []);
 
 
   const scrollToBottom = () => {
