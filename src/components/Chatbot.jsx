@@ -7,6 +7,7 @@ import { api } from '../api/api';
 import pdfToText from 'react-pdftotext';
 import { toast } from 'react-toastify';
 import Toast from './Toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Chatbot() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function Chatbot() {
   const [attachedFile, setAttachedFile] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [convoId, setConvoId] = useState(crypto.randomUUID());
+  const [convoId, setConvoId] = useState(uuidv4());
 
   const messagesEndRef = useRef(null);
   const chatWindowRef = useRef(null);
@@ -117,12 +118,11 @@ export default function Chatbot() {
     };
   }, [t]);
 
-
   const handleSendMessage = async () => {
     if (!inputMessage.trim() && !attachedFile) return;
 
     const currentFile = attachedFile;
-    const userId = crypto.randomUUID();
+    const userId = uuidv4();
 
     const userMessage = {
       id: userId,
@@ -168,7 +168,7 @@ export default function Chatbot() {
       }
       
       const botMessage = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           text: res.data,
           sender: 'bot',
           convoId: convoId
