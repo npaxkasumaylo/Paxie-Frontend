@@ -233,7 +233,7 @@ export default function Home() {
 									{/* Cancel Button */}
 									{
 										file && !uploading && (
-											<button onClick={() => setFile(null)} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg">
+											<button onClick={() => {setFile(null); setDocInfo(4)}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg">
 												Cancel
 											</button>
 										)
