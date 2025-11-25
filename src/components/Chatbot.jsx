@@ -52,7 +52,7 @@ export default function Chatbot() {
     if (localStorage.getItem("npax-ref") == null ) {
       const greeting = {
         id: 1,
-        text: t('chatbotGreeting'),
+        text: "Hello! I'm Paxie, your AI assistant. How can I help you today?",
         sender: 'bot',
         convoId: convoId
       };

@@ -5,6 +5,7 @@ import AboutUsImage from "../assets/AboutUs.png";
 import NPAX1IImage from "../assets/N-Pax1.png";
 import nPaxImage from "../assets/npax-white.png";
 import NPAX3Image from "../assets/N-Pax3.png";
+import nPax2Image from "../assets/N-Pax2.png";
 import TeamImage from "../assets/LP2.png";
 import Chatbot from "./Chatbot.jsx";
 
@@ -237,7 +238,7 @@ export default function AboutUs() {
         <div className="flex flex-col items-center justify-center px-8 mt-20">
           <div className="flex items-center justify-center mb-12">
             <img
-              src="/src/assets/N-Pax2.png"
+              src={nPax2Image}
               alt="n-pax"
               style={{ width: "60%" }}
               className="block"
