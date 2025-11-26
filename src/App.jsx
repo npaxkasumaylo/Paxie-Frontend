@@ -11,9 +11,9 @@ export default function App() {
   return (
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/landingpage" element={<LandingPage />} />
-        <Route path="/aboutus" element={<AboutUs />} />
-        <Route path="/career" element={<Career />} />
+        <Route path="/LandingPage" element={<LandingPage />} />
+        <Route path="/AboutUs" element={<AboutUs />} />
+        <Route path="/Career" element={<Career />} />
 
         <Route path="/admin/login" element={<Login />} />
         <Route path="/admin/home" element={<Home />} />
