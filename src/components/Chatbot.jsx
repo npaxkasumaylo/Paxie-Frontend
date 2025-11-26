@@ -8,6 +8,7 @@ import pdfToText from 'react-pdftotext';
 import { toast } from 'react-toastify';
 import Toast from './Toast';
 import { v4 as uuidv4 } from 'uuid';
+import Markdown from 'react-markdown';
 
 export default function Chatbot() {
   const { t } = useTranslation();
@@ -301,6 +302,8 @@ export default function Chatbot() {
       }
     }
   };
+
+  console.log(messages);
   return (
     <>
       {/* Floating Help Message */}
@@ -389,7 +392,18 @@ export default function Chatbot() {
                       : 'bg-white text-gray-700 rounded-bl-none shadow-sm'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-line leading-relaxed">{message.text}</p>
+                  <div className="text-sm leading-relaxed">
+                  <Markdown
+                    components={{
+                      p: ({node, ...props}) => <p className="mb-1" {...props} />,
+                      li: ({node, ...props}) => <li className="mb-4" {...props} />,
+                    }}
+                  >
+                    {String(message.text || "").trim()}
+                  </Markdown>
+
+                  {/* {message.text} */}
+                  </div>
 
                   {message.attachedFile && (
                     <div className="mt-2">
