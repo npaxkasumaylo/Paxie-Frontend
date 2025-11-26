@@ -174,6 +174,13 @@ export default function Home() {
 		}		
 	}
 
+	const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+} 
+
+
     return (
 		<>
 		{ !loading ? (
@@ -298,6 +305,7 @@ export default function Home() {
 										>
 											<p className="text-white/90 truncate text-sm"><b>File Format:</b> {docTypeArr[item.documentType]}</p>
 											<p className="text-white/90 truncate text-sm"><b>File Information:</b> {docInfoArr[item.documentInformation]}</p>
+											<p className="text-white/90 truncate text-sm"><b>Date Uploaded:</b> {formatDate(item.uplaoded)}</p>
 										</div>
 										
 									</div>
