@@ -8,11 +8,10 @@ import Chatbot from './components/Chatbot.jsx'
 function ChatbotWrapper() {
   const location = useLocation();
 
-  // List of routes where Chatbot should NOT appear
   const visibleRoutes = ["/", "/landingpage", "/aboutus", "/career"];
-  const isHidden = !visibleRoutes.includes(location.pathname);
+  const isVisible = visibleRoutes.includes(location.pathname);
 
-  if (isHidden) return null;
+  if (!isVisible) return null;
 
   return (
     <div className="fixed bottom-8 right-8 z-50">
@@ -20,6 +19,7 @@ function ChatbotWrapper() {
     </div>
   );
 }
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

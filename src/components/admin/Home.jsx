@@ -26,7 +26,6 @@ export default function Home() {
 	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
 	const docInfoArr = ['Company Profile', 'Company Management', 'Product/Service Profile', 'Policy Profile'];
 
-
     useEffect(() => {
 			setTimeout(() => {
 				initializeData();
@@ -64,9 +63,6 @@ export default function Home() {
 		return data.size <= maxSize;
 	};
 
-	
-
-
 	const handleUpload = async () => {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
@@ -81,8 +77,6 @@ export default function Home() {
 			if(validateFileSize(file, 10)) {
 				notify("File must be less than 10MB")
 			};
-
-
 
 			let docType;
 
@@ -179,7 +173,6 @@ export default function Home() {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return date.toLocaleDateString('en-US', options);
 } 
-
 
     return (
 		<>
