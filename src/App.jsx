@@ -5,6 +5,7 @@ import Career from './components/Career';
 import Login from './components/admin/Login';
 import Home from './components/admin/Home';
 import ProtectedRoute from './routes/ProtectedRoutes';
+import NotFound from './components/NotFound';
 
 export default function App() {
   return (
@@ -15,11 +16,8 @@ export default function App() {
         <Route path="/career" element={<Career />} />
 
         <Route path="/admin/login" element={<Login />} />
-        <Route path="/admin/home" element={
-          // <ProtectedRoute>
-            <Home />
-          // </ProtectedRoute>
-        } />
+        <Route path="/admin/home" element={<Home />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
    
   );

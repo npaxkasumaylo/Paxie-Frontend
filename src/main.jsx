@@ -9,9 +9,8 @@ function ChatbotWrapper() {
   const location = useLocation();
 
   // List of routes where Chatbot should NOT appear
-  const hiddenRoutes = ["/admin/login", "/admin/home"];
-
-  const isHidden = hiddenRoutes.includes(location.pathname);
+  const visibleRoutes = ["/", "/landingpage", "/aboutus", "/career"];
+  const isHidden = !visibleRoutes.includes(location.pathname);
 
   if (isHidden) return null;
 

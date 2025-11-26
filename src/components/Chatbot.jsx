@@ -345,7 +345,7 @@ export default function Chatbot() {
         >
             <div className={`w-full  bg-white shadow-2xl flex flex-col overflow-hidden`}>
               {/* Chat Header */}
-              <div className=" bg-blue-500 p-2 flex items-center justify-between">
+              <div className=" bg-gradient-to-r from-blue-400 to-blue-600 p-2 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Bot Icon */}
                   <div className="w-10 h-10 bg-white ml-1.5 rounded-full flex items-center justify-center">
