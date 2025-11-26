@@ -337,7 +337,7 @@ export default function Chatbot() {
           className={`fixed bg-white shadow-2xl flex flex-col z-50 overflow-hidden transition-all duration-300 animate-chatPopIn ${
             isMaximized
               ? 'inset-0 rounded-none'
-              : 'bottom-24 right-8 w-[380px] h-[450px] rounded-3xl'
+              : 'bottom-24 right-8 ml-8 max-w-[380px] h-[450px] rounded-3xl'
           }`}
         >
             <div className={`w-full  bg-white shadow-2xl flex flex-col overflow-hidden`}>

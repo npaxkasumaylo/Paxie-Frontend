@@ -59,6 +59,14 @@ export default function Home() {
 			}
     };
 
+	const validateFileSize = (data, maxMB) => {
+		const maxSize = maxMB * 1024 * 1024; 
+		return data.size <= maxSize;
+	};
+
+	
+
+
 	const handleUpload = async () => {
 			if (!file) {
 				notify("Please select a file to upload.", "warning");
@@ -69,6 +77,12 @@ export default function Home() {
 				notify("Please select a document type.", "warning");
 				return;
 			}
+
+			if(validateFileSize(file, 10)) {
+				notify("File must be less than 10MB")
+			};
+
+
 
 			let docType;
 

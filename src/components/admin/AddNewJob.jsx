@@ -52,6 +52,8 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
               type="text"
               required
 							value={jobTitle}
+							minLength={10}
+							maxLength={100}
               onChange={(e) => setJobTitle(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="e.g Software Engineer"
@@ -63,6 +65,8 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
             <textarea
               required
 							value={jobDescription}
+							minLength={10}
+							maxLength={1500}
               onChange={(e) => setJobDescription(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="e.g Job Description"
@@ -74,6 +78,7 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
             <textarea
               required
 							value={jobRequirements}
+							maxLength={1000}
               onChange={(e) => setJobRequirements(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="Enter job requirements"
