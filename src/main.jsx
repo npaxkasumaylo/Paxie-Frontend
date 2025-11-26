@@ -8,7 +8,7 @@ import Chatbot from './components/Chatbot.jsx'
 function ChatbotWrapper() {
   const location = useLocation();
 
-  const visibleRoutes = ["/", "/landingpage", "/aboutus", "/career"];
+  const visibleRoutes = ["", "/", "/LandingPage", "/AboutUs", "/Career"];
   const isVisible = visibleRoutes.includes(location.pathname);
 
   if (!isVisible) return null;
@@ -19,6 +19,7 @@ function ChatbotWrapper() {
     </div>
   );
 }
+
 
 
 createRoot(document.getElementById('root')).render(
