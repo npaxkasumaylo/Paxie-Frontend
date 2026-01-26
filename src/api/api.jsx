@@ -42,9 +42,18 @@ export const api = {
   getAIResponse: (query, id) => axios.post(`${AI_URL}/chatbot-ai`,{ query, id}),
   addAIDocument: (id) => axios.post(`${AI_URL}/newDocument?id=${id}`),
   deleteAIDocument: (id) => axios.delete(`${AI_URL}/deleteDocument?id=${id}`),
-  deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`)
+  deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`),
 
 
+  //AI Provider
+  getAllProviders: () => Api.get("/Provider"),
+
+  //AI Models
+  getServiceModels: (serviceName) => Api.get("/ServiceModels/GetServiceModels", { params: { ServiceName: serviceName } }),
+
+  //ModelCredentials
+  addModelCredentials: (modelDetails) => Api.post("/ModelCredentials", modelDetails),
+  getModelCredentials: () => Api.get("/ModelCredentials")
 };
 
 

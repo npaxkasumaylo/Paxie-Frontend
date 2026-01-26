@@ -9,6 +9,7 @@ import PageLoader from "../PageLoader";
 import Toast from "../Toast";
 import JobOpenings from "./JobOpenings";
 import AddNewJob from "./AddNewJob";
+import ManageAiModels from "./ManageAIModels";
 
 export default function Home() {
   const [uploading, setUploading] = useState(false);
@@ -22,7 +23,7 @@ export default function Home() {
 	const [documents, setDocuments] = useState([]);
   const [currentId, setCurrentId] = useState(null);
 	const [jobs, setJobs] = useState([]);
-	const [uploadFile, setUploadFile] = useState(true);
+	const [mode, setMode] = useState("files");
 	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
 	const docInfoArr = ['Company Profile', 'Company Management', 'Product/Service Profile', 'Policy Profile'];
 
@@ -185,16 +186,23 @@ export default function Home() {
 					{/* Upload Files */}
 					 <div className="w-full p-8 px-10 pb-16 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl">
 						<div className="flex justify-between pb-3 mb-4">
-							<h1 className="text-2xl font-bold text-white">	{uploadFile ? 'Upload Files' : 'Add Job Opening' }</h1>
-							<button 
-								className="text-white font-semibold p-1.5 border border-gray-300 rounded-lg hover:bg-white hover:text-gray-600"
-								onClick={() => setUploadFile(!uploadFile)}
+							<h1 className="text-2xl font-bold text-white">
+								{mode === "files" && "Upload Files"}
+								{mode === "addJob" && "Manage Jobs"}
+								{mode === "models" && "Manage AI Models"}
+							</h1>
+							<select
+								value={mode}
+								onChange={(e) => setMode(e.target.value)}
+								className="text-gray-600 font-semibold p-1.5 border border-gray-300 rounded-lg hover:bg-white "
 							>
-								{uploadFile ? 'Manage Jobs' : 'Manage Files' }
-							</button>
+								<option value="files">Manage Files</option>
+								<option value="addJob">Manage Jobs</option>
+								<option value="models">AI Models</option>
+							</select>
 						</div> 
 						
-						{uploadFile &&
+						{mode === "files" && (
 							<div className="flex-row justify-between gap-6">
 								
 								{/* Upload Input */}
@@ -255,11 +263,15 @@ export default function Home() {
 								</div> 
 
 							</div>
-						}
+						)}
 
-						{!uploadFile &&
+						{mode === "addJob" && (
 						<AddNewJob getAllJobs={getAllJobs} notify={notify} jobs={jobs} />
-						}
+						)}
+
+						{mode === "models" && (
+							<ManageAiModels notify={notify} />
+						)}
 						
 					</div>
 
