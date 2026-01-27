@@ -53,7 +53,15 @@ export const api = {
 
   //ModelCredentials
   addModelCredentials: (modelDetails) => Api.post("/ModelCredentials", modelDetails),
-  getModelCredentials: () => Api.get("/ModelCredentials")
+  getModelCredentials: () => Api.get("/ModelCredentials"),
+  editModelCredentials: (data) => Api.put("/ModelCredentials",data),
+  getModelCredentialsById: (id) => Api.get(`/ModelCredentials/${id}`),
+  editModelCredentialsByUsedModel: (payload) => Api.put(`/ModelCredentials/UseModel`, payload),
+  deleteModelCredentials: (payload) => Api.delete(`/ModelCredentials`, {data: payload}),
+
+
+  //Security
+  getSecurityKey: () => Api.get("/Security")
 };
 
 

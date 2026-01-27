@@ -13,7 +13,6 @@ const [saving, setSaving] = useState(false);
 const [details, setDetails] =useState([]);
 
 
-
 useEffect(() => {
   const loadProviders = async () => {
     try {
@@ -26,7 +25,6 @@ useEffect(() => {
   };
   loadProviders();
 }, []);
-
 
 
 const getDetails = async () => {
@@ -75,6 +73,30 @@ const handleProviderChange = async (e) => {
   }
 };
 
+const encryptApiKey = async (publicKeyBase64, apiKey) => {
+  const binaryDer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
+
+  const publicKey = await window.crypto.subtle.importKey(
+    "spki",
+    binaryDer.buffer,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  const encrypted = await window.crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    new TextEncoder().encode(apiKey)
+  );
+
+  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+};
+
+
 
 const addNewAiModel = async (e) => {
     e.preventDefault();
@@ -89,27 +111,37 @@ const addNewAiModel = async (e) => {
       return;
     }
 
+    if (!apiKey?.trim()) {
+    notify("Please enter an API key");
+    return;
+  }
+
     setSaving(true);
 
     try {
-        const providerName =
-        providers.find((p) => String(p.id) === String(aiProviders))?.name;
+      const securityRes = await api.getSecurityKey();
+      const encryptedApiKey = await encryptApiKey(securityRes.data, apiKey);
+
+      const providerName =
+      providers.find((p) => String(p.id) === String(aiProviders))?.name;
 
         const modelName =
         filteredModels.find((m) => String(m.id) === String(selectedModel))?.modelName;
+      
+
 
       const modelDetails ={
         serviceProvider: providerName,
-        model: modelName,
-        apiKey: apiKey,
+        modelName: modelName,
+        apiKey: encryptedApiKey,
         isActive: true,   
         temperature: temperature
       };
         await api.addModelCredentials(modelDetails);
 
-      cancelAdd();
       notify("Successfully added new AI model!");
       getDetails();
+      cancelAdd();
     } catch(e) {
         console.error(e);
       notify("Something went wrong");
@@ -117,6 +149,36 @@ const addNewAiModel = async (e) => {
         setSaving(false);
     } 
 };
+
+const deleteModel = async (model) => {
+  try{
+    await api.deleteModelCredentials({
+      id:model.id,
+      isActive:false
+    });
+    notify?.("Model successfuly deleted.", "success");
+    getDetails();
+  }catch (e){
+    console.error(e);
+    notify?.("Failed to use model.", "error");
+    getDetails();
+  }
+};
+
+const modelProvider = async (model) => {
+  try{
+    await api.editModelCredentialsByUsedModel({
+      id:model.id,
+      isImplemented:true
+    });
+    notify?.("Model is now in use.", "success");
+    getDetails(); 
+  }catch (e){
+    console.error(e);
+    notify?.("Failed to use model.", "error");
+    getDetails();
+  }
+}
 
 const cancelAdd = () => {
     setAIProviders("");
@@ -222,12 +284,13 @@ const cancelAdd = () => {
             <div className="w-full overflow-x-auto rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl">
                 <table className="w-full min-w-[720px] table-auto border-collapse">
                     <thead className="bg-white/10">
-                    <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
+                      <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
                         <th>Model Name</th>
+                        <th>Status</th>
                         <th>API Key</th>
                         <th>Temperature</th>
-                        <th className="text-right">Actions</th>
-                    </tr>
+                        <th>Actions</th>
+                      </tr>
                     </thead>
 
                     <tbody className="divide-y divide-white/10">
@@ -236,14 +299,23 @@ const cancelAdd = () => {
                             <tr key={d.id ?? `${d.model}-${d.apiKey}`} className="transition hover:bg-white/10">
                                 <td className="px-5 py-4 text-white">
                                 <div className="flex items-center gap-2">
-                                    <span className="font-semibold">{d.model}</span>
-                                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                    d.isActive ? "bg-emerald-400/15 text-emerald-200" : "bg-gray-400/15 text-gray-200"
-                                    }`}>
-                                     {d.isActive ? "Active" : "Inactive"}
-                                    </span>
+                                    <span className="font-semibold">{d.modelName}</span>
+                                    
                                 </div>
                                 </td>
+
+                                <td className="px-5 py-4 text-white/90">
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                      d.isActive && d.isImplemented
+                                        ? "bg-emerald-400/15 text-emerald-200"
+                                        : "bg-gray-400/15 text-gray-200"
+                                    }`}
+                                  >
+                                    {d.isActive && d.isImplemented ? "Active" : "Inactive"}
+                                  </span>
+                                </td>
+
 
                                 <td className="px-5 py-4 text-white/90">
                                 <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 text-sm font-semibold">
@@ -262,8 +334,22 @@ const cancelAdd = () => {
                                     <button className="rounded-xl bg-white/90 px-4 py-2 text-sm font-bold text-[#183398] shadow hover:bg-white/70 transition">
                                     Edit
                                     </button>
-                                    <button className="rounded-xl bg-white/20 px-4 py-2 text-sm font-bold text-white shadow transition">
-                                    Use Model
+                                    <button 
+                                    onClick={() => modelProvider(d)}
+                                    disabled={d.isImplemented}
+                                    className={`
+                                      rounded-xl px-4 py-2 text-sm font-semibold shadow transition
+                                      ${d.isImplemented
+                                        ? "bg-emerald-500/20 text-emerald-300 cursor-not-allowed"
+                                        : "bg-white/20 text-white hover:bg-white/30"
+                                      }
+                                    `}>
+                                      {d.isImplemented ? "In Use" : "Use Model"}
+                                    </button>
+                                    <button 
+                                    onClick={() => deleteModel(d)}
+                                    className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">
+                                      Delete
                                     </button>
                                 </div>
                                 </td>
