@@ -43,13 +43,16 @@ export const api = {
   addAIDocument: (id) => axios.post(`${AI_URL}/newDocument?id=${id}`),
   deleteAIDocument: (id) => axios.delete(`${AI_URL}/deleteDocument?id=${id}`),
   deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`),
+ //Switchmodels
+  switchModel: (data) => axios.put(`${AI_URL}/SwitchModel`, data),
+
 
 
   //AI Provider
   getAllProviders: () => Api.get("/Provider"),
+  getProviderById: (id) => Api.get(`/Provider/${id}`),
 
-  //AI Models
-  getServiceModels: (serviceName) => Api.get("/ServiceModels/GetServiceModels", { params: { ServiceName: serviceName } }),
+
 
   //ModelCredentials
   addModelCredentials: (modelDetails) => Api.post("/ModelCredentials", modelDetails),
@@ -61,7 +64,10 @@ export const api = {
 
 
   //Security
-  getSecurityKey: () => Api.get("/Security")
+  getSecurityKey: () => Api.get("/Security"),
+
+
+
 };
 
 

@@ -1,16 +1,22 @@
-import {useMemo,useEffect,useState } from "react";
+import {useEffect,useState } from "react";
 import { api } from "../../api/api";
 
 export default function ManageAiModels({ notify }) {
-const [selectedModel, setSelectedModel] = useState("");
 
 const [aiProviders, setAIProviders] = useState("");
 const [providers, setProviders] = useState([]);
-const [serviceModels, setServiceModels] = useState([]);
 const [apiKey, setApiKey] = useState("");
+const [model, setModel] = useState("");
 const [temperature, setTemperature] = useState("");
 const [saving, setSaving] = useState(false);
 const [details, setDetails] =useState([]);
+
+const [endpoint, setEndpoint] = useState("");
+const [apiVersion, setApiVersion] = useState("");
+
+
+const isAzureOpenAI =
+  providers.find(p => String(p.id) === String(aiProviders))?.name === "AzureOpenAI";
 
 
 useEffect(() => {
@@ -41,37 +47,7 @@ useEffect(() => {
   getDetails();
 }, []);
 
- const filteredModels = useMemo(() => {
-  if (!aiProviders) return [];
 
-  const selectedProvider = providers.find(
-    (p) => String(p.id) === String(aiProviders)
-  );
-
-  if (!selectedProvider) return [];
-
-  return serviceModels.filter(
-    (m) => m.serviceProviderName === selectedProvider.name
-  );
-}, [aiProviders, serviceModels, providers]);
-
-
-const handleProviderChange = async (e) => {
-  const providerId = e.target.value;
-  setAIProviders(providerId);
-  setSelectedModel("");
-
-  const provider = providers.find((p) => String(p.id) === String(providerId));
-  if (!provider) return;
-
-  try {
-    const res = await api.getServiceModels(provider.name); // e.g. "Mistral"
-    setServiceModels(res.data || []);
-  } catch (err) {
-    console.error(err);
-    notify?.("Failed to load models.", "error");
-  }
-};
 
 const encryptApiKey = async (publicKeyBase64, apiKey) => {
   const binaryDer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
@@ -96,23 +72,46 @@ const encryptApiKey = async (publicKeyBase64, apiKey) => {
   return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 };
 
+const encryptEndPoint = async (publicKeyBase64, endpoint) => {
+  const binaryDer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
+
+  const publicKey = await window.crypto.subtle.importKey(
+    "spki",
+    binaryDer.buffer,
+    {
+      name: "RSA-OAEP",
+      hash: "SHA-256"
+    },
+    false,
+    ["encrypt"]
+  );
+
+  const encrypted = await window.crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    new TextEncoder().encode(endpoint)
+  );
+
+  return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+};
+
 
 
 const addNewAiModel = async (e) => {
     e.preventDefault();
 
     if (!aiProviders) {
-      notify("Please select an AI provider");
+      notify?.("Please select an AI provider", "error");
       return;
     }
 
-    if (!selectedModel) {
-      notify("Please select an AI model");
+    if (!model) {
+      notify?.("Please select an AI model", "error");
       return;
     }
 
     if (!apiKey?.trim()) {
-    notify("Please enter an API key");
+    notify?.("Please enter an API key", "error");
     return;
   }
 
@@ -121,30 +120,32 @@ const addNewAiModel = async (e) => {
     try {
       const securityRes = await api.getSecurityKey();
       const encryptedApiKey = await encryptApiKey(securityRes.data, apiKey);
+      const encryptedEndPoint = await encryptEndPoint(securityRes.data, endpoint)
 
       const providerName =
       providers.find((p) => String(p.id) === String(aiProviders))?.name;
 
-        const modelName =
-        filteredModels.find((m) => String(m.id) === String(selectedModel))?.modelName;
       
-
-
-      const modelDetails ={
+      const modelDetails = {
         serviceProvider: providerName,
-        modelName: modelName,
+        modelName:model,
         apiKey: encryptedApiKey,
-        isActive: true,   
-        temperature: temperature
+        isActive: true,
+        temperature: Number(temperature),
+        ...(isAzureOpenAI && {
+          endpoint: encryptedEndPoint,
+          apiVersion: apiVersion
+        })
       };
         await api.addModelCredentials(modelDetails);
 
-      notify("Successfully added new AI model!");
+      notify?.("Successfully added new AI model!", "success");
       getDetails();
       cancelAdd();
+      console.log(modelDetails)
     } catch(e) {
         console.error(e);
-      notify("Something went wrong");
+      notify?.("Something went wrong", "error");
     }finally{
         setSaving(false);
     } 
@@ -182,12 +183,43 @@ const modelProvider = async (model) => {
 
 const cancelAdd = () => {
     setAIProviders("");
-    setSelectedModel("");
+    setModel("");
     setApiKey("");
     setTemperature("");
 }
 
 //for table
+
+
+const handleUseModel = async (row) => {
+  try {
+    const payload = {
+      id: row.id,
+      isImplemented: true,
+    };
+
+    const res = await api.editModelCredentialsByUsedModel(payload);
+     console.log (res);
+
+    const data = {
+      Provider: res.data.serviceProvider,
+      ModelName:res.data.modelName,
+      Temperature:res.data.temperature,
+      ApiKey:res.data.apiKey,
+      Endpoint:res.data.endpoint,
+      Version:res.data.apiVersion,
+      ServiceProviderId:res.data.id
+    }
+    
+    await api.switchModel(data)
+    notify?.("Model switched successfully.", "success");
+
+  } catch (e) {
+    console.error(e);
+    notify?.("Failed to switch model.", "error");
+  }
+};
+
 
 
 
@@ -199,7 +231,7 @@ const cancelAdd = () => {
              <span className="text-white/90 text-sm">AI Provider</span>
             <select
                 value={aiProviders}
-                onChange={handleProviderChange}
+                onChange={(e) => setAIProviders(e.target.value)}
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 >
                 <option className="text-gray-900" value="">Select AI Provider</option>
@@ -212,27 +244,13 @@ const cancelAdd = () => {
         </label>  
         <label className="block">
             <span className="text-white/90 text-sm">AI Models</span>
-            <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
+            <input
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
                 disabled={!aiProviders}
+                placeholder="e.g gpt-5-mini-FGT1"
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
-                >
-                <option className="text-gray-900" value="">
-                    {!aiProviders
-                    ? "Select provider first"
-                    : filteredModels.length === 0
-                    ? "No models available"
-                    : "Select AI Model"}
-                </option>
-                    {filteredModels.map((m) => (
-                    <option key={m.id} value={m.id} className="text-gray-900">
-                        {m.modelName}
-                    </option>
-                    ))}
-                </select>
-
-                
+                />
         </label>
 
         <label className="block">
@@ -252,14 +270,51 @@ const cancelAdd = () => {
             <span className="text-white/90 text-sm">Temperature</span>
             <input
               type="number"
+              min={0}
+              max={1}
+              step={0.01}
               required
                 value={temperature}
-                onChange={(e) => setTemperature(e.target.value)}
+                onChange={(e) => {
+              const value = Number(e.target.value);
+              if (value >= 0 && value <= 1) {
+                setTemperature(value);
+              }
+            }}
               placeholder="0-1 (e.g 0.7)"
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
             />
           </label>
 
+
+        {isAzureOpenAI &&(
+          <>
+          <label className="block">
+            <span className="text-white/90 text-sm">Endpoint</span>
+            <input
+              type="text"
+              required
+                value={endpoint}
+                onChange={(e) => setEndpoint(e.target.value)}
+
+              placeholder="e.g https://my-openai-resource.openai.azure.com/"
+              className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+            />
+          </label>
+
+            <label className="block">
+            <span className="text-white/90 text-sm">Api Version</span>
+            <input
+              type="text"
+              required
+                value={apiVersion}
+                onChange={(e) => setApiVersion(e.target.value)}
+              placeholder="e.g 2024-02-15-preview"
+              className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+            />
+          </label>
+          </>
+          )}
         <div className="pt-5">
             <button 
                  type="submit" 
@@ -331,11 +386,17 @@ const cancelAdd = () => {
 
                                 <td className="px-5 py-4">
                                 <div className="flex justify-end gap-2">
-                                    <button className="rounded-xl bg-white/90 px-4 py-2 text-sm font-bold text-[#183398] shadow hover:bg-white/70 transition">
+                                    <button 
+                                    disabled={d.isImplemented}
+                                    className={`
+                                      rounded-xl px-4 py-2 text-sm font-bold shadow transition
+                                      ${d.isImplemented 
+                                        ? "bg-white/10 text-white cursor-not-allowed" 
+                                        : "bg-white/90 text-[#183398] hover:bg-white/70"}`}>
                                     Edit
                                     </button>
                                     <button 
-                                    onClick={() => modelProvider(d)}
+                                    onClick={() => handleUseModel(d)}
                                     disabled={d.isImplemented}
                                     className={`
                                       rounded-xl px-4 py-2 text-sm font-semibold shadow transition
