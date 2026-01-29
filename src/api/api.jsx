@@ -44,7 +44,7 @@ export const api = {
   deleteAIDocument: (id) => axios.delete(`${AI_URL}/deleteDocument?id=${id}`),
   deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`),
  //Switchmodels
-  switchModel: (data) => axios.put(`${AI_URL}/SwitchModel`, data),
+  switchModel: (id) => axios.put(`${AI_URL}/SwitchModel`, {id}),
 
 
 
@@ -57,7 +57,7 @@ export const api = {
   //ModelCredentials
   addModelCredentials: (modelDetails) => Api.post("/ModelCredentials", modelDetails),
   getModelCredentials: () => Api.get("/ModelCredentials"),
-  editModelCredentials: (data) => Api.put("/ModelCredentials",data),
+  editModelCredentials: (payload) => Api.put("/ModelCredentials",payload),
   getModelCredentialsById: (id) => Api.get(`/ModelCredentials/${id}`),
   editModelCredentialsByUsedModel: (payload) => Api.put(`/ModelCredentials/UseModel`, payload),
   deleteModelCredentials: (payload) => Api.delete(`/ModelCredentials`, {data: payload}),

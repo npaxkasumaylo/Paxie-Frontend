@@ -14,11 +14,15 @@ const [details, setDetails] =useState([]);
 const [endpoint, setEndpoint] = useState("");
 const [apiVersion, setApiVersion] = useState("");
 
+const [isEditing, setIsEditing] = useState(false);
+const [editingId, setEditingId] = useState(null);
+
+
 
 const isAzureOpenAI =
   providers.find(p => String(p.id) === String(aiProviders))?.name === "AzureOpenAI";
 
-
+//loads all Ai Providers
 useEffect(() => {
   const loadProviders = async () => {
     try {
@@ -33,6 +37,7 @@ useEffect(() => {
 }, []);
 
 
+//gets model credentials
 const getDetails = async () => {
     try{
         const res = await api.getModelCredentials();
@@ -43,12 +48,13 @@ const getDetails = async () => {
     }
 };
 
+
 useEffect(() => {
   getDetails();
 }, []);
 
 
-
+//Encrypts Api Key
 const encryptApiKey = async (publicKeyBase64, apiKey) => {
   const binaryDer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
 
@@ -72,6 +78,7 @@ const encryptApiKey = async (publicKeyBase64, apiKey) => {
   return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
 };
 
+//Encrypts Endpoint
 const encryptEndPoint = async (publicKeyBase64, endpoint) => {
   const binaryDer = Uint8Array.from(atob(publicKeyBase64), c => c.charCodeAt(0));
 
@@ -96,7 +103,7 @@ const encryptEndPoint = async (publicKeyBase64, endpoint) => {
 };
 
 
-
+//Add new created model
 const addNewAiModel = async (e) => {
     e.preventDefault();
 
@@ -122,10 +129,8 @@ const addNewAiModel = async (e) => {
       const encryptedApiKey = await encryptApiKey(securityRes.data, apiKey);
       const encryptedEndPoint = await encryptEndPoint(securityRes.data, endpoint)
 
-      const providerName =
-      providers.find((p) => String(p.id) === String(aiProviders))?.name;
+      const providerName =providers.find((p) => String(p.id) === String(aiProviders))?.name;
 
-      
       const modelDetails = {
         serviceProvider: providerName,
         modelName:model,
@@ -141,7 +146,7 @@ const addNewAiModel = async (e) => {
 
       notify?.("Successfully added new AI model!", "success");
       getDetails();
-      cancelAdd();
+      cancel();
       console.log(modelDetails)
     } catch(e) {
         console.error(e);
@@ -151,6 +156,98 @@ const addNewAiModel = async (e) => {
     } 
 };
 
+
+//prefill forms
+const editAiModel= (row) => {
+  setIsEditing(true);
+  setEditingId(row.id);
+
+  const provider = providers.find(p => p.name === row.serviceProvider);
+  setAIProviders(provider?.id ?? "");
+  setModel(row.modelName ?? "");
+  setTemperature(row.temperature ?? "");
+  setApiKey("");
+  setEndpoint("");
+  setApiVersion(row.apiVersion ?? "");
+
+}
+
+//updates Ai models
+const updateAiModel = async (e) => {
+  e.preventDefault();
+
+  if(!editingId){
+    notify?.("No model selected for editing.", "error");
+    return;
+  }
+
+   const providerName =
+    providers.find((p) => String(p.id) === String(aiProviders))?.name;
+
+  if (!providerName) {
+    notify?.("Provider not found.", "error");
+    return;
+  }
+
+  if (!model?.trim()) {
+    notify?.("Please enter an AI model", "error");
+    return;
+  }
+
+  if (temperature === "" || temperature === null || temperature === undefined) {
+    notify?.("Please enter temperature", "error");
+    return;
+  }
+
+  // If Azure and you want apiVersion required during edit:
+  if (isAzureOpenAI && !apiVersion?.trim()) {
+    notify?.("Please enter API version", "error");
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    const securityRes = await api.getSecurityKey();
+
+    const currentRes = await api.getModelCredentialsById(editingId);
+    const current = currentRes.data;
+
+    // Update only if user typed new apiKey/endpoint
+    const encryptedApiKey = apiKey?.trim() ? await encryptApiKey(securityRes.data, apiKey): null;
+
+    const encryptedEndPoint = endpoint?.trim()? await encryptEndPoint(securityRes.data, endpoint): null;
+
+    const payload = {
+      id: current.id,
+      apiKey: encryptedApiKey,
+      modelName: model,
+      temperature: Number(temperature),
+      isImplemented: current.isImplemented,
+      isActive: current.isActive,
+      serviceProvider: current.serviceProvider,
+      endpoint: encryptedEndPoint || "",
+      apiVersion: apiVersion || "",
+    };
+
+    console.log(payload)
+
+    await api.editModelCredentials(payload); 
+
+    notify?.("Model updated successfully.", "success");
+    getDetails();
+    cancel(); // reuse your reset
+  } catch (err) {
+    console.error(err);
+    notify?.("Failed to update model.", "error");
+  } finally {
+    setSaving(false);
+  }
+  
+}
+
+
+//soft delete for models
 const deleteModel = async (model) => {
   try{
     await api.deleteModelCredentials({
@@ -166,72 +263,51 @@ const deleteModel = async (model) => {
   }
 };
 
-const modelProvider = async (model) => {
-  try{
-    await api.editModelCredentialsByUsedModel({
-      id:model.id,
-      isImplemented:true
-    });
-    notify?.("Model is now in use.", "success");
-    getDetails(); 
-  }catch (e){
-    console.error(e);
-    notify?.("Failed to use model.", "error");
-    getDetails();
-  }
-}
-
-const cancelAdd = () => {
+//cancel button
+const cancel = () => {
     setAIProviders("");
     setModel("");
     setApiKey("");
     setTemperature("");
+    setEndpoint("");
+    setApiVersion("");
+
+    setIsEditing(false);
+    setEditingId(null);
 }
 
-//for table
-
-
+//switching AI models
 const handleUseModel = async (row) => {
   try {
-    const payload = {
+    await api.switchModel(row.id);
+    await api.editModelCredentialsByUsedModel({
       id: row.id,
       isImplemented: true,
-    };
-
-    const res = await api.editModelCredentialsByUsedModel(payload);
-     console.log (res);
-
-    const data = {
-      Provider: res.data.serviceProvider,
-      ModelName:res.data.modelName,
-      Temperature:res.data.temperature,
-      ApiKey:res.data.apiKey,
-      Endpoint:res.data.endpoint,
-      Version:res.data.apiVersion,
-      ServiceProviderId:res.data.id
-    }
-    
-    await api.switchModel(data)
+    });
     notify?.("Model switched successfully.", "success");
-
+    getDetails();
   } catch (e) {
     console.error(e);
-    notify?.("Failed to switch model.", "error");
+    notify?.(
+      e?.response?.data?.detail?.[0]?.msg ||
+        e?.response?.data?.message ||
+        "Failed to switch model.",
+      "error"
+    );
   }
 };
 
 
-
-
     return (
         <div>
-            <form onSubmit={addNewAiModel} className="space-y-2">
+            <form onSubmit={isEditing ? updateAiModel : addNewAiModel} className="space-y-2">
         <label className="block">
 
              <span className="text-white/90 text-sm">AI Provider</span>
             <select
                 value={aiProviders}
                 onChange={(e) => setAIProviders(e.target.value)}
+                disabled={isEditing}
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 >
                 <option className="text-gray-900" value="">Select AI Provider</option>
@@ -247,7 +323,7 @@ const handleUseModel = async (row) => {
             <input
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                disabled={!aiProviders}
+                disabled={!aiProviders && !isEditing}
                 placeholder="e.g gpt-5-mini-FGT1"
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 />
@@ -321,12 +397,12 @@ const handleUseModel = async (row) => {
                 disabled={saving}
                 className={`w-full bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-1.5 rounded-full transition`}
             >
-              {saving ? "SAVING..." : "SAVE"}
+              {saving ? "SAVING..." : isEditing ? "UPDATE" : "SAVE"}
             </button>
         </div>
             </form>
             <button 
-            onClick={cancelAdd}
+            onClick={cancel}
                 disabled={saving}
                 className={`w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
                     CANCEL
@@ -387,6 +463,7 @@ const handleUseModel = async (row) => {
                                 <td className="px-5 py-4">
                                 <div className="flex justify-end gap-2">
                                     <button 
+                                     onClick={() => editAiModel(d)}
                                     disabled={d.isImplemented}
                                     className={`
                                       rounded-xl px-4 py-2 text-sm font-bold shadow transition
@@ -409,7 +486,14 @@ const handleUseModel = async (row) => {
                                     </button>
                                     <button 
                                     onClick={() => deleteModel(d)}
-                                    className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">
+                                    disabled={d.isImplemented}
+                                    className={`
+                                    rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition 
+                                    ${d.isImplemented 
+                                      ? "bg-white/20 text-white hover:bg-white/30 cursor-not-allowed"
+                                      : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
+                                     }
+                                    `}>
                                       Delete
                                     </button>
                                 </div>
