@@ -109,10 +109,10 @@ export default function LandingPage() {
 
             {/* SOFTWARE PRODUCTS & SERVICES Dropdown */}
             <div className="relative group">
-              <button className="hover:text-blue-300 transition flex items-center gap-1">
+              <Link to="/ProductsandServices" className="hover:text-blue-300 transition flex items-center gap-1">
                 SOFTWARE PRODUCTS AND SERVICES
                 <ChevronDown className="w-4 h-4" />
-              </button>
+                </Link>
 
               <div
                 className="absolute left-0 top-full mt-2 bg-white border border-gray-200 border-t-2 border-t-blue-500 
@@ -122,9 +122,9 @@ export default function LandingPage() {
                 transition-all duration-500 ease-out"
               >
                 <div className="p-5">
-                  <h3 className="font-semibold mb-4 text-gray-800">
-                    Software Products and Services
-                  </h3>
+                    <h3 className="font-semibold mb-4 text-gray-800">
+                      Software Products and Services
+                    </h3>
                   <div className="space-y-2 text-sm text-gray-500">
                     <a
                       href="#"

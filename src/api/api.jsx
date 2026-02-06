@@ -30,7 +30,7 @@ export const api = {
 
   // DOCUMENTS API
   addDocument: (document) => Api.post("/Documents/AddDocument", document),
-  getDocuments: () => Api.get("/Documents/GetDocuments"),
+  getDocuments: (isProductTag = false, productName = "General") => Api.get("/Documents/GetDocuments", { params: { isProductTag, productName } }),
   deleteDocument: (documentId) => Api.delete(`/Documents/${documentId}`),
 
   //JOB OPENING API
@@ -66,6 +66,8 @@ export const api = {
   //Security
   getSecurityKey: () => Api.get("/Security"),
 
+  //DocumentTags
+  getDocumentTags: () => Api.get(`/DocumentTags`),
 
 
 };

@@ -1,7 +1,7 @@
 import {useEffect,useState } from "react";
 import { api } from "../../api/api";
 
-export default function ManageAiModels({ notify }) {
+export default function ManageAiModels({ notify, getDetails, editingRow, clearEditingRow }) {
 
 const [aiProviders, setAIProviders] = useState("");
 const [providers, setProviders] = useState([]);
@@ -9,7 +9,6 @@ const [apiKey, setApiKey] = useState("");
 const [model, setModel] = useState("");
 const [temperature, setTemperature] = useState("");
 const [saving, setSaving] = useState(false);
-const [details, setDetails] =useState([]);
 
 const [endpoint, setEndpoint] = useState("");
 const [apiVersion, setApiVersion] = useState("");
@@ -36,17 +35,21 @@ useEffect(() => {
   loadProviders();
 }, []);
 
+useEffect(() => {
+  if (!editingRow) return;
 
-//gets model credentials
-const getDetails = async () => {
-    try{
-        const res = await api.getModelCredentials();
-        setDetails(res.data || [])
-    }catch (e) {
-        console.error(e);
-        notify?.("Failed to load details.", "error");
-    }
-};
+  setIsEditing(true);
+  setEditingId(editingRow.id);
+
+  const provider = providers.find(p => p.name === editingRow.serviceProvider);
+  setAIProviders(provider?.id ?? "");
+  setModel(editingRow.modelName ?? "");
+  setTemperature(editingRow.temperature ?? "");
+  setApiVersion(editingRow.apiVersion ?? "");
+  setApiKey("");
+  setEndpoint("");
+}, [editingRow, providers]);
+
 
 
 useEffect(() => {
@@ -158,19 +161,6 @@ const addNewAiModel = async (e) => {
 
 
 //prefill forms
-const editAiModel= (row) => {
-  setIsEditing(true);
-  setEditingId(row.id);
-
-  const provider = providers.find(p => p.name === row.serviceProvider);
-  setAIProviders(provider?.id ?? "");
-  setModel(row.modelName ?? "");
-  setTemperature(row.temperature ?? "");
-  setApiKey("");
-  setEndpoint("");
-  setApiVersion(row.apiVersion ?? "");
-
-}
 
 //updates Ai models
 const updateAiModel = async (e) => {
@@ -247,22 +237,6 @@ const updateAiModel = async (e) => {
 }
 
 
-//soft delete for models
-const deleteModel = async (model) => {
-  try{
-    await api.deleteModelCredentials({
-      id:model.id,
-      isActive:false
-    });
-    notify?.("Model successfuly deleted.", "success");
-    getDetails();
-  }catch (e){
-    console.error(e);
-    notify?.("Failed to use model.", "error");
-    getDetails();
-  }
-};
-
 //cancel button
 const cancel = () => {
     setAIProviders("");
@@ -274,29 +248,10 @@ const cancel = () => {
 
     setIsEditing(false);
     setEditingId(null);
+    clearEditingRow?.();
 }
 
 //switching AI models
-const handleUseModel = async (row) => {
-  try {
-    await api.switchModel(row.id);
-    await api.editModelCredentialsByUsedModel({
-      id: row.id,
-      isImplemented: true,
-    });
-    notify?.("Model switched successfully.", "success");
-    getDetails();
-  } catch (e) {
-    console.error(e);
-    notify?.(
-      e?.response?.data?.detail?.[0]?.msg ||
-        e?.response?.data?.message ||
-        "Failed to switch model.",
-      "error"
-    );
-  }
-};
-
 
     return (
         <div>
@@ -407,109 +362,6 @@ const handleUseModel = async (row) => {
                 className={`w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
                     CANCEL
             </button>
-
-            <hr className="my-6 border-white/10" />
-
-             {/* AI Models Table */}
-
-            <div className="w-full overflow-x-auto rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl">
-                <table className="w-full min-w-[720px] table-auto border-collapse">
-                    <thead className="bg-white/10">
-                      <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
-                        <th>Model Name</th>
-                        <th>Status</th>
-                        <th>API Key</th>
-                        <th>Temperature</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-
-                    <tbody className="divide-y divide-white/10">
-                        {details.length > 0 ? (
-                            details.map((d) => (
-                            <tr key={d.id ?? `${d.model}-${d.apiKey}`} className="transition hover:bg-white/10">
-                                <td className="px-5 py-4 text-white">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold">{d.modelName}</span>
-                                    
-                                </div>
-                                </td>
-
-                                <td className="px-5 py-4 text-white/90">
-                                  <span
-                                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                      d.isActive && d.isImplemented
-                                        ? "bg-emerald-400/15 text-emerald-200"
-                                        : "bg-gray-400/15 text-gray-200"
-                                    }`}
-                                  >
-                                    {d.isActive && d.isImplemented ? "Active" : "Inactive"}
-                                  </span>
-                                </td>
-
-
-                                <td className="px-5 py-4 text-white/90">
-                                <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 text-sm font-semibold">
-                                    —
-                                </span>
-                                </td>
-
-                                <td className="px-5 py-4 text-white/90">
-                                <span className="inline-flex items-center rounded-lg bg-white/10 px-2 py-1 text-sm font-semibold">
-                                    {d.temperature}
-                                </span>
-                                </td>
-
-                                <td className="px-5 py-4">
-                                <div className="flex justify-end gap-2">
-                                    <button 
-                                     onClick={() => editAiModel(d)}
-                                    disabled={d.isImplemented}
-                                    className={`
-                                      rounded-xl px-4 py-2 text-sm font-bold shadow transition
-                                      ${d.isImplemented 
-                                        ? "bg-white/10 text-white cursor-not-allowed" 
-                                        : "bg-white/90 text-[#183398] hover:bg-white/70"}`}>
-                                    Edit
-                                    </button>
-                                    <button 
-                                    onClick={() => handleUseModel(d)}
-                                    disabled={d.isImplemented}
-                                    className={`
-                                      rounded-xl px-4 py-2 text-sm font-semibold shadow transition
-                                      ${d.isImplemented
-                                        ? "bg-emerald-500/20 text-emerald-300 cursor-not-allowed"
-                                        : "bg-white/20 text-white hover:bg-white/30"
-                                      }
-                                    `}>
-                                      {d.isImplemented ? "In Use" : "Use Model"}
-                                    </button>
-                                    <button 
-                                    onClick={() => deleteModel(d)}
-                                    disabled={d.isImplemented}
-                                    className={`
-                                    rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md transition 
-                                    ${d.isImplemented 
-                                      ? "bg-white/20 text-white hover:bg-white/30 cursor-not-allowed"
-                                      : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
-                                     }
-                                    `}>
-                                      Delete
-                                    </button>
-                                </div>
-                                </td>
-                            </tr>
-                            ))
-                        ) : (
-                            <tr>
-                            <td className="px-5 py-6 text-white/70" colSpan={4}>
-                                No models added yet.
-                            </td>
-                            </tr>
-                        )}
-                        </tbody>
-                </table>
-                </div>
         </div>
 
     )

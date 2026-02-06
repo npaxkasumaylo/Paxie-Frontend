@@ -39,10 +39,10 @@ export default function Career() {
 
             {/* SOFTWARE PRODUCTS & SERVICES Dropdown */}
             <div className="relative group">
-              <button className="hover:text-blue-300 transition flex items-center gap-1">
+              <Link to="/ProductsandServices" className="hover:text-blue-300 transition flex items-center gap-1">
                 SOFTWARE PRODUCTS AND SERVICES
                 <ChevronDown className="w-4 h-4" />
-              </button>
+              </Link>
 
               <div className="absolute left-0 top-full mt-2 bg-white border border-gray-200 border-t-2 border-t-blue-500 
                 shadow-xl overflow-hidden

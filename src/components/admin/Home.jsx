@@ -10,6 +10,9 @@ import Toast from "../Toast";
 import JobOpenings from "./JobOpenings";
 import AddNewJob from "./AddNewJob";
 import ManageAiModels from "./ManageAIModels";
+import ManageProductsandServices from "./ProductsandServices";
+import ProductsandServicesList from "./ProductsandServicesList";
+import ModelList from "./ModelList";
 
 export default function Home() {
   const [uploading, setUploading] = useState(false);
@@ -18,7 +21,7 @@ export default function Home() {
   const [error, setError] = useState("");
 	const [networkError, setNetworkError] = useState("");
   const [file, setFile] = useState(null);
-	const [docInfo, setDocInfo] = useState(4);
+	const [docInfo, setDocInfo] = useState("");
   const navigate = useNavigate();
 	const [documents, setDocuments] = useState([]);
   const [currentId, setCurrentId] = useState(null);
@@ -26,6 +29,11 @@ export default function Home() {
 	const [mode, setMode] = useState("files");
 	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
 	const docInfoArr = ['Company Profile', 'Company Management', 'Product/Service Profile', 'Policy Profile'];
+const [details, setDetails] = useState([]);
+const [editingRow, setEditingRow] = useState(null);
+
+ const [documentTags, setDocumentTags] = useState([]);
+
 
     useEffect(() => {
 			setTimeout(() => {
@@ -34,8 +42,10 @@ export default function Home() {
     },[]);
 
 		const initializeData = async () => {
-			await getAllDocuments();
+			await getAllDocuments(false, "General");
 			await getAllJobs();
+			await getDetails();
+			await getDocumentTags();
 			setLoading(false);
 		};
 
@@ -49,9 +59,9 @@ export default function Home() {
 			}
 		};
 
-    const getAllDocuments = async () => {
+    const getAllDocuments = async (isProductTag = false, productName = "General") => {
 			try {
-				const res = await api.getDocuments();
+				const res = await api.getDocuments(isProductTag, productName);
 				setDocuments(res.data);
 			} catch (e) {
 				if(e.status == 401) {navigate("/admin/login");}
@@ -70,13 +80,14 @@ export default function Home() {
 				return;
 			}
 
-			if (docInfo == null) {
+			if (!docInfo) {
 				notify("Please select a document type.", "warning");
 				return;
 			}
 
-			if(validateFileSize(file, 10)) {
-				notify("File must be less than 10MB")
+			if(!validateFileSize(file, 10)) {
+				notify("File must be less than 10MB", "error");
+				return;
 			};
 
 			let docType;
@@ -88,7 +99,7 @@ export default function Home() {
 				return;
 			}
 
-				const { byteArray, base64String } = await convertFileToBytes(file);
+				const { base64String } = await convertFileToBytes(file);
 				
 			
 			// Check uniqueness of documents
@@ -106,6 +117,8 @@ export default function Home() {
 				const document = {
 					FileName: file.name,
 					DocumentType: docType,
+					productName:"General",
+					documentTagsId: Number(docInfo),
 					Data: base64String,
 					Uploaded: new Date().toISOString(),
 					DocumentInformation: docInfo
@@ -116,11 +129,12 @@ export default function Home() {
 
 				setUploading(false);
 				setFile(null);
-				setDocInfo(4);
+				setDocInfo("");
 				notify("Successfully uploaded file!", "success")
 				getAllDocuments();
 
 			} catch (e) {
+				console.error("Error uploading document:", e);
 				notify("Upload Failed. Try again later.", "error");
 				setUploading(false);
 			}
@@ -175,6 +189,151 @@ export default function Home() {
   return date.toLocaleDateString('en-US', options);
 } 
 
+
+
+//editAIModel, handleUseModel, deleteModel, details
+//gets model credentials
+	const getDetails = async () => {
+  const res = await api.getModelCredentials();
+  setDetails(res.data || []);
+};
+
+
+const deleteModel = async (model) => {
+  try{
+    await api.deleteModelCredentials({
+      id:model.id,
+      isActive:false
+    });
+    notify?.("Model successfuly deleted.", "success");
+    getDetails();
+  }catch (e){
+    console.error(e);
+    notify?.("Failed to use model.", "error");
+    getDetails();
+  }
+};
+const handleUseModel = async (row) => {
+  try {
+
+    const response = await api.switchModel(row.id);
+
+    const result = response.data;
+    console.log("Switch model response:", result);
+
+    if (result != "Success") {
+      notify?.(
+        result?.message || "Model switch failed.",
+        "error"
+      );
+      return;
+    }
+
+
+    await api.editModelCredentialsByUsedModel({
+      id: row.id,
+      isImplemented: true,
+    });
+
+    notify?.("Model switched successfully.", "success");
+
+
+    getDetails();
+    console.log(response)
+  } catch (e) {
+    console.error(e);
+    notify?.(
+      e?.response?.data?.detail?.[0]?.msg ||
+        e?.response?.data?.message ||
+        "Failed to switch model.",
+      "error"
+    );
+  }
+};
+
+const onEditModel= (row) => setEditingRow(row);
+
+//document tags
+const getDocumentTags = async () => {
+  try {
+    const res = await api.getDocumentTags(false);
+    setDocumentTags(Array.isArray(res?.data) ? res.data : []);
+  } catch (e) {
+    console.error(e);
+    notify?.("Failed to load document tags.", "error");
+    setDocumentTags([]);
+  }
+};
+
+	const SidePanel = () => {
+		if (mode === "files") {
+			return (
+				<div className="md:w-1/8 lg:1/3 w-full p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
+							overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
+					[&::-webkit-scrollbar-thumb]:bg-white/50"
+					>
+							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">General Document List</h1>
+							{documents && documents.length > 0 ? (
+								documents.map(item => (
+									<div key={item.documentId} className="relative group mt-2.5">
+										<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
+											<button 
+												onClick={() => handleDownload(item)}
+												className="flex flex-1 items-center cursor-pointer hover:text-white"
+											>
+												<FileText className="mr-2 text-white/90 hover:text-white" />
+												<p className="text-white/90 hover:text-white truncate">{item.fileName}</p>
+											</button>
+											<button onClick={handleDelete(item.documentId)} className="ml-auto flex-shrink-0" disabled={deleting}>
+												{deleting && currentId === item.documentId ? (
+													<LoaderCircle className="text-white/90 animate-spin"/>
+												) : (
+													<CircleX size={20} className="text-white/90 transition-transform duration-200 hover:scale-125"/>
+												)}
+											</button>
+										</div>
+
+										{/* Specific details */}
+										<div className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
+											max-h-0 opacity-0 pointer-events-none group-hover:static group-hover:max-h-60 group-hover:opacity-100 group-hover:pointer-events-auto
+											transition-all duration-300 ease-out"
+										>
+											<p className="text-white/90 truncate text-sm"><b>File Format:</b> {docTypeArr[item.documentType]}</p>
+											<p className="text-white/90 truncate text-sm"><b>File Information:</b> {documentTags.find(t => Number(t.id) === Number(item.documentTagsId))?.tagName ?? "Unknown"}</p>
+											<p className="text-white/90 truncate text-sm"><b>Date Uploaded:</b> {formatDate(item.uploaded)}</p>
+										</div>
+										
+									</div>
+									
+								)) 
+							) : (
+								 <>
+							{ networkError ? (
+								<p className="text-red-500 text-sm mt-2 font-medium text-center">{networkError}</p>
+								) : (
+									<p className="text-white/90 mt-4 text-center">No documents uploaded yet.</p>
+								)}
+									</>
+								)}
+							
+					</div>
+			)
+		}	
+		if (mode === "addJob") {
+			return <JobOpenings jobs={jobs} networkError={networkError} getAllJobs={getAllJobs} notify={notify} />
+		}
+
+		if (mode === "producstandservices") {
+			return <ProductsandServicesList jobs={jobs} networkError={networkError} getAllJobs={getAllJobs} notify={notify} />
+		}
+		
+		if (mode === "models") {
+			return<ModelList details={details} editAiModel={onEditModel} handleUseModel={handleUseModel} deleteModel={deleteModel} notify={notify} />
+		}
+
+		return null;
+	};
+
     return (
 		<>
 		{ !loading ? (
@@ -187,9 +346,10 @@ export default function Home() {
 					 <div className="w-full p-8 px-10 pb-16 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl">
 						<div className="flex justify-between pb-3 mb-4">
 							<h1 className="text-2xl font-bold text-white">
-								{mode === "files" && "Upload Files"}
+								{mode === "files" && "Upload General Files"}
 								{mode === "addJob" && "Manage Jobs"}
 								{mode === "models" && "Manage AI Models"}
+								{mode === "producstandservices" && "Products and Services"}
 							</h1>
 							<select
 								value={mode}
@@ -198,6 +358,7 @@ export default function Home() {
 							>
 								<option value="files">Manage Files</option>
 								<option value="addJob">Manage Jobs</option>
+								<option value="producstandservices">Products and Services</option>
 								<option value="models">AI Models</option>
 							</select>
 						</div> 
@@ -225,18 +386,20 @@ export default function Home() {
 								</div>
 									
 								<div className="mt-4 w-full">
-									<select 
-										value={docInfo} 
-										disabled={!file ? true : false }
-										onChange={(e) => setDocInfo(Number(e.target.value))} 
-										className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
-									>
-										<option className="text-gray-800" value={4}>Choose document type</option>
-										<option className="text-gray-800" value={0}>Company Profile</option>
-										<option className="text-gray-800" value={1}>Company Management</option>
-										<option className="text-gray-800" value={2}>Product/Service Profile</option>
-										<option className="text-gray-800" value={3}>Policy Profile</option>
-									</select>
+								<select
+									value={docInfo}
+									onChange={(e) => setDocInfo(e.target.value === "" ? "" : Number(e.target.value))}
+									disabled={!file}
+									className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
+								>
+									<option className="text-gray-800" value="">Choose document type</option>
+
+									{documentTags.map((t) => (
+									<option key={t.id} value={t.id} className="text-gray-800">
+										{t.tagName}
+									</option>
+									))}
+								</select>
 								</div>
 
 								{/* Upload Button */}
@@ -270,66 +433,16 @@ export default function Home() {
 						)}
 
 						{mode === "models" && (
-							<ManageAiModels notify={notify} />
+						<ManageAiModels notify={notify} getDetails={getDetails} editingRow={editingRow} clearEditingRow={() => setEditingRow(null)} />
 						)}
-						
+
+						{mode === "producstandservices" && (
+						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} />
+						)}	
+
 					</div>
 
-
-
-					{/* Document List */}
-					<div className="md:w-1/8 lg:1/3 w-full p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
-							overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
-					[&::-webkit-scrollbar-thumb]:bg-white/50"
-					>
-							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Document List</h1>
-							{documents && documents.length > 0 ? (
-								documents.map(item => (
-									<div key={item.documentId} className="relative group mt-2.5">
-										<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
-											<button 
-												onClick={() => handleDownload(item)}
-												className="flex flex-1 items-center cursor-pointer hover:text-white"
-											>
-												<FileText className="mr-2 text-white/90 hover:text-white" />
-												<p className="text-white/90 hover:text-white truncate">{item.fileName}</p>
-											</button>
-											<button onClick={handleDelete(item.documentId)} className="ml-auto flex-shrink-0" disabled={deleting}>
-												{deleting && currentId === item.documentId ? (
-													<LoaderCircle className="text-white/90 animate-spin"/>
-												) : (
-													<CircleX size={20} className="text-white/90 transition-transform duration-200 hover:scale-125"/>
-												)}
-											</button>
-										</div>
-
-										{/* Specific details */}
-										<div className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
-											max-h-0 opacity-0 pointer-events-none group-hover:static group-hover:max-h-60 group-hover:opacity-100 group-hover:pointer-events-auto
-											transition-all duration-300 ease-out"
-										>
-											<p className="text-white/90 truncate text-sm"><b>File Format:</b> {docTypeArr[item.documentType]}</p>
-											<p className="text-white/90 truncate text-sm"><b>File Information:</b> {docInfoArr[item.documentInformation]}</p>
-											<p className="text-white/90 truncate text-sm"><b>Date Uploaded:</b> {formatDate(item.uplaoded)}</p>
-										</div>
-										
-									</div>
-									
-								)) 
-							) : (
-								 <>
-							{ networkError ? (
-								<p className="text-red-500 text-sm mt-2 font-medium text-center">{networkError}</p>
-								) : (
-									<p className="text-white/90 mt-4 text-center">No documents uploaded yet.</p>
-								)}
-									</>
-								)}
-							
-					</div>
-					
-					{/* Job Openings */}
-					<JobOpenings jobs={jobs} networkError={networkError} getAllJobs={getAllJobs} notify={notify} />
+						<SidePanel />
 
 				</div>
 				

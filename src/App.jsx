@@ -6,6 +6,7 @@ import Login from './components/admin/Login';
 import Home from './components/admin/Home';
 import ProtectedRoute from './routes/ProtectedRoutes';
 import NotFound from './components/NotFound';
+import ProductsandServices from './components/ProductsandServices';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/LandingPage" element={<LandingPage />} />
         <Route path="/AboutUs" element={<AboutUs />} />
+        <Route path="/ProductsandServices" element={<ProductsandServices />} />
         <Route path="/Career" element={<Career />} />
 
         <Route path="/admin/login" element={<Login />} />
