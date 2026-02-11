@@ -67,7 +67,9 @@ export const api = {
   getSecurityKey: () => Api.get("/Security"),
 
   //DocumentTags
-  getDocumentTags: () => Api.get(`/DocumentTags`),
+  getDocumentTags: (isProductTag) => Api.get("/DocumentTags", {params: { IsProductTag: isProductTag },
+  }),
+
 
 
 };

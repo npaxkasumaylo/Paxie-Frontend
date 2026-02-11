@@ -58,8 +58,7 @@ const [editingRow, setEditingRow] = useState(null);
 				toast.info(msg);
 			}
 		};
-
-    const getAllDocuments = async (isProductTag = false, productName = "General") => {
+const getAllDocuments = async (isProductTag = false, productName = "General") => {
 			try {
 				const res = await api.getDocuments(isProductTag, productName);
 				setDocuments(res.data);
@@ -68,6 +67,7 @@ const [editingRow, setEditingRow] = useState(null);
 				setNetworkError("Something went wrong. Try again later.");
 			}
     };
+    
 
 	const validateFileSize = (data, maxMB) => {
 		const maxSize = maxMB * 1024 * 1024; 
@@ -324,7 +324,17 @@ const getDocumentTags = async () => {
 		}
 
 		if (mode === "producstandservices") {
-			return <ProductsandServicesList jobs={jobs} networkError={networkError} getAllJobs={getAllJobs} notify={notify} />
+			return <ProductsandServicesList 
+			 documents={documents}
+				handleDownload={handleDownload}
+				handleDelete={handleDelete}
+				deleting={deleting}
+				currentId={currentId}
+				docTypeArr={docTypeArr}
+				documentTags={documentTags}
+				formatDate={formatDate}
+				networkError={networkError}
+				/>
 		}
 		
 		if (mode === "models") {
@@ -367,6 +377,7 @@ const getDocumentTags = async () => {
 							<div className="flex-row justify-between gap-6">
 								
 								{/* Upload Input */}
+								<span className="text-white/90 text-sm">Upload Document</span>
 								<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
 									<input 
 										onChange={(e) => setFile(e.target.files[0])}
@@ -386,6 +397,7 @@ const getDocumentTags = async () => {
 								</div>
 									
 								<div className="mt-4 w-full">
+								<span className="text-white/90 text-sm">Document Type</span>
 								<select
 									value={docInfo}
 									onChange={(e) => setDocInfo(e.target.value === "" ? "" : Number(e.target.value))}
@@ -393,7 +405,6 @@ const getDocumentTags = async () => {
 									className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
 								>
 									<option className="text-gray-800" value="">Choose document type</option>
-
 									{documentTags.map((t) => (
 									<option key={t.id} value={t.id} className="text-gray-800">
 										{t.tagName}
@@ -418,7 +429,7 @@ const getDocumentTags = async () => {
 									{/* Cancel Button */}
 									{
 										file && !uploading && (
-											<button onClick={() => {setFile(null); setDocInfo(4)}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg">
+											<button onClick={() => {setFile(null); setDocInfo("")}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg">
 												Cancel
 											</button>
 										)

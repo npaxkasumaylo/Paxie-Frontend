@@ -1,125 +1,101 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu, Search } from "lucide-react";
 import Chatbot from "./Chatbot";
 
 import nPaxImage from "../assets/npax-white.png";
 
-// ✅ Best practice:
-// - If images are in /public, reference them like "/adminBG.jpg" (NO /public)
-// - Or import from src/assets.
-const FALLBACK_IMAGE = "/adminBG.jpg";
-
 const ITEMS = [
   {
-    title: "Business Analytics & Intelligence",
+    key: "mcf7",
+    title: "MCF7 (PCM/SCM)",
     description:
-      "Transform data into actionable insights using real-time dashboards, advanced reporting, and predictive analytics.",
-    image: "/2.png",
+      "Integrated solutions covering finance, procurement, inventory, operations, and supply chain management.",
+    link: "https://www.n-pax.com/mcframe_iot.php"
   },
   {
-    title: "Digital Transformation",
-    description:
-      "Modernize business operations through cloud adoption, automation, and technology-driven process optimization.",
-    image: "/3.png",
-  },
-  {
-    title: "HRIS & Payroll Systems",
-    description:
-      "Centralized HR platforms that manage employee data, payroll, timekeeping, compliance, and performance analytics.",
-    image: "/5.png",
-  },
-  {
-    title: "Enterprise Resource Planning (ERP)",
-    description:
-      "Integrated ERP solutions covering finance, procurement, inventory, operations, and supply chain management.",
-    image: "/6.png",
-  },
-  {
-    title: "Accounting & Financial Systems",
+    key: "mcfga",
+    title: "MCF GA",
     description:
       "Accurate and compliant accounting solutions with reporting, tax management, and financial controls.",
-    image: "/7.png",
+    link: "https://www.n-pax.com/mcframega.php"
   },
   {
-    title: "IOT System",
+    key: "drsum",
+    title: "Dr. Sum",
     description:
-      "Boost factory productivity by digitalizing hidden elements with Kaizen-driven IoT solutions",
-    image: "/7.png",
+      "Centralized HR platforms that manage employee data, payroll, timekeeping, compliance, and performance analytics.",
+    link: "https://www.wingarc.com/en/product/dr_sum/scene/"
   },
   {
-    title: "Managed IT Services",
+    key: "motionboard",
+    title: "MotionBoard",
     description:
-      "End-to-end IT support including infrastructure management, system monitoring, and technical support services.",
-    image: "/8.png",
+      "Next-generation BI dashboard to analyze and visualize business data in one place, in real-time.",
+    link: "https://www.n-pax.com/motionboard.php"
   },
   {
-    title: "MotionBoard™ Workflow Automation",
+    key: "hrc",
+    title: "Human Resource Companion (HRC)",
     description:
-      "MotionBoard is a next-generation BI dashboard that helps business managers and users accelerate business performance. It gives you the power to analyze and visualize all of your business data in one place, in real-time, in a matter of seconds.",
-    image: "/4.png",
+      "Experience a Comprehensive and Cost-Effective Solution for Businesses of All Sizes",
+    link: "https://www.n-pax.com/hrc.php"
   },
   {
-    title: "Paxyroll Cloud Timekeeping",
+    key: "nxpert",
+    title: "NXPERT",
+    description:
+      "Explore how you can evolve your business with a proven solution for a better, cost efficient and accelarated business processes.",
+    link: "https://www.n-pax.com/nxpert.php"
+  },
+  {
+    key: "paxyroll",
+    title: "PaxyRoll",
     description:
       "Timesheet nightmare no more when Paxyroll got your role. Your state of the art digitalized work hour trackers under cloudbase solution you can use for free.",
-    image: "/9.png",
+    link: "https://www.paxyroll.com/#home"
   },
 ];
 
-function ServiceCard({ title, description, image }) {
-  const bg = image || FALLBACK_IMAGE;
+function DashboardTile({ active, title, description, onClick }) {
 
   return (
-    <div className="group relative overflow-hidden rounded-xl px-8 py-10">
-      {/* Background image (low opacity on hover) */}
-      <div
-        className="
-          pointer-events-none absolute inset-0
-          opacity-0 scale-105
-          transition-all duration-500 ease-out
-          group-hover:opacity-100 group-hover:scale-100
-        "
-        style={{
-          backgroundImage: `url(${bg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        group relative w-full text-left
+        overflow-hidden rounded-xl border
+        px-6 py-7 transition
+        ${active ? "bg-blue-200 border-blue-500" : "bg-white hover:bg-slate-50"}
+      `}
+    >
 
-      {/* Soft overlay to keep text readable */}
-      <div className="pointer-events-none absolute inset-0 bg-white/80" />
+      {/* Soft overlay for readability */}
+      <div className="pointer-events-none absolute inset-0 bg-white/85" />
 
       {/* Content */}
-      <h3
-        className="
-          relative z-10 inline-block
-          text-[19px] font-semibold tracking-[-0.01em] text-slate-900
-          transition-transform duration-300 group-hover:translate-x-1
-        "
-      >
-        <span className="relative">
-          {title}
-          <span
-            className="
-              absolute left-0 -bottom-1 h-[2px] w-full
-              origin-left scale-x-0 bg-slate-900
-              transition-transform duration-300 group-hover:scale-x-100
-            "
-          />
-        </span>
-      </h3>
+      <div className="relative z-10">
+        <div className="text-[15px] font-semibold text-slate-900">
+          <span className="relative inline-block">
+            {title}
+            <span
+              className="
+                absolute left-0 -bottom-1 h-[2px] w-full
+                origin-left scale-x-0 bg-slate-900
+                transition-transform duration-300 group-hover:scale-x-100
+              "
+            />
+          </span>
+        </div>
 
-      <p
-        className="
-          relative z-10 mt-4
-          text-[16px] leading-[1.8] text-slate-600
-          transition-transform duration-300 group-hover:translate-x-1
-        "
-      >
-        {description}
-      </p>
-    </div>
+        {description ? (
+          <p className="mt-2 text-sm leading-relaxed text-slate-600 line-clamp-3">
+            {description}
+          </p>
+        ) : null}
+      </div>
+    </button>
   );
 }
 
@@ -127,7 +103,6 @@ function Navbar() {
   return (
     <nav className="relative z-20 border-b border-white/10 bg-slate-900/90 backdrop-blur">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-3 lg:px-8">
-        {/* Logo */}
         <div className="flex items-center">
           <Link to="/">
             <img
@@ -138,17 +113,14 @@ function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Links */}
         <div className="hidden items-center gap-8 text-white lg:flex">
           <Link to="/AboutUs" className="hover:text-blue-300 transition">
             ABOUT US
           </Link>
 
-          {/* Dropdown */}
           <div className="relative group">
             <button className="hover:text-blue-300 transition flex items-center gap-1">
               SOFTWARE PRODUCTS AND SERVICES
-              <ChevronDown className="w-4 h-4" />
             </button>
 
             <div
@@ -165,30 +137,17 @@ function Navbar() {
                 <h3 className="font-semibold mb-4 text-gray-800">
                   Software Products and Services
                 </h3>
-                <div className="space-y-2 text-sm text-gray-500">
-                  {[
-                    "Advanced Analytics Solutions",
-                    "BI and Dashboarding",
-                    "Digital Transformation Services",
-                    "HRIS / Payroll System",
-                    "ERP System",
-                    "Accounting System",
-                    "IoT System",
-                    "Managed IT Services",
-                    "Paxyroll Cloud Timekeeping",
-                  ].map((label) => (
-                    <a
-                      key={label}
-                      href="#"
-                      className="block border-b mx-3 pb-2 hover:text-blue-500 transition"
-                    >
-                      {label}
-                    </a>
-                  ))}
-                </div>
+                
               </div>
             </div>
           </div>
+
+          <a
+            href="#contact"
+            className="hover:text-blue-300 transition uppercase text-sm tracking-wide"
+          >
+            INSIGHTS AND BLOGS
+          </a>
 
           <Link to="/Career" className="hover:text-blue-300 transition">
             CAREERS
@@ -206,7 +165,6 @@ function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         <div className="lg:hidden flex items-center">
           <div className="relative group">
             <button className="hover:text-blue-300 transition flex items-center gap-1">
@@ -223,19 +181,34 @@ function Navbar() {
               "
             >
               <div className="p-5 flex flex-col gap-4">
-                <Link to="/AboutUs" className="text-gray-100 hover:text-blue-400 transition">
+                <Link
+                  to="/AboutUs"
+                  className="text-gray-100 hover:text-blue-400 transition"
+                >
                   ABOUT US
                 </Link>
-                <a href="#" className="text-gray-100 hover:text-blue-400 transition">
+                <a
+                  href="#"
+                  className="text-gray-100 hover:text-blue-400 transition"
+                >
                   SOFTWARE PRODUCTS AND SERVICES
                 </a>
-                <a href="#" className="text-gray-100 hover:text-blue-400 transition">
+                <a
+                  href="#"
+                  className="text-gray-100 hover:text-blue-400 transition"
+                >
                   INSIGHTS AND BLOGS
                 </a>
-                <Link to="/Career" className="text-gray-100 hover:text-blue-400 transition">
+                <Link
+                  to="/Career"
+                  className="text-gray-100 hover:text-blue-400 transition"
+                >
                   CAREERS
                 </Link>
-                <a href="#contact" className="text-gray-100 hover:text-blue-400 transition">
+                <a
+                  href="#contact"
+                  className="text-gray-100 hover:text-blue-400 transition"
+                >
                   CONTACT US
                 </a>
                 <button className="text-white border border-white px-4 py-2 hover:bg-white hover:text-slate-800 transition-all uppercase text-sm tracking-wide">
@@ -243,7 +216,6 @@ function Navbar() {
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -252,44 +224,168 @@ function Navbar() {
 }
 
 export default function ProductsandServices() {
+  const [activeKey, setActiveKey] = useState(ITEMS[0]?.key ?? "mcf7");
+  const [query, setQuery] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMaximized, setChatMaximized] = useState(false);
+
+  const [autoPrompt, setAutoPrompt] = useState("");
+  const [autoPromptId, setAutoPromptId] = useState(null);
+
+  const activeItem = useMemo(
+    () => ITEMS.find((x) => x.key === activeKey) || ITEMS[0],
+    [activeKey]
+  );
+
+  const filteredItems = useMemo(() => {
+  const q = query.trim().toLowerCase();
+  if (!q) return ITEMS;
+
+  return ITEMS.filter((item) => {
+    const title = (item.title || "").toLowerCase();
+    const desc = (item.description || "").toLowerCase();
+    const link = (item.link || "").toLowerCase();
+
+    return title.includes(q) || desc.includes(q) || link.includes(q);
+  });
+}, [query]);
+
   return (
-    <div className="bg-white">
+    <div className="bg-white min-h-screen">
       <Navbar />
 
+      {/* Dashboard wrapper (matches screenshot spacing) */}
       <section className="bg-white">
-        <div className="mx-auto max-w-[1120px] px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
-          {/* Header */}
-          <div className="max-w-[720px]">
-            <div className="text-[12px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Products & Services
-            </div>
-
-            <h2 className="mt-4 text-[34px] sm:text-[42px] lg:text-[48px] leading-[1.1] font-bold tracking-[-0.02em] text-slate-900">
-              Smart Solutions for a Digital-First Enterprise
-            </h2>
-
-            <p className="mt-6 text-[16px] sm:text-[18px] leading-[1.9] text-slate-600">
-              We deliver integrated technology solutions designed to streamline
-              operations, enhance decision-making, and accelerate business growth.
+        <div className="mx-auto max-w-[1300px] px-6 lg:px-8 py-14 sm:py-16">
+          <div className="max-w-[720px] py-4"> 
+            <h2 className="mt-4 text-[34px] sm:text-[42px] lg:text-[48px] leading-[1.1] font-bold tracking-[-0.02em] text-slate-900"> 
+              Products & Services 
+            </h2> 
+            
+            <p className="mt-6 text-[16px] sm:text-[18px] leading-[1.9] text-slate-600"> 
+              We deliver integrated technology solutions designed to streamline operations, enhance decision-making, and accelerate business growth. 
             </p>
+          </div> 
+          {/* 1) Paxie Search Bar */}
+          <div className="rounded-2xl border border-blue-500 bg-white px-4 py-3 sm:px-6 sm:py-4">
+            <div className="flex items-center gap-3">
+              <Search className="h-5 w-5 text-slate-400" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search for products, services, or insights..."
+                className="
+                  w-full bg-transparent outline-none
+                  text-[14px] sm:text-[15px] text-slate-700 placeholder:text-slate-400
+                "
+              />
+            </div>
           </div>
 
-          {/* Cards */}
-          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {ITEMS.map((item) => (
-              <ServiceCard
-                key={item.title}
+          {/* 2) Top Tiles (4 boxes) */}
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <DashboardTile
+                key={item.key}
                 title={item.title}
                 description={item.description}
                 image={item.image}
+                active={item.key === activeKey}
+                onClick={() => setActiveKey(item.key)}
               />
-            ))}
+            ))
+          ) : (
+            <div className="col-span-full rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-slate-600">
+              No results for <span className="font-semibold">{query}</span>
+            </div>
+          )}
+        </div>
+
+          {/* 3) Large Preview Panel */}
+          <div className="mt-10 overflow-hidden rounded-2xl border border-blue-500 bg-white">
+            {/* Header (optional browser-like bar) */}
+            <div className="flex items-center gap-2 border-b border-blue-500/30 bg-blue-50 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-400" />
+                <span className="h-3 w-3 rounded-full bg-yellow-400" />
+                <span className="h-3 w-3 rounded-full bg-green-400" />
+              </div>
+
+              <div className="ml-3 flex-1 truncate text-xs text-slate-600">
+                {activeItem?.link || "No link available"}
+              </div>
+
+              <div className="text-xs font-semibold text-slate-700">
+                {activeItem?.title}
+              </div>
+            </div>
+
+            {/* Iframe area */}
+            <div className="relative h-[650px] w-full bg-white">
+              {activeItem?.link ? (
+                <iframe
+                  src={activeItem.link}
+                  title={activeItem.title}
+                  className="h-full w-full border-0"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-slate-500">
+                  No preview available
+                </div>
+              )}
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex flex-wrap items-center justify-center gap-3 border-t border-blue-500/30 bg-white px-6 py-5">
+              {activeItem?.link ? (
+                <a
+                  href={activeItem.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition"
+                >
+                  View this Website
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-sm text-slate-400"
+                >
+                  View Details
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setChatOpen(true);
+                  setChatMaximized(true);
+
+                  const prompt = `can you tell me more about ${activeItem.title}.`;
+                  setAutoPrompt(prompt);
+                  setAutoPromptId(crypto?.randomUUID?.() || String(Date.now()));
+                }}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:opacity-90 transition"
+              >
+                Ask Paxie about this
+              </button>
+            </div>
           </div>
+
+
+          {/* Optional: Chatbot (place wherever you want) */}
+          <Chatbot 
+            externalOpen={chatOpen} 
+            externalMaximized={chatMaximized} 
+            onOpenChange={setChatOpen}
+            onMaximizedChange={setChatMaximized}
+            autoPrompt={autoPrompt}
+            autoPromptId={autoPromptId}
+          />
         </div>
       </section>
-      <div className="fixed bottom-8 right-8 z-50">
-            <Chatbot isDark={false} /> 
-      </div>
     </div>
   );
 }
+

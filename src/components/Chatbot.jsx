@@ -10,7 +10,7 @@ import Toast from './Toast';
 import { v4 as uuidv4 } from 'uuid';
 import Markdown from 'react-markdown';
 
-export default function Chatbot() {
+export default function Chatbot({externalOpen, externalMaximized, onOpenChange, onMaximizedChange, autoPrompt, autoPromptId}) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -29,6 +29,34 @@ export default function Chatbot() {
   const chatButtonRef = useRef(null); // <-- new ref for button
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
+  const lastAutoPromptIdRef = useRef(null);
+  const inputRef = useRef(null);
+
+  
+useEffect(() => {
+  if (!autoPrompt || !autoPromptId) return;
+  if (!externalOpen) return; // only fill when chat is open
+  if (isTyping) return;
+  if (lastAutoPromptIdRef.current === autoPromptId) return;
+
+  lastAutoPromptIdRef.current = autoPromptId;
+
+  setInputMessage((prev) => (prev?.trim() ? prev : autoPrompt));
+
+  setTimeout(() => {
+    inputRef.current?.focus();
+  }, 0);
+}, [autoPrompt, autoPromptId, externalOpen, isTyping]);
+
+
+  useEffect(() => {
+  if (typeof externalOpen === "boolean") setIsOpen(externalOpen);
+}, [externalOpen]);
+
+useEffect(() => {
+  if (typeof externalMaximized === "boolean") setIsMaximized(externalMaximized);
+}, [externalMaximized]);
+
 
  useEffect(() => {
 
@@ -126,15 +154,17 @@ export default function Chatbot() {
     };
   }, [t]);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() && !attachedFile) return;
+  const handleSendMessage = async (forcedText) => {
+    const messageToSend = (typeof forcedText === "string" ? forcedText : inputMessage);
+
+    if (!messageToSend.trim() && !attachedFile) return;
 
     const currentFile = attachedFile;
     const userId = uuidv4();
 
     const userMessage = {
       id: userId,
-      text: inputMessage,
+      text: messageToSend,
       sender: 'user',
       attachedFile: currentFile
         ? { name: currentFile.name, size: currentFile.size, type: currentFile.type }
@@ -152,15 +182,13 @@ export default function Chatbot() {
     setAttachedFile(null);
     setIsTyping(true);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
 
     var text = "";
     if (currentFile) {
       await pdfToText(currentFile)
         .then((txt) => text = txt)
-        .catch((error) => console.error("Failed to extract text from pdf"));
+        .catch(() => console.error("Failed to extract text from pdf"));
     }
 
     try {
@@ -182,17 +210,14 @@ export default function Chatbot() {
           convoId: convoId
 
         };
-        setMessages(prev => {
+        setMessages((prev) => {
           const updated = [...prev, botMessage]
           localStorage.setItem("npax-ref", JSON.stringify(updated));
           return updated;
         });
     } catch (error) {
       console.error('Chatbot error:', error);
-      const errorMessage = {
-        text: t('chatbotError'),
-        sender: 'bot',
-      };
+      const errorMessage = {text: t('chatbotError'),sender: 'bot'};
       setMessages(prev => {
         const updated = [...prev, errorMessage];
         localStorage.setItem("npax-ref", JSON.stringify(updated));
@@ -356,7 +381,11 @@ export default function Chatbot() {
                 <div className="flex items-center gap-1">
                   {/* Maximize Button */}
                   <button
-                    onClick={() => setIsMaximized(!isMaximized)}
+                    onClick={() => {
+                      const newState = !isMaximized;
+                      setIsMaximized(newState);
+                      onMaximizedChange?.(newState);
+                    }}
                     className="text-white hover:bg-blue-600 rounded-lg p-1 transition-colors"
                     title={isMaximized ? "Restore" : "Maximize"}
                   >
@@ -364,7 +393,13 @@ export default function Chatbot() {
                   </button>
                   {/* Minimize Button */}
                   <button
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={() => {
+                      setIsOpen(false);
+                      onOpenChange?.(false);
+
+                      setIsMaximized(false);
+                      onMaximizedChange?.(false);
+                    }}
                     className="text-white hover:bg-blue-600 rounded-lg p-1 transition-colors"
                     title="Minimize"
                   >
@@ -473,6 +508,7 @@ export default function Chatbot() {
               </button>
               {/* Message Text Box */}
               <input
+                ref={inputRef}
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
