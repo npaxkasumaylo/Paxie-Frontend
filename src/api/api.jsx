@@ -71,7 +71,7 @@ export const api = {
   }),
 
 
-
+  searchFilterProductDocument: (searchParam) => Api.get("/Documents/GetDocuments", { params: { query: searchParam } }),
 };
 
 

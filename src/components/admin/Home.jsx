@@ -1,5 +1,5 @@
 import { CircleX, FileText, LoaderCircle, LoaderIcon } from "lucide-react";
-import React, { use, useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertFileToBytes, downloadFileFromBase64 } from "../../utils/FileConverter";
 import { api } from "../../api/api";
@@ -15,31 +15,37 @@ import ProductsandServicesList from "./ProductsandServicesList";
 import ModelList from "./ModelList";
 
 export default function Home() {
-  const [uploading, setUploading] = useState(false);
+	const [uploading, setUploading] = useState(false);
 	const [deleting, setDeleting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  	const [loading, setLoading] = useState(true);
+  	const [error, setError] = useState("");
 	const [networkError, setNetworkError] = useState("");
-  const [file, setFile] = useState(null);
+  	const [file, setFile] = useState(null);
 	const [docInfo, setDocInfo] = useState("");
-  const navigate = useNavigate();
-	const [documents, setDocuments] = useState([]);
-  const [currentId, setCurrentId] = useState(null);
+  	const navigate = useNavigate();
+	const [generalDocuments, setGeneralDocuments] = useState([]);
+	const [productDocuments, setProductDocuments] = useState([]);
+  	const [currentId, setCurrentId] = useState(null);
 	const [jobs, setJobs] = useState([]);
 	const [mode, setMode] = useState("files");
 	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
-	const docInfoArr = ['Company Profile', 'Company Management', 'Product/Service Profile', 'Policy Profile'];
-const [details, setDetails] = useState([]);
-const [editingRow, setEditingRow] = useState(null);
+	const [details, setDetails] = useState([]);
+	const [editingRow, setEditingRow] = useState(null);
+ 	const [documentTags, setDocumentTags] = useState([]);
+	const [productTagMap, setProductTagMap] = useState({});
 
- const [documentTags, setDocumentTags] = useState([]);
-
-
+	//loading initial data
     useEffect(() => {
 			setTimeout(() => {
 				initializeData();
 			}, 500)
     },[]);
+
+	useEffect(() => {
+	if (mode === "producstandservices" && productDocuments.length === 0) {
+		getAllProductDocuments();
+	}
+	}, [mode]);
 
 		const initializeData = async () => {
 			await getAllDocuments(false, "General");
@@ -58,10 +64,13 @@ const [editingRow, setEditingRow] = useState(null);
 				toast.info(msg);
 			}
 		};
-const getAllDocuments = async (isProductTag = false, productName = "General") => {
+
+	// get all documents
+	const getAllDocuments = async (isProductTag = false, productName = "General") => {
 			try {
 				const res = await api.getDocuments(isProductTag, productName);
-				setDocuments(res.data);
+				console.log("Fetched documents:", res.data);
+				setGeneralDocuments(res.data);
 			} catch (e) {
 				if(e.status == 401) {navigate("/admin/login");}
 				setNetworkError("Something went wrong. Try again later.");
@@ -103,9 +112,9 @@ const getAllDocuments = async (isProductTag = false, productName = "General") =>
 				
 			
 			// Check uniqueness of documents
-			if (documents 
-					&& documents.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
-					|| documents.some(d => d.data === base64String)) {
+			if (generalDocuments 
+					&& generalDocuments.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
+					|| generalDocuments.some(d => d.data === base64String)) {
 				notify("A document with this filename or content already exists.", "error");
 				return;
 			}
@@ -157,6 +166,7 @@ const getAllDocuments = async (isProductTag = false, productName = "General") =>
 			setDeleting(false);
 			setCurrentId(null);
 			getAllDocuments();
+			getAllProductDocuments();
 		} catch (e) {
 			console.error("Error deleting document:", e);
 			setDeleting(false);
@@ -265,6 +275,38 @@ const getDocumentTags = async () => {
   }
 };
 
+//get all products
+const getAllProductDocuments = async () => {
+  try {
+    setNetworkError("");
+
+    // fetch product tags
+    const { data: tags = [] } = await api.getDocumentTags(true);
+
+    // build map id -> name
+    const map = {};
+    tags.forEach(t => {
+      const id = t?.id;
+      const name = t?.tagName;
+      if (id != null && name) map[String(id)] = name;
+    });
+    setProductTagMap(map);
+
+    const productNames = [...new Set(tags.map(t => t?.tagName).filter(Boolean))];
+
+    const responses = await Promise.all(productNames.map(name => api.getDocuments(true, name)));
+    const merged = responses.flatMap(r => (Array.isArray(r?.data) ? r.data : []));
+
+    setProductDocuments(merged);
+  } catch (e) {
+    console.error(e);
+    setNetworkError("Something went wrong. Try again later.");
+    notify?.("Failed to load product documents.", "error");
+  }
+};
+
+
+
 	const SidePanel = () => {
 		if (mode === "files") {
 			return (
@@ -272,9 +314,11 @@ const getDocumentTags = async () => {
 							overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
 					[&::-webkit-scrollbar-thumb]:bg-white/50"
 					>
-							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">General Document List</h1>
-							{documents && documents.length > 0 ? (
-								documents.map(item => (
+							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">
+							General Document List
+							</h1>
+							{generalDocuments && generalDocuments.length > 0 ? (
+								generalDocuments.map(item => (
 									<div key={item.documentId} className="relative group mt-2.5">
 										<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
 											<button 
@@ -325,7 +369,7 @@ const getDocumentTags = async () => {
 
 		if (mode === "producstandservices") {
 			return <ProductsandServicesList 
-			 documents={documents}
+			 documents={productDocuments}
 				handleDownload={handleDownload}
 				handleDelete={handleDelete}
 				deleting={deleting}
@@ -334,6 +378,7 @@ const getDocumentTags = async () => {
 				documentTags={documentTags}
 				formatDate={formatDate}
 				networkError={networkError}
+				tagMap={productTagMap}
 				/>
 		}
 		
@@ -418,7 +463,7 @@ const getDocumentTags = async () => {
 									{error && <p className={`text-red-600 text-sm mt-2 font-medium
 									bg-white p-1.5 px-2 rounded-b-lg`}>{error}</p>}
 
-									<button onClick={handleUpload} disabled={uploading} className="w-full mt-6 bg-white/90 hover:bg-white/50 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-lg">
+									<button onClick={handleUpload} disabled={uploading} className="w-full mt-6 bg-white/90 hover:bg-white/50 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg">
 										<span>{uploading ? (
 											<div className="flex items-center justify-center">
 												<LoaderCircle className="animate-spin mr-2"/>
@@ -429,7 +474,7 @@ const getDocumentTags = async () => {
 									{/* Cancel Button */}
 									{
 										file && !uploading && (
-											<button onClick={() => {setFile(null); setDocInfo("")}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg">
+											<button onClick={() => {setFile(null); setDocInfo("")}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg">
 												Cancel
 											</button>
 										)
@@ -448,7 +493,7 @@ const getDocumentTags = async () => {
 						)}
 
 						{mode === "producstandservices" && (
-						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} />
+						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} />
 						)}	
 
 					</div>
@@ -458,6 +503,8 @@ const getDocumentTags = async () => {
 				</div>
 				
 				<Toast />
+
+				
 
 			</div>
 		) : (

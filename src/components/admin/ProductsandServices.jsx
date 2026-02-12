@@ -4,7 +4,7 @@ import Toast from "../Toast";
 import { api } from "../../api/api";
 import { convertFileToBytes } from "../../utils/FileConverter";
 
-export default function ManageProductsandServices({notify}) {
+export default function ManageProductsandServices({notify , onUploaded}){
     const [file, setFile] = useState(null);
     const [documentType, setDocumentType] = useState("");
     const [documentTags, setDocumentTags] = useState([]);
@@ -12,7 +12,6 @@ export default function ManageProductsandServices({notify}) {
 
     useEffect(() => {
         getDocumentTags();
-        
     }, []);
 
 const selectedTag = documentTags.find(
@@ -54,12 +53,11 @@ const addProductService = async (e) => {
 
       notify("Product document uploaded!", "success");
       cancel();
-
+      await onUploaded?.(); 
     } catch (e) {
       console.error(e);
       notify("Upload failed.", "error");
     }
-
     setUploading(false);
   };
 
@@ -119,6 +117,7 @@ const cancel = () => {
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
                 disabled={!file}
+                required
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 >
                 <option className="text-gray-800" value="">
@@ -146,7 +145,7 @@ const cancel = () => {
 				className={`w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
 					CANCEL
 			</button>
-            <Toast/>
+
 		</div>
     )
 }

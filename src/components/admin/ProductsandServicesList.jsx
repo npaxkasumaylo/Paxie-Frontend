@@ -1,5 +1,5 @@
 import { CircleX, FileText, LoaderCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { api } from "../../api/api";
 
 export default function ProductsandServicesList({
@@ -8,40 +8,91 @@ export default function ProductsandServicesList({
   deleting,
   currentId,
   docTypeArr = [],
-  documentTags = [],
   formatDate,
-  notify
+  documents = [],
+  networkError,
+  tagMap = {},
+  notify,
 }){
+const [selectedTagId, setSelectedTagId] = useState("");
+const [search, setSearch] = useState("");
+const [documentTags, setDocumentTags] = useState([]);
+
+useEffect(() => {
+		getDocumentTags();
+	}, []);
 
 
-const [documents, setDocuments] = useState([]);
-  const [networkError, setNetworkError] = useState("");
 
-const getProductDocuments = async (isProductTag = true ) => {
-    try {
-      const res = await api.getDocuments(isProductTag);
-      setDocuments(res.data);
-      setNetworkError("");
-    } catch (e) {
-      console.error(e);
-      setNetworkError("Something went wrong. Try again later.");
-      notify?.("Failed to load product documents.", "error");
-    }
-  };
+const getDocumentTags = async () => {
+  try {
+	const res = await api.getDocumentTags(true);
+	setDocumentTags(Array.isArray(res?.data) ? res.data : []);
+	console.log("documentTags:", res.data);
+  } catch (e) {
+	console.error(e);
+	notify?.("Failed to load document tags.", "error");
+	setDocumentTags([]);
+  }
+};
 
-  useEffect(() => {
-    getProductDocuments();
-  }, []);
+const filteredDocuments = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    return (Array.isArray(documents) ? documents : []).filter((d) => {
+      // filter by selected tag
+      const tagMatch =
+        !selectedTagId || String(d.documentTagsId) === String(selectedTagId);
+
+      // filter by search (fileName + optional tag text)
+      const fileName = String(d.fileName ?? "").toLowerCase();
+      const tagText = String(tagMap[String(d.documentTagsId)] ?? "").toLowerCase();
+
+      const searchMatch = !q || fileName.includes(q) || tagText.includes(q);
+
+      return tagMatch && searchMatch;
+    });
+  }, [documents, selectedTagId, search, tagMap]);
+
+
 
   return (
     <>
-      	{/* Job Openings */}
 			<div className="md:w-1/8 lg:1/3 w-full  p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
 				overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
 				[&::-webkit-scrollbar-thumb]:bg-white/50"
 			>
-			<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Products and Services List</h1>
-				{documents && documents.length > 0 ? (documents.map(item => (
+			<div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
+				<h1 className="text-2xl font-bold text-white">
+					Products and Services List
+				</h1>
+
+				<input
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+					placeholder="Search documents..."
+          		/>
+				
+				<select
+					value={selectedTagId}
+					onChange={(e) => setSelectedTagId(e.target.value)}
+					className="text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
+				>
+					<option value="">All</option>
+					{documentTags.map((t) => (
+						<option key={t.id} value={t.id}>
+							{t.tagName}
+						</option>
+					))}
+				</select>
+			</div>
+			<div className="max-h-[420px] overflow-y-auto pr-2
+			[&::-webkit-scrollbar]:w-2
+			[&::-webkit-scrollbar-track]:rounded-full
+			[&::-webkit-scrollbar-thumb]:rounded-full
+			[&::-webkit-scrollbar-thumb]:bg-white/50">
+				{filteredDocuments && filteredDocuments.length > 0 ? (filteredDocuments.map(item => (
 					<div key={item.documentId} className="relative group mt-2.5">
 						<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
 							<button 
@@ -66,7 +117,7 @@ const getProductDocuments = async (isProductTag = true ) => {
 											transition-all duration-300 ease-out"
 							>
 								<p className="text-white/90 truncate text-sm"><b>File Format:</b> {docTypeArr[item.documentType]}</p>
-								<p className="text-white/90 truncate text-sm"><b>File Information:</b> {documentTags.find(t => Number(t.id) === Number(item.documentTagsId))?.tagName ?? "Unknown"}</p>
+								<p className="text-white/90 truncate text-sm"><b>File Information:</b> {tagMap[String(item.documentTagsId)] ?? "Unknown"}</p>
 								<p className="text-white/90 truncate text-sm"><b>Date Uploaded:</b> {formatDate(item.uploaded)}</p>
 							</div>
 											
@@ -83,6 +134,7 @@ const getProductDocuments = async (isProductTag = true ) => {
 							</>
 							)}
 			</div>
+		</div>
     </>
   )
 }
