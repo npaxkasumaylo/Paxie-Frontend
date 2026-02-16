@@ -5,6 +5,7 @@ export default function QueryLogs ({ networkError}){
 const [logs, setLogs] = useState([]);
 const [pageNumber, setPageNumber] = useState(1);
 const [pageSize] = useState(10);
+const [providers, setProviders] = useState([]);
 
 const getQueryLogs = async () => {
     try{
@@ -22,8 +23,19 @@ const getQueryLogs = async () => {
     }
 };
 
+const getProviders = async () => {
+    try{
+        const res = await api.getAllProviders();
+        setProviders(Array.isArray(res?.data) ? res.data : []);
+    } catch(e){
+        console.error(e);
+        setProviders([]);
+    }
+}
+
 useEffect(() => {
   getQueryLogs();
+  getProviders();
 }, []);
 
  const totalPages = useMemo(() => {
@@ -41,6 +53,14 @@ useEffect(() => {
   useEffect(() => {
     if (pageNumber > totalPages) setPageNumber(totalPages);
   }, [totalPages, pageNumber]);
+
+  const providerMap = useMemo(() => {
+  const map = {};
+  providers.forEach((p) => {
+    map[String(p.id)] = p.name; // or p.providerName depending on your API
+  });
+  return map;
+}, [providers]);
 
    return(
     <>
@@ -85,7 +105,7 @@ useEffect(() => {
                                                 <span>{item.totalOutputToken}</span>
                                             </td>
                                             <td className="px-5 py-4 text-white/90">
-                                                <span>{item.aiProvider}</span>
+                                                <span>{providerMap[String(item.serviceProviderId)] || "Unknown"}</span>
                                             </td>
                                             <td className="px-5 py-4 text-white/90">
                                                 <span>{item.inputTokenThroughput}</span>

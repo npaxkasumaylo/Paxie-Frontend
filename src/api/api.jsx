@@ -75,7 +75,7 @@ export const api = {
 
   //logging
   getQueryLogs: (pageNumber = 1, pageSize = 10) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
-
+  getEmbeddingLogs: (pageNumber =1, pageSize = 10) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize}}),
 };
 
 

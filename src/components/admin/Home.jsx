@@ -17,6 +17,7 @@ import Report from "./Reports/QueryLogs";
 import QueryLogs from "./Reports/QueryLogs";
 import DocumentLogs from "./Reports/DocumentLogs";
 import Graphs from "./Reports/Graphs";
+import Calculator from "./Reports/Calculator";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -551,6 +552,7 @@ const SidePanel = () => {
 										{reportMode === "querylogs" && "Query Logging"}
 										{reportMode === "documentlogs" && "Document Logging"}
 										{reportMode === "graphs" && "Graphs"}
+										{reportMode === "calculator" && "Token Calculator"}
 									</h1>
 
 							<select
@@ -561,6 +563,7 @@ const SidePanel = () => {
 								<option value="querylogs">Query Logging</option>
 								<option value="documentlogs">Document Logging</option>
 								<option value="graphs">Graphs Report</option>
+								<option value="calculator">Token Calculator</option>
 							</select>
 							</div>
 
@@ -574,6 +577,10 @@ const SidePanel = () => {
 
 							{reportMode === "graphs" && (
 								<Graphs />
+							)}
+
+							{reportMode === "calculator" && (
+								<Calculator />
 							)}
 
 							</div>
