@@ -13,6 +13,10 @@ import ManageAiModels from "./ManageAIModels";
 import ManageProductsandServices from "./ProductsandServices";
 import ProductsandServicesList from "./ProductsandServicesList";
 import ModelList from "./ModelList";
+import Report from "./Reports/QueryLogs";
+import QueryLogs from "./Reports/QueryLogs";
+import DocumentLogs from "./Reports/DocumentLogs";
+import Graphs from "./Reports/Graphs";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -33,6 +37,12 @@ export default function Home() {
 	const [editingRow, setEditingRow] = useState(null);
  	const [documentTags, setDocumentTags] = useState([]);
 	const [productTagMap, setProductTagMap] = useState({});
+	const [pageSize] = useState(10);
+	const [totalPages, setTotalPages] = useState(1);
+	const [pageNumber, setPageNumber] = useState(1);
+
+	const [reportMode, setReportMode] = useState("querylogs");
+
 
 	//loading initial data
     useEffect(() => {
@@ -68,9 +78,24 @@ export default function Home() {
 	// get all documents
 	const getAllDocuments = async (isProductTag = false, productName = "General") => {
 			try {
-				const res = await api.getDocuments(isProductTag, productName);
-				console.log("Fetched documents:", res.data);
-				setGeneralDocuments(res.data);
+				const res = await api.getDocuments(isProductTag, productName, pageNumber, pageSize);
+				const data = res?.data;
+
+				 if (Array.isArray(res.data)) {
+					setGeneralDocuments(res.data);
+					setTotalPages(1);
+					return;
+				}else {
+				setGeneralDocuments(data?.items || []);
+				setTotalPages(
+					data?.totalPages ||
+					Math.ceil((data?.totalCount || 0) / pageSize) ||
+					1
+				);
+				}
+
+				setGeneralDocuments(res.data );
+				setTotalPages(res.data?.totalPages || 10);
 			} catch (e) {
 				if(e.status == 401) {navigate("/admin/login");}
 				setNetworkError("Something went wrong. Try again later.");
@@ -305,9 +330,8 @@ const getAllProductDocuments = async () => {
   }
 };
 
-
-
-	const SidePanel = () => {
+//SIDEPANEL 
+const SidePanel = () => {
 		if (mode === "files") {
 			return (
 				<div className="md:w-1/8 lg:1/3 w-full p-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
@@ -359,8 +383,30 @@ const getAllProductDocuments = async () => {
 								)}
 									</>
 								)}
-							
-					</div>
+
+								<div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+									<button
+									className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+									disabled={pageNumber <= 1}
+									onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+									>
+									Prev
+									</button>
+
+									<p className="text-sm text-white/70">
+									Page {pageNumber} of {totalPages}
+									</p>
+
+									<button
+									className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+									disabled={pageNumber >= totalPages}
+									onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
+									>
+									Next
+									</button>
+								</div>	
+				</div>
+					
 			)
 		}	
 		if (mode === "addJob") {
@@ -405,6 +451,7 @@ const getAllProductDocuments = async () => {
 								{mode === "addJob" && "Manage Jobs"}
 								{mode === "models" && "Manage AI Models"}
 								{mode === "producstandservices" && "Products and Services"}
+								{mode === "report" && "AI Reports"}
 							</h1>
 							<select
 								value={mode}
@@ -415,6 +462,7 @@ const getAllProductDocuments = async () => {
 								<option value="addJob">Manage Jobs</option>
 								<option value="producstandservices">Products and Services</option>
 								<option value="models">AI Models</option>
+								<option value="report">AI Reports</option>
 							</select>
 						</div> 
 						
@@ -495,6 +543,41 @@ const getAllProductDocuments = async () => {
 						{mode === "producstandservices" && (
 						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} />
 						)}	
+
+						{mode === "report" && (
+							<div className="w-full space-y-6">
+						 		<div className="flex justify-between pb-3 mb-4">
+									<h1 className="text-2xl font-bold text-white">
+										{reportMode === "querylogs" && "Query Logging"}
+										{reportMode === "documentlogs" && "Document Logging"}
+										{reportMode === "graphs" && "Graphs"}
+									</h1>
+
+							<select
+								value={reportMode}
+								onChange={(e) => setReportMode(e.target.value)}
+								className="text-gray-600 font-semibold p-1.5 border border-gray-300 rounded-lg hover:bg-white "
+							>
+								<option value="querylogs">Query Logging</option>
+								<option value="documentlogs">Document Logging</option>
+								<option value="graphs">Graphs Report</option>
+							</select>
+							</div>
+
+							{reportMode === "querylogs" && (
+								<QueryLogs />
+							)}	
+
+							{reportMode === "documentlogs" && (
+								<DocumentLogs />
+							)}
+
+							{reportMode === "graphs" && (
+								<Graphs />
+							)}
+
+							</div>
+						)}
 
 					</div>
 

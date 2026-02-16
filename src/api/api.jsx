@@ -30,7 +30,7 @@ export const api = {
 
   // DOCUMENTS API
   addDocument: (document) => Api.post("/Documents/AddDocument", document),
-  getDocuments: (isProductTag = false, productName = "General") => Api.get("/Documents/GetDocuments", { params: { isProductTag, productName } }),
+  getDocuments: (isProductTag = false, productName = "General", pageNumber = 1, pageSize = 10 ) => Api.get("/Documents/GetDocuments", { params: { isProductTag, productName, pageNumber, pageSize } }),
   deleteDocument: (documentId) => Api.delete(`/Documents/${documentId}`),
 
   //JOB OPENING API
@@ -70,8 +70,12 @@ export const api = {
   getDocumentTags: (isProductTag) => Api.get("/DocumentTags", {params: { IsProductTag: isProductTag },
   }),
 
-
+  //filetring
   searchFilterProductDocument: (searchParam) => Api.get("/Documents/GetDocuments", { params: { query: searchParam } }),
+
+  //logging
+  getQueryLogs: (pageNumber = 1, pageSize = 10) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
+
 };
 
 

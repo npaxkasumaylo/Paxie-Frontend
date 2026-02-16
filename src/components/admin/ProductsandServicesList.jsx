@@ -17,11 +17,14 @@ export default function ProductsandServicesList({
 const [selectedTagId, setSelectedTagId] = useState("");
 const [search, setSearch] = useState("");
 const [documentTags, setDocumentTags] = useState([]);
+const [pageNumber, setPageNumber] = useState(1);
+const pageSize = 10;
+
+
 
 useEffect(() => {
 		getDocumentTags();
 	}, []);
-
 
 
 const getDocumentTags = async () => {
@@ -35,6 +38,7 @@ const getDocumentTags = async () => {
 	setDocumentTags([]);
   }
 };
+
 
 const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -54,6 +58,20 @@ const filteredDocuments = useMemo(() => {
     });
   }, [documents, selectedTagId, search, tagMap]);
 
+  useEffect(() => {
+  setPageNumber(1);
+}, [selectedTagId, search, documents]);
+
+const totalPages = Math.max(1, Math.ceil(filteredDocuments.length / pageSize));
+
+  const pagedDocuments = useMemo(() => {
+  const start = (pageNumber - 1) * pageSize;
+  return filteredDocuments.slice(start, start + pageSize);
+}, [filteredDocuments, pageNumber, pageSize]);
+
+  useEffect(() => {
+  if (pageNumber > totalPages) setPageNumber(totalPages);
+}, [totalPages, pageNumber]);
 
 
   return (
@@ -87,12 +105,8 @@ const filteredDocuments = useMemo(() => {
 					))}
 				</select>
 			</div>
-			<div className="max-h-[420px] overflow-y-auto pr-2
-			[&::-webkit-scrollbar]:w-2
-			[&::-webkit-scrollbar-track]:rounded-full
-			[&::-webkit-scrollbar-thumb]:rounded-full
-			[&::-webkit-scrollbar-thumb]:bg-white/50">
-				{filteredDocuments && filteredDocuments.length > 0 ? (filteredDocuments.map(item => (
+			<div>
+				{pagedDocuments && pagedDocuments.length > 0 ? (pagedDocuments.map(item => (
 					<div key={item.documentId} className="relative group mt-2.5">
 						<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
 							<button 
@@ -134,6 +148,28 @@ const filteredDocuments = useMemo(() => {
 							</>
 							)}
 			</div>
+			<div className="flex items-center justify-between px-2 py-4 border-t border-white/10">
+			<button
+				className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+				disabled={pageNumber <= 1}
+				onClick={() => setPageNumber(p => Math.max(1, p - 1))}
+			>
+				Prev
+			</button>
+
+			<p className="text-sm text-white/70">
+				Page {pageNumber} of {totalPages}
+			</p>
+
+			<button
+				className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+				disabled={pageNumber >= totalPages}
+				onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
+			>
+				Next
+			</button>
+			</div>
+
 		</div>
     </>
   )

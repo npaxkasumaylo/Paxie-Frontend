@@ -111,10 +111,10 @@ export default function LandingPage() {
             <div className="relative group">
               <Link to="/ProductsandServices" className="hover:text-blue-300 transition flex items-center gap-1">
                 SOFTWARE PRODUCTS AND SERVICES
-                <ChevronDown className="w-4 h-4" />
+                {/* <ChevronDown className="w-4 h-4" /> */}
                 </Link>
 
-              <div
+              {/* <div
                 className="absolute left-0 top-full mt-2 bg-white border border-gray-200 border-t-2 border-t-blue-500 
                 shadow-xl overflow-hidden
                 max-h-0 opacity-0 invisible -translate-y-2 
@@ -191,7 +191,7 @@ export default function LandingPage() {
                     </a>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* INSIGHTS AND BLOGS (Mega Dropdown) */}

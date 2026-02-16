@@ -7,53 +7,32 @@ import nPaxImage from "../assets/npax-white.png";
 
 const ITEMS = [
   {
-    key: "mcf7",
+    key: "MCFrame7",
     title: "MCF7 (PCM/SCM)",
     description:
       "Integrated solutions covering finance, procurement, inventory, operations, and supply chain management.",
     link: "https://www.n-pax.com/mcframe_iot.php"
   },
   {
-    key: "mcfga",
+    key: "MCFrameGA",
     title: "MCF GA",
     description:
       "Accurate and compliant accounting solutions with reporting, tax management, and financial controls.",
     link: "https://www.n-pax.com/mcframega.php"
   },
   {
-    key: "drsum",
+    key: "Dr. Sum",
     title: "Dr. Sum",
     description:
       "Centralized HR platforms that manage employee data, payroll, timekeeping, compliance, and performance analytics.",
     link: "https://www.wingarc.com/en/product/dr_sum/scene/"
   },
   {
-    key: "motionboard",
+    key: "MotionBoard",
     title: "MotionBoard",
     description:
       "Next-generation BI dashboard to analyze and visualize business data in one place, in real-time.",
     link: "https://www.n-pax.com/motionboard.php"
-  },
-  {
-    key: "hrc",
-    title: "Human Resource Companion (HRC)",
-    description:
-      "Experience a Comprehensive and Cost-Effective Solution for Businesses of All Sizes",
-    link: "https://www.n-pax.com/hrc.php"
-  },
-  {
-    key: "nxpert",
-    title: "NXPERT",
-    description:
-      "Explore how you can evolve your business with a proven solution for a better, cost efficient and accelarated business processes.",
-    link: "https://www.n-pax.com/nxpert.php"
-  },
-  {
-    key: "paxyroll",
-    title: "PaxyRoll",
-    description:
-      "Timesheet nightmare no more when Paxyroll got your role. Your state of the art digitalized work hour trackers under cloudbase solution you can use for free.",
-    link: "https://www.paxyroll.com/#home"
   },
 ];
 
@@ -231,6 +210,8 @@ export default function ProductsandServices() {
 
   const [autoPrompt, setAutoPrompt] = useState("");
   const [autoPromptId, setAutoPromptId] = useState(null);
+  const [chatContext, setChatContext] = useState("");
+
 
   const activeItem = useMemo(
     () => ITEMS.find((x) => x.key === activeKey) || ITEMS[0],
@@ -359,6 +340,7 @@ export default function ProductsandServices() {
 
               <button
                 onClick={() => {
+                  setChatContext(activeItem?.key || "");
                   setChatOpen(true);
                   setChatMaximized(true);
 
@@ -374,7 +356,7 @@ export default function ProductsandServices() {
           </div>
 
 
-          {/* Optional: Chatbot (place wherever you want) */}
+          {/* Chatbot */}
           <Chatbot 
             externalOpen={chatOpen} 
             externalMaximized={chatMaximized} 
@@ -382,6 +364,8 @@ export default function ProductsandServices() {
             onMaximizedChange={setChatMaximized}
             autoPrompt={autoPrompt}
             autoPromptId={autoPromptId}
+            context={chatContext}
+            onClearContext={() => setChatContext("")}
           />
         </div>
       </section>

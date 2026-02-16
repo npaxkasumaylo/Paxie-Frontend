@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Send, MessageCircle, Minus, ArrowBigDown, ChevronDown, ChevronUp, Mic, Paperclip, Maximize2, User, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -10,7 +10,7 @@ import Toast from './Toast';
 import { v4 as uuidv4 } from 'uuid';
 import Markdown from 'react-markdown';
 
-export default function Chatbot({externalOpen, externalMaximized, onOpenChange, onMaximizedChange, autoPrompt, autoPromptId}) {
+export default function Chatbot({externalOpen, externalMaximized, onOpenChange, onMaximizedChange, autoPrompt, autoPromptId, context, onClearContext}) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -24,6 +24,8 @@ export default function Chatbot({externalOpen, externalMaximized, onOpenChange, 
   const [isRecording, setIsRecording] = useState(false);
   const [convoId, setConvoId] = useState(uuidv4());
 
+  
+
   const messagesEndRef = useRef(null);
   const chatWindowRef = useRef(null);
   const chatButtonRef = useRef(null); // <-- new ref for button
@@ -32,7 +34,18 @@ export default function Chatbot({externalOpen, externalMaximized, onOpenChange, 
   const lastAutoPromptIdRef = useRef(null);
   const inputRef = useRef(null);
 
-  
+const contextText = useMemo(() => {
+  if (!context) return "";
+
+  return `
+Selected Product Context:
+- Title: ${context.title || ""}
+- Description: ${context.description || ""}
+- Link: ${context.link || ""}
+`.trim();
+}, [context]);
+
+
 useEffect(() => {
   if (!autoPrompt || !autoPromptId) return;
   if (!externalOpen) return; // only fill when chat is open
@@ -154,10 +167,15 @@ useEffect(() => {
     };
   }, [t]);
 
+  //chatbot message
   const handleSendMessage = async (forcedText) => {
     const messageToSend = (typeof forcedText === "string" ? forcedText : inputMessage);
 
-    if (!messageToSend.trim() && !attachedFile) return;
+     const finalQuery = contextText
+    ? `${messageToSend}\n\n${contextText}`
+    : messageToSend;
+
+    if (!finalQuery.trim() && !attachedFile) return;
 
     const currentFile = attachedFile;
     const userId = uuidv4();
@@ -165,6 +183,7 @@ useEffect(() => {
     const userMessage = {
       id: userId,
       text: messageToSend,
+      context: context || null,
       sender: 'user',
       attachedFile: currentFile
         ? { name: currentFile.name, size: currentFile.size, type: currentFile.type }
@@ -195,12 +214,12 @@ useEffect(() => {
       var res = "";
       if(currentFile) {
         // console.log(userId)
-        const query = inputMessage + " || Uploaded File: " + text;
+        const query = finalQuery + " || Uploaded File: " + text;
         console.log(query, convoId)
          res = await api.getAIResponse(query, convoId);
       } else {
         console.log(inputMessage, convoId)
-        res = await api.getAIResponse(inputMessage, convoId);
+        res = await api.getAIResponse(finalQuery, convoId);
       }
       
       const botMessage = {
@@ -344,7 +363,13 @@ useEffect(() => {
       {/* Chatbot Button */}
       <button
         ref={chatButtonRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          const newState = !isOpen
+
+          if (newState) onClearContext?.();
+          setIsOpen(newState);
+          onOpenChange?.(newState)
+        }}
         className={`fixed bottom-8 right-8 p-1 bg-gray-700 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform duration-300 border-2 border-blue-600 z-40 ${
           isOpen ? 'scale-110' : ''}`}
       >
