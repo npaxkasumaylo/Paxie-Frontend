@@ -18,6 +18,7 @@ import QueryLogs from "./Reports/QueryLogs";
 import DocumentLogs from "./Reports/DocumentLogs";
 import Graphs from "./Reports/Graphs";
 import Calculator from "./Reports/Calculator";
+import Dashboard from "./Reports/Dashboard";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -42,7 +43,7 @@ export default function Home() {
 	const [totalPages, setTotalPages] = useState(1);
 	const [pageNumber, setPageNumber] = useState(1);
 
-	const [reportMode, setReportMode] = useState("querylogs");
+	const [reportMode, setReportMode] = useState("dashboard");
 
 
 	//loading initial data
@@ -229,7 +230,7 @@ export default function Home() {
 
 //editAIModel, handleUseModel, deleteModel, details
 //gets model credentials
-	const getDetails = async () => {
+const getDetails = async () => {
   const res = await api.getModelCredentials();
   setDetails(res.data || []);
 };
@@ -548,11 +549,14 @@ const SidePanel = () => {
 						{mode === "report" && (
 							<div className="w-full space-y-6">
 						 		<div className="flex justify-between pb-3 mb-4">
-									<h1 className="text-2xl font-bold text-white">
+									<h1 className={`text-4xl font-bold text-white ${
+										reportMode === "dashboard" ? "text-center w-full" : ""
+									}`}>
+										{reportMode === "dashboard" && "PAXIE Cost Tracking Dashboard"}
 										{reportMode === "querylogs" && "Query Logging"}
 										{reportMode === "documentlogs" && "Document Logging"}
 										{reportMode === "graphs" && "Graphs"}
-										{reportMode === "calculator" && "Token Calculator"}
+										{reportMode === "calculator" && "Cost Calculator"}
 									</h1>
 
 							<select
@@ -560,12 +564,17 @@ const SidePanel = () => {
 								onChange={(e) => setReportMode(e.target.value)}
 								className="text-gray-600 font-semibold p-1.5 border border-gray-300 rounded-lg hover:bg-white "
 							>
+								<option value="dashboard">Cost Tracking Dashboard</option>
 								<option value="querylogs">Query Logging</option>
 								<option value="documentlogs">Document Logging</option>
 								<option value="graphs">Graphs Report</option>
-								<option value="calculator">Token Calculator</option>
+								<option value="calculator">Cost Calculator</option>
 							</select>
 							</div>
+
+							{reportMode === "dashboard" && (
+								<Dashboard />
+							)}
 
 							{reportMode === "querylogs" && (
 								<QueryLogs />
@@ -580,7 +589,7 @@ const SidePanel = () => {
 							)}
 
 							{reportMode === "calculator" && (
-								<Calculator />
+								<Calculator/>
 							)}
 
 							</div>

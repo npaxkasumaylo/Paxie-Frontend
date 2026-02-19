@@ -18,8 +18,8 @@ const [editingId, setEditingId] = useState(null);
 
 
 
-const isAzureOpenAI =
-  providers.find(p => String(p.id) === String(aiProviders))?.name === "AzureOpenAI";
+const isAzureAIFoundry =
+  providers.find(p => String(p.id) === String(aiProviders))?.name === "AzureAIFoundry";
 
 //loads all Ai Providers
 useEffect(() => {
@@ -140,7 +140,7 @@ const addNewAiModel = async (e) => {
         apiKey: encryptedApiKey,
         isActive: true,
         temperature: Number(temperature),
-        ...(isAzureOpenAI && {
+        ...(isAzureAIFoundry && {
           endpoint: encryptedEndPoint,
           apiVersion: apiVersion
         })
@@ -190,7 +190,7 @@ const updateAiModel = async (e) => {
   }
 
   // If Azure and you want apiVersion required during edit:
-  if (isAzureOpenAI && !apiVersion?.trim()) {
+  if (isAzureAIFoundry && !apiVersion?.trim()) {
     notify?.("Please enter API version", "error");
     return;
   }
@@ -318,7 +318,7 @@ const cancel = () => {
           </label>
 
 
-        {isAzureOpenAI &&(
+        {isAzureAIFoundry &&(
           <>
           <label className="block">
             <span className="text-white/90 text-sm">Endpoint</span>
