@@ -74,8 +74,8 @@ export const api = {
   searchFilterProductDocument: (searchParam) => Api.get("/Documents/GetDocuments", { params: { query: searchParam } }),
 
   //logging
-  getQueryLogs: (pageNumber = 1, pageSize = 10) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
-  getEmbeddingLogs: (pageNumber =1, pageSize = 10) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize}}),
+  getQueryLogs: (pageNumber, pageSize) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
+  getEmbeddingLogs: (pageNumber, pageSize) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize}}),
 };
 
 

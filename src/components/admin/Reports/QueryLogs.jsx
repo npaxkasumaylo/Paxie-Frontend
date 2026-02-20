@@ -1,214 +1,285 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../api/api";
 
-export default function QueryLogs ({ networkError}){
-const [logs, setLogs] = useState([]);
-const [pageNumber, setPageNumber] = useState(1);
-const [pageSize] = useState(10);
-const [providers, setProviders] = useState([]);
-const [selectedProvider, setSelectedProvider] = useState("");
-const [aiModels, setAIModels] = useState([]);
-const [selectedAIModel, setSelectedAIModel] = useState("");
+export default function QueryLogs({ networkError }) {
+  const [logs, setLogs] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const pageSize = 10;
 
-const getQueryLogs = async () => {
-    try{
-        const res = await api.getQueryLogs(pageNumber, pageSize);
-        const data = res?.data;
+  const [providers, setProviders] = useState([]);
+  const [selectedProvider, setSelectedProvider] = useState("");
 
-        if(Array.isArray(res.data)){
-            setLogs(res.data);
-            return
-        }
-        setLogs(data?.items || data?.data || []);
-    }catch (e){
-        console.error(e);
-        setLogs([]);
+  const [answeringModel, setAnsweringModel] = useState([]);
+  const [selectedAnsweringModel, setSelectedAnsweringModel] = useState("");
+
+  const getQueryLogs = async () => {
+    try {
+      const res = await api.getQueryLogs(pageNumber, pageSize);
+      const data = res?.data;
+
+      // ✅ handle array-only API
+      if (Array.isArray(data)) {
+        setLogs(data);
+        return;
+      }
+
+      // ✅ handle object API too (just in case)
+      const items = data?.items || data?.data || [];
+      setLogs(Array.isArray(items) ? items : []);
+    } catch (e) {
+      console.error(e);
+      setLogs([]);
     }
-};
+  };
 
-const getProviders = async () => {
-    try{
-        const res = await api.getAllProviders();
-        setProviders(Array.isArray(res?.data) ? res.data : []);
-    } catch(e){
-        console.error(e);
-        setProviders([]);
+  const getProviders = async () => {
+    try {
+      const res = await api.getAllProviders();
+      setProviders(Array.isArray(res?.data) ? res.data : []);
+    } catch (e) {
+      console.error(e);
+      setProviders([]);
     }
-}
+  };
 
-const getModels = async () => {
-    try{
-        const res = await api.getModelCredentials();
-        setAIModels(Array.isArray(res?.data) ? res.data : []);
-    } catch(e){
-        console.error(e);
-        setAIModels([]);
+  const getModels = async () => {
+    try {
+      const res = await api.getModelCredentials();
+      setAnsweringModel(Array.isArray(res?.data) ? res.data : []);
+    } catch (e) {
+      console.error(e);
+      setAnsweringModel([]);
     }
-}
+  };
 
-useEffect(() => {
-  getQueryLogs();
-  getProviders();
-  getModels();
-}, []);
-
- const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil((logs?.length || 0) / pageSize));
-  }, [logs, pageSize]);
-
-  // ✅ slice like Products & Services
-  const pagedLogs = useMemo(() => {
-    const safePage = Math.min(Math.max(1, pageNumber), totalPages);
-    const start = (safePage - 1) * pageSize;
-    return (Array.isArray(logs) ? logs : []).slice(start, start + pageSize);
-  }, [logs, pageNumber, pageSize, totalPages]);
-
-  // ✅ clamp when logs shrink
-  useEffect(() => {
-    if (pageNumber > totalPages) setPageNumber(totalPages);
-  }, [totalPages, pageNumber]);
-
+  // ✅ build providerId -> providerName map
   const providerMap = useMemo(() => {
-  const map = {};
-  providers.forEach((p) => {
-    map[String(p.id)] = p.name; // or p.providerName depending on your API
-  });
-  return map;
-}, [providers]);
+    const map = {};
+    providers.forEach((p) => {
+      map[String(p.id)] = p.name;
+    });
+    return map;
+  }, [providers]);
 
-const formatNumber = (value, decimals = 2) => {
-  if (value === null || value === undefined) return "0";
+  const formatNumber = (value, decimals = 2) => {
+    if (value === null || value === undefined) return "0";
+    const num = Number(value);
+    return num.toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals,
+    });
+  };
 
-  const num = Number(value);
+  // ✅ fetch provider/model once
+  useEffect(() => {
+    getProviders();
+    getModels();
+  }, []);
 
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: decimals,
-  });
-};
+  // ✅ fetch logs when page changes
+  useEffect(() => {
+    getQueryLogs();
+  }, [pageNumber]);
 
+  // ✅ reset to page 1 when filter changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [selectedProvider, selectedAnsweringModel]);
 
-   return(
-    <>  
-        <div className="w-full overflow-x-auto rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl">
-            <table className="w-full min-w-[720px] table-auto border-collapse">
-                <thead className="bg-white/10">
-                    <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
-                    <th>User Query</th>
-                    <th>AI Response</th>
-                    <th>Relfection Model</th>
-                    <th>Total Processing Time</th>
-                    <th>Total tool calls</th>
-                    <th>Total Output token</th>
-                    <th>
-                        <select
-                            value={selectedProvider}
-                            onChange={(e) => setSelectedProvider(e.target.value)}
-                            className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white/90 outline-none">
-                            <option value="">AI Providers</option>
-                            {providers.map((p) => (
-                                <option key={p.id} value={p.id} className="text-gray-800">
-                                {p.name}
-                                </option>
-                            ))}
-                        </select>
-                    </th>
-                    <th>
-                        <select
-                            value={selectedAIModel}
-                            onChange={(e) => setSelectedAIModel(e.target.value)}
-                            className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white/90 outline-none">
-                            <option value="">AI Models</option>
-                                {aiModels.map((model) => (
-                                    <option key={model.id} value={model.id} className="text-gray-800">
-                                        {model.modelName}
-                                    </option>
-                                ))}
-                        </select>
-                    </th>
-                    <th>Total Input token</th>
-                    </tr>
-                </thead>
+  // ✅ filter within current page
+  const filteredLogs = useMemo(() => {
+    return (Array.isArray(logs) ? logs : []).filter((item) => {
+      const matchProvider =
+        !selectedProvider || String(item.serviceProviderId) === String(selectedProvider);
 
-                <tbody className="divide-y divide-white/10">
-                    {pagedLogs && pagedLogs.length > 0 ? (
-                        pagedLogs.map((item) => (
-                            <tr key={item.id} className="transition hover:bg-white/10">
-                                <td className="px-5 py-4 text-white/90 max-w-[100px]">
-                                    <span className="truncate block">{item.userQuery}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90 max-w-[100px]">
-                                    <span className="truncate block">{item.aiResponse}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90 max-w-[100px]">
-                                    <span>{item.reflectionModel}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{formatNumber(item.totalProcessingTime)}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{formatNumber(item.totalToolCalls)}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{formatNumber(item.totalOutputToken)}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{providerMap[String(item.serviceProviderId)]}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{item.aiModel}</span>
-                                </td>
-                                <td className="px-5 py-4 text-white/90">
-                                    <span>{formatNumber(item.totalInputToken)}</span>
-                                </td>
-                            </tr>
-                            
-                        )) 
-                    ) : (
-                            <tr>
-                    <td
-                        colSpan={11}
-                        className="px-5 py-16 text-center align-middle"
-                    >
-                        {networkError ? (
-                        <p className="text-red-400 font-medium">{networkError}</p>
-                        ) : (
-                        <p className="text-white/80 text-sm">No query logs yet.</p>
-                        )}
-                    </td>
-                    </tr>
-                )}
-                </tbody>
-                <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-lg [&>th]:font-semibold [&>th]:text-white/90">
-                    <th className="px-5 py-4 text-white">Total</th>
-                    <th className="px-5 py-4 text-white"></th>
-                    <th className="px-5 py-4 text-white"></th>
-                    <th className="px-5 py-4 text-white"></th>
-                    <th className="px-5 py-4 text-white"></th>
+      // NOTE: item.answeringModel is a string in your sample logs
+      const matchAnsweringModel =
+        !selectedAnsweringModel || String(item.answeringModel) === String(selectedAnsweringModel);
+
+      return matchProvider && matchAnsweringModel;
+    });
+  }, [logs, selectedProvider, selectedAnsweringModel]);
+
+  // ✅ server-paginated: do NOT slice again
+  const pagedLogs = filteredLogs;
+
+  // ✅ enable Next if we got a full page from server
+  const hasNextPage = logs.length === pageSize;
+
+  const totals = useMemo(() => {
+    return filteredLogs.reduce(
+      (acc, item) => {
+        acc.answeringTotalInputToken += Number(item.answeringTotalInputToken || 0);
+        acc.answeringTotalOutputToken += Number(item.answeringTotalOutputToken || 0);
+        acc.reflectionTotalInputToken += Number(item.reflectionTotalInputToken || 0);
+        acc.reflectionTotalOutputToken += Number(item.reflectionTotalOutputToken || 0);
+        acc.totalProcessingTime += Number(item.totalProcessingTime || 0);
+        return acc;
+      },
+      { answeringTotalInputToken: 0, 
+        answeringTotalOutputToken: 0, 
+        reflectionTotalInputToken: 0,
+        reflectionTotalOutputToken: 0,
+        totalProcessingTime: 0
+    }
+    );
+  }, [filteredLogs]);
+
+  return (
+    <>
+     <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10 bg-[#0b1f3a]  backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        <table className="w-full min-w-[720px] table-auto border-collapse">
+          <thead className="bg-[#132a4a] border-b border-blue-400/10">
+            <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
+              <th>Timestamp</th>
+              <th>User Query</th>
+              <th>AI Response</th>
+
+              <th>
+                <select
+                  value={selectedProvider}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white/90 outline-none"
+                >
+                  <option value="" className="text-gray-800">
+                    AI Providers
+                  </option>
+                  {providers.map((p) => (
+                    <option key={p.id} value={p.id} className="text-gray-800">
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </th>
+
+              <th>
+                <select
+                  value={selectedAnsweringModel}
+                  onChange={(e) => setSelectedAnsweringModel(e.target.value)}
+                  className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white/90 outline-none"
+                >
+                  <option value="" className="text-gray-800">
+                    Answering Model
+                  </option>
+                  {answeringModel.map((m) => (
+                    <option key={m.id} value={m.modelName} className="text-gray-800">
+                      {m.modelName}
+                    </option>
+                  ))}
+                </select>
+              </th>
+
+              <th>Relfection Model</th>
+              <th>Node Stage</th>
+              <th>Answering Total Input Token</th>
+              <th>Answering Total Output Token</th>
+              <th>Reflection Total Input Token</th>
+              <th>Reflection Total Output Token</th>
+              <th>Total Processing Time (ms)</th>
+              <th>Answering Total Tool Calls</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-blue-400/5 bg-[#0e2545]">
+            {pagedLogs && pagedLogs.length > 0 ? (
+              pagedLogs.map((item) => (
+                <tr key={item.id} className="border-b border-blue-400/5 hover:bg-[#17365f]/70 transition-colors duration-200">
+                  <td className="px-5 py-4 text-white/90 max-w-[100px]">
+                    <span className="truncate block">{item.timeStamp}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90 max-w-[160px]">
+                    <span className="truncate block">{item.userQuery}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90 max-w-[200px]">
+                    <span className="truncate block">{item.aiResponse}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90 text-center">
+                    <span>{providerMap[String(item.serviceProviderId)] || item.serviceProviderId}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.answeringModel}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.reflectionModel}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.nodeStage}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.answeringTotalInputToken}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.answeringTotalOutputToken}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.reflectionTotalInputToken}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.reflectionTotalOutputToken}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{formatNumber(item.totalProcessingTime)}</span>
+                  </td>
+                  <td className="px-5 py-4 text-white/90">
+                    <span>{item.answeringTotalToolCalls}</span>
+                  </td>
                 </tr>
-            </table>
-            <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
-                <button
-                className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
-                disabled={pageNumber <= 1}
-                onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-                >
-                Prev
-                </button>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={13} className="px-5 py-16 text-center align-middle">
+                  {networkError ? (
+                    <p className="text-red-400 font-medium">{networkError}</p>
+                  ) : (
+                    <p className="text-white/80 text-sm">No query logs yet.</p>
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        
+        {filteredLogs.length > 0 && (
+          <tfoot className="bg-[#132a4a] border-t border-blue-400/10">
+            <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-lg [&>th]:font-semibold [&>th]:text-white/90">
+              <th className="px-5 py-4 text-white">Total</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">-</th>
+              <th className="px-5 py-4 text-white">{totals.answeringTotalInputToken}</th>
+              <th className="px-5 py-4 text-white">{totals.answeringTotalOutputToken}</th>
+              <th className="px-5 py-4 text-white">{totals.reflectionTotalInputToken}</th>
+              <th className="px-5 py-4 text-white">{totals.reflectionTotalOutputToken}</th>
+              <th className="px-5 py-4 text-white">{formatNumber(totals.totalProcessingTime)}</th>
+              <th className="px-5 py-4 text-white">-</th>
+            </tr>
+          </tfoot>
+        )}
+        </table>
 
-                <p className="text-sm text-white/70">
-                Page {pageNumber} of {totalPages}
-                </p>
+        <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+          <button
+            className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+            disabled={pageNumber <= 1}
+            onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+          >
+            Prev
+          </button>
 
-                <button
-                className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
-                disabled={pageNumber >= totalPages}
-                onClick={() => setPageNumber((p) => Math.min(totalPages, p + 1))}
-                >
-                Next
-                </button>
-            </div>
+          <p className="text-sm text-white/70">Page {pageNumber}</p>
+
+          <button
+            className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
+            disabled={!hasNextPage}
+            onClick={() => setPageNumber((p) => p + 1)}
+          >
+            Next
+          </button>
         </div>
+      </div>
     </>
-    )
+  );
 }
+

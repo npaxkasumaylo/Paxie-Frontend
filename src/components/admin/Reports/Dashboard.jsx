@@ -87,6 +87,18 @@ export default function Dashboard (){
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>What is the weather today?</span>
                         </td>
+                        <td className="px-10 py-4 text-white/90 text-center">
+                            <span>271</span>
+                        </td>
+                        <td className="px-10 py-4 text-white/90 text-center">
+                            <span>Mistral-Large-3</span>
+                        </td>
+                        <td className="px-10 py-4 text-white/90 text-center">
+                            <span>1276</span>
+                        </td>
+                        <td className="px-10 py-4 text-white/90 text-center">
+                            <span>$00005</span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
