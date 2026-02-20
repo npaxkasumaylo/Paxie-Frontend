@@ -78,31 +78,54 @@ export default function Home() {
 		};
 
 	// get all documents
-	const getAllDocuments = async (isProductTag = false, productName = "General") => {
-			try {
-				const res = await api.getDocuments(isProductTag, productName, pageNumber, pageSize);
-				const data = res?.data;
+	const getAllDocuments = async (
+  isProductTag = false,
+  productName = "General",
+  page = pageNumber,
+  size = pageSize
+) => {
+  try {
+    setNetworkError("");
 
-				 if (Array.isArray(res.data)) {
-					setGeneralDocuments(res.data);
-					setTotalPages(1);
-					return;
-				}else {
-				setGeneralDocuments(data?.items || []);
-				setTotalPages(
-					data?.totalPages ||
-					Math.ceil((data?.totalCount || 0) / pageSize) ||
-					1
-				);
-				}
+    const res = await api.getDocuments(isProductTag, productName, page, size);
+    const data = res?.data;
 
-				setGeneralDocuments(res.data );
-				setTotalPages(res.data?.totalPages || 10);
-			} catch (e) {
-				if(e.status == 401) {navigate("/admin/login");}
-				setNetworkError("Something went wrong. Try again later.");
-			}
-    };
+    // If backend returns plain array
+    if (Array.isArray(data)) {
+      setGeneralDocuments(data);
+      // Unknown total pages — treat as "Next exists if we got a full page"
+      setTotalPages(1);
+      return;
+    }
+
+    // If backend returns object { items, totalPages/totalCount }
+    const items = data?.items || data?.data || [];
+    setGeneralDocuments(Array.isArray(items) ? items : []);
+
+    const apiTotalPages = data?.totalPages ?? data?.pages ?? null;
+    const totalCount = data?.totalCount ?? data?.totalItems ?? data?.count ?? null;
+
+    if (apiTotalPages != null) {
+      setTotalPages(Number(apiTotalPages) || 1);
+    } else if (totalCount != null) {
+      setTotalPages(Math.max(1, Math.ceil(Number(totalCount) / size)));
+    } else {
+      setTotalPages(1);
+    }
+  } catch (e) {
+    if (e?.status === 401) navigate("/admin/login");
+    console.error(e);
+    setNetworkError("Something went wrong. Try again later.");
+    setGeneralDocuments([]);
+    setTotalPages(1);
+  }
+};
+
+useEffect(() => {
+  if (mode === "files") {
+    getAllDocuments(false, "General", pageNumber, pageSize);
+  }
+}, [pageNumber, pageSize, mode]);
     
 
 	const validateFileSize = (data, maxMB) => {
@@ -331,7 +354,7 @@ const getAllProductDocuments = async () => {
     notify?.("Failed to load product documents.", "error");
   }
 };
-
+const hasNextPage = generalDocuments.length === pageSize;
 //SIDEPANEL 
 const SidePanel = () => {
 		if (mode === "files") {
@@ -401,8 +424,8 @@ const SidePanel = () => {
 
 									<button
 									className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
-									disabled={pageNumber >= totalPages}
-									onClick={() => setPageNumber(p => Math.min(totalPages, p + 1))}
+									disabled={totalPages > 1 ? pageNumber >= totalPages : !hasNextPage}
+    								onClick={() => setPageNumber((p) => p + 1)}
 									>
 									Next
 									</button>
