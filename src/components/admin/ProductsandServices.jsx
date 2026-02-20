@@ -3,6 +3,7 @@ import { useState, useEffect  } from "react";
 import Toast from "../Toast";
 import { api } from "../../api/api";
 import { convertFileToBytes } from "../../utils/FileConverter";
+import { LoaderCircle } from "lucide-react";
 
 export default function ManageProductsandServices({notify , onUploaded}){
     const [file, setFile] = useState(null);
@@ -134,11 +135,12 @@ const cancel = () => {
 
 			<div className="pt-5">
 				<button 
-                disabled={uploading} 
-				className={`w-full bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-1.5 rounded-full transition`}>
-                {uploading ? "Uploading..." : "SAVE"}
-            </button>
-					</div>
+          disabled={uploading} 
+          className={`w-full flex items-center justify-center gap-2 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-1.5 rounded-full transition`}>
+          {uploading ? (<><LoaderCircle className="h-5 w-5 animate-spin" />  <span className="ml-2">Uploading...</span></>) : "SAVE"}
+        </button>
+
+			</div>
 			</form>
 			<button 
                 onClick={cancel}

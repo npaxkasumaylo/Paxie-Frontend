@@ -1,5 +1,7 @@
 import {useEffect,useState } from "react";
 import { api } from "../../api/api";
+import { LoaderCircle } from "lucide-react";
+
 
 export default function ManageAiModels({ notify, getDetails, editingRow, clearEditingRow }) {
 

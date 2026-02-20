@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { api } from "../../api/api";
+import { LoaderCircle } from "lucide-react";
 
 export default function AddNewJob({getAllJobs, notify, jobs}) {
 	const [jobTitle, setJobTitle] = useState("");
@@ -91,7 +92,8 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 							disabled={adding}
 							className={`w-full ${adding ? 'bg-white/20 text-gray-500' : 'bg-white hover:bg-white/25 hover:text-white text-[#183398]'}  text-md font-bold py-1.5 rounded-full transition`}
             >
-              {adding ? "SAVING..."  : "SAVE"}
+				{adding && <LoaderCircle className="h-5 w-5 animate-spin" />}
+            	{adding ? "SAVING..."  : "SAVE"}
             </button>
 					</div>
 			</form>

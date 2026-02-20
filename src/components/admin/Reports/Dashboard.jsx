@@ -129,7 +129,7 @@ export default function Dashboard (){
 
         <h1  className='text-2xl font-bold text-white'>Running Cost: per user query (live feed)</h1>
             
-        <div className="w-full rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        <div className="w-full overflow-x-auto rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
             <table className="w-full min-w-[720px] table-auto border-collapse">
                 <thead className="bg-[#132a4a] border-b border-blue-400/10">
                     <tr className="[&>th]:px-10 [&>th]:py-4 [&>th]:text-center [&>th]:text-xl [&>th]:font-semibold [&>th]:text-white/90">
