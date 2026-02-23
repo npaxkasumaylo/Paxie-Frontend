@@ -30,7 +30,7 @@ export const api = {
 
   // DOCUMENTS API
   addDocument: (document) => Api.post("/Documents/AddDocument", document),
-  getDocuments: (isProductTag = false, productName = "General", pageNumber = 1, pageSize = 10 ) => Api.get("/Documents/GetDocuments", { params: { isProductTag, productName, pageNumber, pageSize } }),
+  getDocuments: (IsProductTag = false, ProductName = "General", PageNumber = 1, PageSize = 10 ) => Api.get("/Documents/GetDocuments", { params: { IsProductTag, ProductName, PageNumber, PageSize } }),
   deleteDocument: (documentId) => Api.delete(`/Documents/${documentId}`),
 
   //JOB OPENING API
@@ -73,9 +73,15 @@ export const api = {
   //filetring
   searchFilterProductDocument: (searchParam) => Api.get("/Documents/GetDocuments", { params: { query: searchParam } }),
 
+  //search
+  searchDocument: (isProductTag, searchParam) => Api.get("/Documents/SearchDocument", {params: {isProductTag,SearchParam: searchParam}}),
+
   //logging
   getQueryLogs: (pageNumber, pageSize) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
   getEmbeddingLogs: (pageNumber, pageSize) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize}}),
+
+
+
 };
 
 

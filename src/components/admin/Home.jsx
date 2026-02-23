@@ -78,7 +78,7 @@ export default function Home() {
 		};
 
 	// get all documents
-	const getAllDocuments = async (
+const getAllDocuments = async (
   isProductTag = false,
   productName = "General",
   page = pageNumber,
@@ -258,7 +258,6 @@ const getDetails = async () => {
   setDetails(res.data || []);
 };
 
-
 const deleteModel = async (model) => {
   try{
     await api.deleteModelCredentials({
@@ -273,6 +272,7 @@ const deleteModel = async (model) => {
     getDetails();
   }
 };
+
 const handleUseModel = async (row) => {
   try {
 
@@ -330,27 +330,28 @@ const getAllProductDocuments = async () => {
   try {
     setNetworkError("");
 
-    // fetch product tags
-    const { data: tags = [] } = await api.getDocumentTags(true);
-
-    // build map id -> name
-    const map = {};
-    tags.forEach(t => {
-      const id = t?.id;
-      const name = t?.tagName;
-      if (id != null && name) map[String(id)] = name;
-    });
-    setProductTagMap(map);
+    const resTags = await api.getDocumentTags(true);
+    const tags = Array.isArray(resTags?.data) ? resTags.data : [];
 
     const productNames = [...new Set(tags.map(t => t?.tagName).filter(Boolean))];
 
-    const responses = await Promise.all(productNames.map(name => api.getDocuments(true, name)));
-    const merged = responses.flatMap(r => (Array.isArray(r?.data) ? r.data : []));
+    // if somehow no tags exist, at least fetch General so ProductName is not empty
+    if (productNames.length === 0) {
+      const res = await api.getDocuments(true, "General", 1, 100);
+      setProductDocuments(Array.isArray(res?.data) ? res.data : []);
+      return;
+    }
 
+    const responses = await Promise.all(
+      productNames.map((name) => api.getDocuments(true, name, 1, 1000))
+    );
+
+    const merged = responses.flatMap((r) => (Array.isArray(r?.data) ? r.data : []));
     setProductDocuments(merged);
   } catch (e) {
     console.error(e);
     setNetworkError("Something went wrong. Try again later.");
+    setProductDocuments([]);
     notify?.("Failed to load product documents.", "error");
   }
 };
@@ -419,7 +420,7 @@ const SidePanel = () => {
 									</button>
 
 									<p className="text-sm text-white/70">
-									Page {pageNumber} of {totalPages}
+									Page {pageNumber}
 									</p>
 
 									<button
