@@ -19,6 +19,8 @@ import DocumentLogs from "./Reports/DocumentLogs";
 import Graphs from "./Reports/Graphs";
 import Calculator from "./Reports/Calculator";
 import Dashboard from "./Reports/Dashboard";
+import ModelCosting from "./ModelCosting";
+import CostingList from "./CostingList";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -458,6 +460,11 @@ const SidePanel = () => {
 			return<ModelList details={details} editAiModel={onEditModel} handleUseModel={handleUseModel} deleteModel={deleteModel} notify={notify} />
 		}
 
+		if (mode === "costing") {
+			return<CostingList/>
+		}
+
+
 		return null;
 	};
 
@@ -476,6 +483,7 @@ const SidePanel = () => {
 								{mode === "files" && "Upload General Files"}
 								{mode === "addJob" && "Manage Jobs"}
 								{mode === "models" && "Manage AI Models"}
+								{mode === "costing" && "Model Costing"}
 								{mode === "producstandservices" && "Products and Services"}
 								{mode === "report" && "AI Reports"}
 							</h1>
@@ -488,6 +496,7 @@ const SidePanel = () => {
 								<option value="addJob">Manage Jobs</option>
 								<option value="producstandservices">Products and Services</option>
 								<option value="models">AI Models</option>
+								<option value="costing">Model Costing</option>
 								<option value="report">AI Reports</option>
 							</select>
 						</div> 
@@ -566,9 +575,15 @@ const SidePanel = () => {
 						<ManageAiModels notify={notify} getDetails={getDetails} editingRow={editingRow} clearEditingRow={() => setEditingRow(null)} />
 						)}
 
+						{mode === 'costing' && (
+							<ModelCosting/>
+						)}
+
 						{mode === "producstandservices" && (
 						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} />
 						)}	
+
+						
 
 						{mode === "report" && (
 							<div className="w-full space-y-6">
@@ -615,6 +630,8 @@ const SidePanel = () => {
 							{reportMode === "calculator" && (
 								<Calculator/>
 							)}
+
+
 
 							</div>
 						)}

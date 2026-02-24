@@ -160,7 +160,7 @@ export default function ProductsandServicesList({
                     <b>File Format:</b> {docTypeArr[item.documentType]}
                   </p>
                   <p className="text-white/90 truncate text-sm">
-                    <b>File Information:</b> {tagMap[String(item.documentTagsId)] ?? "Unknown"}
+                    <b>File Information:</b>{documentTags.find(t => Number(t.id) === Number(item.documentTagsId))?.tagName ?? "Unknown"}
                   </p>
                   <p className="text-white/90 truncate text-sm">
                     <b>Date Uploaded:</b> {formatDate(item.uploaded)}

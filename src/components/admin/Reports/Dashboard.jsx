@@ -1,5 +1,7 @@
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../../../api/api";
 
 const data = [
   { label: 'Answering Agent', value:  65, color: '#0088FE' },
@@ -15,11 +17,166 @@ const settings = {
 
 
 export default function Dashboard (){
+    const [allLogs, setAllLogs] = useState([]);
+    const pageSize = 10;
+
+    //text-embedding-ada pricing
+    const embeddingPrice = 0.10;
+
+    //gpt-mini-5 pricing
+    const llmInputPrice = 0.25;
+    const llmOutputPrice = 2;
+
+    //ministral-large-3
+    const reflectionInput =0.50
+    const reflectionOutput =1.50
+
+
+    const TOKENS_UNIT = 1_000_000;
+
+    const [queryLogs, setQueryLogs] = useState([]);
+
+    const queryPageSize = 5; // or 100, depends on your API limits
+
+
+    const getAllEmbeddingLogs = async () => {
+  try {
+    const collected = [];
+    let p = 1;
+
+    while (true) {
+      const res = await api.getEmbeddingLogs(p, pageSize);
+      const data = res?.data;
+
+      const items = Array.isArray(data)
+        ? data
+        : (data?.items || data?.data || []);
+
+      if (!Array.isArray(items) || items.length === 0) break;
+
+      collected.push(...items);
+
+      if (items.length < pageSize) break;
+
+      p += 1;
+    }
+
+    setAllLogs(collected);
+  } catch (e) {
+    console.error(e);
+    setAllLogs([]);
+  }
+};
+
+const getAllQueryLogs = async () => {
+  try {
+    const collected = [];
+    let p = 1;
+
+    while (true) {
+      const res = await api.getQueryLogs(p, queryPageSize);
+      const data = res?.data;
+
+      const items = Array.isArray(data)
+        ? data
+        : (data?.items || data?.data || []);
+
+      if (!Array.isArray(items) || items.length === 0) break;
+
+      collected.push(...items);
+
+      if (items.length < queryPageSize) break;
+
+      p += 1;
+    }
+
+    setQueryLogs(collected);
+  } catch (e) {
+    console.error(e);
+    setQueryLogs([]);
+  }
+};
+
+useEffect(() => {
+  getAllEmbeddingLogs();
+  getAllQueryLogs();
+}, []);
+
+//Total Ingestion cost calcualtion
+const totalIngestionCost = useMemo(() => {
+
+  return allLogs.reduce((acc, item) => {
+    const embedding =
+      (Number(item.textTokenCount || 0) / TOKENS_UNIT) * embeddingPrice;
+
+    const input =
+      (Number(item.imageTextTokenInput || 0) / TOKENS_UNIT) * llmInputPrice;
+
+    const output =
+      (Number(item.imageTextTokenOutput || 0) / TOKENS_UNIT) * llmOutputPrice;
+
+    return acc + embedding + input + output;
+  }, 0);
+}, [allLogs, embeddingPrice, llmInputPrice, llmOutputPrice]);
+
+//Total running cost calculation
+const totalRunningTokensInput = useMemo(() => {
+  return allLogs.reduce((acc, item) => {
+    return acc + Number(item.imageTextTokenInput || 0);
+  }, 0);
+}, [allLogs]);
+
+const totalRunningTokensOutput = useMemo(() => {
+  return allLogs.reduce((acc, item) => {
+    return acc + Number(item.imageTextTokenOutput || 0);
+  }, 0);
+}, [allLogs]);
+
+const totalRunningCost = useMemo(() => {
+  const inputCost =
+    (totalRunningTokensInput / TOKENS_UNIT) * llmInputPrice;
+
+  const outputCost =
+    (totalRunningTokensOutput / TOKENS_UNIT) * llmOutputPrice;
+
+  return inputCost + outputCost;
+}, [
+  totalRunningTokensInput,
+  totalRunningTokensOutput,
+  llmInputPrice,
+  llmOutputPrice,
+]);
+
+//Average running cost
+const avgRunningCost = useMemo(() => {
+  if (!allLogs.length) return 0;
+  return totalRunningCost / allLogs.length;
+}, [totalRunningCost, allLogs.length]);
+
+
+//Total token usage calculation
+const totalTokenUsage = useMemo(() => {
+  return allLogs.reduce((acc, item) => {
+    return (
+      acc +
+      Number(item.textTokenCount || 0) +
+      Number(item.imageTextTokenInput || 0) +
+      Number(item.imageTextTokenOutput || 0)
+    );
+  }, 0);
+}, [allLogs]);
+
+
+const latestFiveQueries = useMemo(() => {
+  return [...queryLogs]
+    .sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp))
+    .slice(0, 5);
+}, [queryLogs]);
+
    return(
     <>  
         <div className="w-full rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
                 {/* Card 1 */}
                 <div className="bg-[#11284a] border border-blue-400/10 rounded-xl p-6 
                                 hover:bg-[#17365f] transition-all duration-300 
@@ -28,7 +185,7 @@ export default function Dashboard (){
                     Total Ingestion Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    $42.50
+                    ${totalIngestionCost.toFixed(4)}
                 </p>
                 </div>
 
@@ -40,7 +197,7 @@ export default function Dashboard (){
                     Total Running Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    $12.85
+                    ${totalRunningCost.toFixed(4)}
                 </p>
                 </div>
 
@@ -52,7 +209,7 @@ export default function Dashboard (){
                     Avg. Running Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    $12.85
+                    ${avgRunningCost.toFixed(4)}
                 </p>
                 </div>
 
@@ -64,7 +221,7 @@ export default function Dashboard (){
                     Total Token Usage
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    1.1M
+                    {totalTokenUsage.toLocaleString()}
                 </p>
                 </div>
 
@@ -95,26 +252,31 @@ export default function Dashboard (){
                 ]}
                 height={300}
                 sx={{
-                    // Axis line (bottom & left main lines)
+                    // Bottom & left axis lines
                     '& .MuiChartsAxis-line': {
-                    stroke: '#ffffff',
+                        stroke: '#ffffff',
                     },
 
                     // Tick lines
                     '& .MuiChartsAxis-tick': {
-                    stroke: '#ffffff',
+                        stroke: '#ffffff',
                     },
 
-                    // Axis labels (numbers + bar names)
+                    // Axis labels
                     '& .MuiChartsAxis-tickLabel': {
-                    fill: '#ffffff',
+                        fill: '#ffffff',
                     },
 
-                    // Grid lines
+                    // Horizontal & vertical grid lines
                     '& .MuiChartsGrid-line': {
-                    stroke: 'rgba(255,255,255,0.2)', // softer white
+                        stroke: 'rgba(255,255,255,0.3)',
                     },
-                }}
+
+                    // Some versions use this instead
+                    '& .MuiChartsGrid-root line': {
+                        stroke: 'rgba(255,255,255,0.3)',
+                    },
+                    }}
                 />
 
                 <PieChart
@@ -122,12 +284,21 @@ export default function Dashboard (){
                 {...settings}
                 />
             </div>
+
+
+            <iframe
+                className='rounded-2xl'
+                src="http://172.179.236.27:3000/public-dashboards/034fd1c78d744a139cc5b24df4391c8d"
+                width="100%" height="400" frameBorder="0"
+            >
+
+            </iframe>
         </div>
 
         
         <hr className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
 
-        <h1  className='text-2xl font-bold text-white'>Running Cost: per user query (live feed)</h1>
+        <h1  className='text-3xl font-bold text-white'>Running Cost: per user query (live feed)</h1>
             
         <div className="w-full overflow-x-auto rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
             <table className="w-full min-w-[720px] table-auto border-collapse">
@@ -143,26 +314,55 @@ export default function Dashboard (){
                 </thead>
 
                 <tbody className="divide-y divide-blue-400/5 bg-[#0e2545]">
+                {queryLogs && queryLogs.length > 0 ? (
+                latestFiveQueries.slice(0,5).map((item) => (
                     <tr className="border-b border-blue-400/5 hover:bg-[#17365f]/70 transition-colors duration-200">
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>2024-06-01 12:00:00</span>
+                            <span>{new Date(item.timeStamp).toLocaleString()}</span>
+                        </td>
+                        <td className="px-5 py-4 text-white/90 max-w-[100px]">
+                            <span className="block truncate">{item.userQuery}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>What is the weather today?</span>
+                            <span>
+                            {(
+                                Number(item.answeringTotalInputToken || 0) +
+                                Number(item.answeringTotalOutputToken || 0)
+                            ).toFixed(2)}
+                            </span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>271</span>
+                            <span>{item.reflectionModel}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>Mistral-Large-3</span>
+                            <span>
+                                {(
+                                Number(item.reflectionTotalInputToken || 0) +
+                                Number(item.answeringTotalInputToken || 0) +
+                                Number(item.answeringTotalOutputToken || 0) +
+                                Number(item.reflectionTotalOutputToken || 0) 
+                            ).toFixed(2)}
+                            </span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>1276</span>
-                        </td>
-                        <td className="px-10 py-4 text-white/90 text-center">
-                            <span>$00005</span>
+                            <span>
+                                ${(
+                                (Number(item.reflectionTotalInputToken || 0) / TOKENS_UNIT) * reflectionInput +
+                                (Number(item.answeringTotalInputToken || 0) / TOKENS_UNIT) * llmInputPrice +
+                                (Number(item.answeringTotalOutputToken || 0) / TOKENS_UNIT) * llmOutputPrice +
+                                (Number(item.reflectionTotalOutputToken || 0) / TOKENS_UNIT) * reflectionOutput
+                                ).toFixed(4)}
+                            </span>
                         </td>
                     </tr>
+                                ))
+                        ) : (
+                        <tr>
+                            <td colSpan={13} className="px-5 py-16 text-center align-middle">
+                                <p className="text-white/80 text-sm">No query logs yet.</p>
+                            </td>
+                        </tr>
+                        )}
                 </tbody>
             </table>
         </div>

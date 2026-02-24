@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import Toast from './Toast';
 import { v4 as uuidv4 } from 'uuid';
 import Markdown from 'react-markdown';
+import FAQ from "./FAQ"
 
 export default function Chatbot({externalOpen, externalMaximized, onOpenChange, onMaximizedChange, autoPrompt, autoPromptId, context, onClearContext}) {
   const { t } = useTranslation();
@@ -33,6 +34,13 @@ export default function Chatbot({externalOpen, externalMaximized, onOpenChange, 
   const recognitionRef = useRef(null);
   const lastAutoPromptIdRef = useRef(null);
   const inputRef = useRef(null);
+
+  const [showFAQ, setShowFAQ] = useState(true);
+
+
+const hasConversation = useMemo(() => {
+  return messages?.some((m) => m.sender === "user");
+}, [messages]);
 
 const contextText = useMemo(() => {
   if (!context) return "";
@@ -60,6 +68,21 @@ useEffect(() => {
     inputRef.current?.focus();
   }, 0);
 }, [autoPrompt, autoPromptId, externalOpen, isTyping]);
+
+useEffect(() => {
+  if (!isOpen) return;
+
+  // If user already chatted, never show FAQ again
+  if (hasConversation) {
+    setShowFAQ(false);
+    localStorage.setItem("npax-faq-hidden", "1");
+    return;
+  }
+
+  // Only show the first time opening (unless hidden already)
+  const faqHidden = localStorage.getItem("npax-faq-hidden") === "1";
+  setShowFAQ(!faqHidden);
+}, [isOpen, hasConversation]);
 
 
   useEffect(() => {
@@ -94,6 +117,8 @@ useEffect(() => {
   const ref = localStorage.getItem("npax-ref");
 
   if (!ref) {
+    localStorage.removeItem("npax-faq-hidden");
+
     const greeting = {
       id: 1,
       text: "Hello! I'm Paxie, your AI assistant. How can I help you today?",
@@ -109,8 +134,14 @@ useEffect(() => {
 
     setMessages(initial);
   } else {
-    setMessages(JSON.parse(ref));
+    const stored = JSON.parse(ref);
+    setMessages(stored);
+     const hasUser = stored?.some((m) => m.sender === "user");
+    if (!hasUser) {
+      localStorage.removeItem("npax-faq-hidden");
+    }
   }
+
 }, []);
 
 
@@ -197,6 +228,8 @@ useEffect(() => {
       return updated;
     });
 
+    setShowFAQ(false);
+    localStorage.setItem("npax-faq-hidden", "1");
     setInputMessage('');
     setAttachedFile(null);
     setIsTyping(true);
@@ -242,6 +275,9 @@ useEffect(() => {
         localStorage.setItem("npax-ref", JSON.stringify(updated));
         return updated;
       });
+
+      setShowFAQ(false);
+    localStorage.setItem("npax-faq-hidden", "1");
       
     } finally {
       setIsTyping(false); 
@@ -393,7 +429,7 @@ useEffect(() => {
               : 'bottom-24 right-8 ml-8 max-w-[380px] h-[450px] rounded-3xl'
           }`}
         >
-            <div className={`w-full  bg-white shadow-2xl flex flex-col overflow-hidden`}>
+            <div className={`w-full bg-white shadow-2xl flex flex-col overflow-hidden`}>
               {/* Chat Header */}
               <div className=" bg-gradient-to-r from-blue-400 to-blue-600 p-2 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -434,6 +470,8 @@ useEffect(() => {
               </div>
           </div>
 
+          
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 bg-gray-100">
             {messages.map((message) => (
@@ -461,6 +499,17 @@ useEffect(() => {
                   >
                     {String(message.text || "").trim()}
                   </Markdown>
+
+                  {showFAQ && (
+                <FAQ
+                  disabled={isTyping}
+                  onSelect={(question) => {
+                    handleSendMessage(question);
+                    setShowFAQ(false);
+                    localStorage.setItem("npax-faq-hidden", "1");
+                  }}
+                />
+              )}
 
                   {/* {message.text} */}
                   </div>
