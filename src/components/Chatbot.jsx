@@ -249,10 +249,10 @@ useEffect(() => {
         // console.log(userId)
         const query = finalQuery + " || Uploaded File: " + text;
         console.log(query, convoId)
-         res = await api.getAIResponse(query, convoId);
+         res = await api.getAIResponse(query, convoId, context);
       } else {
         console.log(inputMessage, convoId)
-        res = await api.getAIResponse(finalQuery, convoId);
+        res = await api.getAIResponse(finalQuery, convoId, context);
       }
       
       const botMessage = {
