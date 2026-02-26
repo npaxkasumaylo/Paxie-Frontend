@@ -22,7 +22,8 @@ export default function DocumentLogs({ networkError }) {
   // ✅ Fetch ALL pages once
    const getEmbeddingLogs = async () => {
     try {
-      const res = await api.getEmbeddingLogs(pageNumber, pageSize);
+      console.log(`Selected Tag: ${selectedTag}`);
+      const res = await api.getEmbeddingLogs(pageNumber, pageSize, selectedTag);
       const data = res?.data;
 
       if(Array.isArray(data)){
@@ -42,14 +43,14 @@ export default function DocumentLogs({ networkError }) {
     getDocumentTags();
   }, []);
 
-   useEffect(() => {
-    getEmbeddingLogs();
-  }, [pageNumber]);
-
   // ✅ reset to page 1 when filter changes
   useEffect(() => {
     setPageNumber(1);
   }, [selectedTag]);
+
+  useEffect(() => {
+    getEmbeddingLogs();
+  }, [pageNumber, selectedTag])
 
   // ✅ filter across ALL logs
   const filteredLogs = useMemo(() => {
