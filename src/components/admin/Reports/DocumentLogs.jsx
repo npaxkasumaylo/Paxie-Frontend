@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../api/api";
 
 export default function DocumentLogs({ networkError }) {
-  const [allLogs, setAllLogs] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 10;
 
@@ -20,37 +20,31 @@ export default function DocumentLogs({ networkError }) {
   };
 
   // ✅ Fetch ALL pages once
-  const getAllEmbeddingLogs = async () => {
+   const getEmbeddingLogs = async () => {
     try {
-      const collected = [];
-      let p = 1;
+      const res = await api.getEmbeddingLogs(pageNumber, pageSize);
+      const data = res?.data;
 
-      while (true) {
-        const res = await api.getEmbeddingLogs(p, pageSize);
-        const data = res?.data;
-
-        const items = Array.isArray(data) ? data : (data?.items || data?.data || []);
-        if (!Array.isArray(items) || items.length === 0) break;
-
-        collected.push(...items);
-
-        // stop if last page
-        if (items.length < pageSize) break;
-
-        p += 1;
+      if(Array.isArray(data)){
+        setLogs(data);
+        return
       }
 
-      setAllLogs(collected);
+      const items = data?.items || data?.data || [];
+      setLogs(Array.isArray(items) ? items : []);
     } catch (e) {
       console.error(e);
-      setAllLogs([]);
+      setLogs([]);
     }
   };
 
   useEffect(() => {
     getDocumentTags();
-    getAllEmbeddingLogs();
   }, []);
+
+   useEffect(() => {
+    getEmbeddingLogs();
+  }, [pageNumber]);
 
   // ✅ reset to page 1 when filter changes
   useEffect(() => {
@@ -59,22 +53,16 @@ export default function DocumentLogs({ networkError }) {
 
   // ✅ filter across ALL logs
   const filteredLogs = useMemo(() => {
-    return (Array.isArray(allLogs) ? allLogs : []).filter((item) => {
+    return (Array.isArray(logs) ? logs : []).filter((item) => {
       if (!selectedTag) return true;
       return String(item.productName || "") === String(selectedTag);
     });
-  }, [allLogs, selectedTag]);
+  }, [logs, selectedTag]);
 
-  // ✅ local pagination now works correctly
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(filteredLogs.length / pageSize));
-  }, [filteredLogs.length]);
+  const pagedLogs = filteredLogs;
 
-  const pagedLogs = useMemo(() => {
-    const safePage = Math.min(Math.max(1, pageNumber), totalPages);
-    const start = (safePage - 1) * pageSize;
-    return filteredLogs.slice(start, start + pageSize);
-  }, [filteredLogs, pageNumber, totalPages]);
+  const hasNextPage = logs.length === pageSize;
+
 
   const totals = useMemo(() => {
     return filteredLogs.reduce(
@@ -91,7 +79,7 @@ export default function DocumentLogs({ networkError }) {
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10  bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
       <table className="w-full min-w-[720px] table-auto border-collapse">
-        <thead className="bg-[#132a4a] border-b border-blue-400/10">
+        <thead className="bg-[#27304d] border-b border-blue-400/10">
           <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
             <th>Timestamp</th>
             <th>Document Name</th>
@@ -117,10 +105,10 @@ export default function DocumentLogs({ networkError }) {
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-blue-400/5 bg-[#0e2545]">
+        <tbody className="divide-y divide-blue-400/5 bg-[#27304d]">
           {pagedLogs.length > 0 ? (
             pagedLogs.map((item) => (
-              <tr key={item.id}  className="border-b border-blue-400/5 hover:bg-[#17365f]/70 transition-colors duration-200">
+              <tr key={item.id}  className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
                 <td className="px-5 py-4 text-white/90 max-w-[140px]">
                   <span className="truncate block">{item.timeStamp}</span>
                 </td>
@@ -161,7 +149,7 @@ export default function DocumentLogs({ networkError }) {
         </tbody>
 
         {filteredLogs.length > 0 && (
-          <tfoot className="bg-[#132a4a] border-t border-blue-400/10">
+          <tfoot className="bg-[#27304d] border-t border-blue-400/10">
             <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-lg [&>th]:font-semibold [&>th]:text-white/90">
               <th className="px-5 py-4 text-white">Total</th>
               <th className="px-5 py-4 text-white">-</th>
@@ -176,7 +164,7 @@ export default function DocumentLogs({ networkError }) {
         )}
       </table>
 
-      <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+      <div className="flex items-center bg-[#27304d] justify-between px-5 py-4 border-t border-white/10">
         <button
           className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
           disabled={pageNumber <= 1}
@@ -186,13 +174,13 @@ export default function DocumentLogs({ networkError }) {
         </button>
 
         <p className="text-sm text-white/70">
-          Page {pageNumber} of {totalPages}
+          Page {pageNumber}
         </p>
 
         <button
           className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
-          disabled={pageNumber >= totalPages}
-          onClick={() => setPageNumber((p) => Math.min(totalPages, p + 1))}
+          disabled={!hasNextPage}
+          onClick={() => setPageNumber((p) => p + 1)}
         >
           Next
         </button>

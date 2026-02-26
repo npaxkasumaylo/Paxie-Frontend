@@ -129,7 +129,7 @@ export default function QueryLogs({ networkError }) {
     <>
      <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10 bg-[#0b1f3a]  backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
         <table className="w-full min-w-[720px] table-auto border-collapse">
-          <thead className="bg-[#132a4a] border-b border-blue-400/10">
+          <thead className="bg-[#27304d] border-b border-blue-400/10">
             <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
               <th>Timestamp</th>
               <th>User Query</th>
@@ -180,10 +180,10 @@ export default function QueryLogs({ networkError }) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-blue-400/5 bg-[#0e2545]">
+          <tbody className="divide-y divide-blue-400/5 bg-[#27304d]">
             {pagedLogs && pagedLogs.length > 0 ? (
               pagedLogs.map((item) => (
-                <tr key={item.id} className="border-b border-blue-400/5 hover:bg-[#17365f]/70 transition-colors duration-200">
+                <tr key={item.id} className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
                   <td className="px-5 py-4 text-white/90 max-w-[100px]">
                     <span className="truncate block">{item.timeStamp}</span>
                   </td>
@@ -239,7 +239,7 @@ export default function QueryLogs({ networkError }) {
           </tbody>
         
         {filteredLogs.length > 0 && (
-          <tfoot className="bg-[#132a4a] border-t border-blue-400/10">
+          <tfoot className="bg-[#27304d] border-t border-blue-400/10">
             <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-lg [&>th]:font-semibold [&>th]:text-white/90">
               <th className="px-5 py-4 text-white">Total</th>
               <th className="px-5 py-4 text-white">-</th>
@@ -259,7 +259,7 @@ export default function QueryLogs({ networkError }) {
         )}
         </table>
 
-        <div className="flex items-center justify-between px-5 py-4 border-t border-white/10">
+        <div className="flex items-center bg-[#27304d] justify-between px-5 py-4 border-t border-white/10">
           <button
             className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
             disabled={pageNumber <= 1}

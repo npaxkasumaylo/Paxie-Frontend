@@ -51,6 +51,7 @@ export const api = {
   //AI Provider
   getAllProviders: () => Api.get("/Provider"),
   getProviderById: (id) => Api.get(`/Provider/${id}`),
+ getProviderModels: (providerName) => Api.get("/Provider/ProviderModels", {params: { Provider: providerName },}),
 
 
 

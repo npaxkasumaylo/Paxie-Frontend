@@ -90,7 +90,7 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 						<button 
 							type="submit" 
 							disabled={adding}
-							className={`w-full ${adding ? 'bg-white/20 text-gray-500' : 'bg-white hover:bg-white/25 hover:text-white text-[#183398]'}  text-md font-bold py-1.5 rounded-full transition`}
+							className={`w-full ${adding ? 'bg-white/20 text-gray-500' : 'bg-white hover:bg-white/25 hover:text-white text-[#00092d]'}  text-md font-bold py-1.5 rounded-full transition`}
             >
 				{adding && <LoaderCircle className="h-5 w-5 animate-spin" />}
             	{adding ? "SAVING..."  : "SAVE"}

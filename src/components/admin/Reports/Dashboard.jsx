@@ -170,16 +170,16 @@ const totalTokenUsage = useMemo(() => {
 const latestFiveQueries = useMemo(() => {
   return [...queryLogs]
     .sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp))
-    .slice(0, 5);
+    .slice(0, 10);
 }, [queryLogs]);
 
    return(
     <>  
-        <div className="w-full rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        <div className="w-full rounded-2xl p-6 ">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Card 1 */}
-                <div className="bg-[#11284a] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#17365f] transition-all duration-300 
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Ingestion Cost
@@ -190,8 +190,8 @@ const latestFiveQueries = useMemo(() => {
                 </div>
 
                 {/* Card 2 */}
-                <div className="bg-[#11284a] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#17365f] transition-all duration-300 
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Running Cost
@@ -202,8 +202,8 @@ const latestFiveQueries = useMemo(() => {
                 </div>
 
                 {/* Card 3 */}
-                <div className="bg-[#11284a] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#17365f] transition-all duration-300 
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Avg. Running Cost
@@ -214,8 +214,8 @@ const latestFiveQueries = useMemo(() => {
                 </div>
 
                 {/* Card 4 */}
-                <div className="bg-[#11284a] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#17365f] transition-all duration-300 
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Token Usage
@@ -233,7 +233,7 @@ const latestFiveQueries = useMemo(() => {
 
         <div className='text-3xl font-bold text-white'>Graphs</div>
             
-        <div className="w-full rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        <div className="w-full rounded-2xl p-6 ">
             <div className="flex flex-col md:flex-row gap-4 p-4">
                  <BarChart
                 xAxis={[
@@ -296,13 +296,11 @@ const latestFiveQueries = useMemo(() => {
         </div>
 
         
-        <hr className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
-
+        <hr className="border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
         <h1  className='text-3xl font-bold text-white'>Running Cost: per user query (live feed)</h1>
-            
-        <div className="w-full overflow-x-auto rounded-2xl bg-[#0b1f3a] border border-blue-400/10 p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-            <table className="w-full min-w-[720px] table-auto border-collapse">
-                <thead className="bg-[#132a4a] border-b border-blue-400/10">
+        <div className="w-full overflow-x-auto rounded-2xl overflow-hidden bg-[#27304d] ">
+            <table className="w-full min-w-[720px] table-auto ">
+                <thead className="bg-[#27304d] border-b  border-blue-400/10">
                     <tr className="[&>th]:px-10 [&>th]:py-4 [&>th]:text-center [&>th]:text-xl [&>th]:font-semibold [&>th]:text-white/90">
                         <th>Timestamp</th>
                         <th>User Query</th>
@@ -313,10 +311,10 @@ const latestFiveQueries = useMemo(() => {
                     </tr>
                 </thead>
 
-                <tbody className="divide-y divide-blue-400/5 bg-[#0e2545]">
+                <tbody className="divide-y divide-blue-400/5 bg-[#27304d] ">
                 {queryLogs && queryLogs.length > 0 ? (
-                latestFiveQueries.slice(0,5).map((item) => (
-                    <tr className="border-b border-blue-400/5 hover:bg-[#17365f]/70 transition-colors duration-200">
+                latestFiveQueries.slice(0,10).map((item) => (
+                    <tr className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>{new Date(item.timeStamp).toLocaleString()}</span>
                         </td>
