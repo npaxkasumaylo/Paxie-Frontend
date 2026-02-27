@@ -1,6 +1,6 @@
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../../api/api";
 
 const data = [
@@ -17,167 +17,70 @@ const settings = {
 
 
 export default function Dashboard (){
-    const [allLogs, setAllLogs] = useState([]);
-    const pageSize = 10;
-
-    //text-embedding-ada pricing
-    const embeddingPrice = 0.10;
-
-    //gpt-mini-5 pricing
-    const llmInputPrice = 0.25;
-    const llmOutputPrice = 2;
-
-    //ministral-large-3
-    const reflectionInput =0.50
-    const reflectionOutput =1.50
-
-
-    const TOKENS_UNIT = 1_000_000;
-
     const [queryLogs, setQueryLogs] = useState([]);
+    const [cardData, setCardData] = useState(null);
+    const [loadingCard, setLoadingCard] = useState(false);
+    const [loadingLogs, setLoadingLogs] = useState(false);
 
-    const queryPageSize = 5; // or 100, depends on your API limits
 
 
-    const getAllEmbeddingLogs = async () => {
-  try {
-    const collected = [];
-    let p = 1;
-
-    while (true) {
-      const res = await api.getEmbeddingLogs(p, pageSize);
-      const data = res?.data;
-
-      const items = Array.isArray(data)
-        ? data
-        : (data?.items || data?.data || []);
-
-      if (!Array.isArray(items) || items.length === 0) break;
-
-      collected.push(...items);
-
-      if (items.length < pageSize) break;
-
-      p += 1;
+ useEffect(() => {
+  const loadDashboard = async () => {
+    setLoadingCard(true);
+    try {
+      const res = await api.getDashboardData();
+      setCardData(res?.data ?? null);
+    } catch (e) {
+      console.error(e);
+      setCardData(null);
+    } finally {
+      setLoadingCard(false);
     }
+  };
 
-    setAllLogs(collected);
-  } catch (e) {
-    console.error(e);
-    setAllLogs([]);
-  }
-};
+  loadDashboard();
+}, []);
+
+
+
+  const totalIngestionCost  = Number(cardData?.totalIngestionCost ?? 0);
+  const totalQueryCost = Number(cardData?.totalQueryCost ?? 0);
+  const averageQueryCost = Number(cardData?. averageQueryCost);
+  const averageIngestionCost = Number (cardData?. averageIngestionCost ?? 0);
+  const grandTotalCost = Number (cardData?. grandTotalCost ?? 0);
+  const totalTokenUsage = Number(cardData?.totalTokenUsage ?? 0);
+  const totalQueryCount = Number(cardData?.totalQueryCount ?? 0);
+  const totalEmbeddingCount = Number(cardData?.totalEmbeddingCount ?? 0);
 
 const getAllQueryLogs = async () => {
+  setLoadingLogs(true);
   try {
-    const collected = [];
-    let p = 1;
+    const res = await api.getDashboardQueryData(); // ✅ /Costing/query
+    const data = res?.data;
 
-    while (true) {
-      const res = await api.getQueryLogs(p, queryPageSize);
-      const data = res?.data;
-
-      const items = Array.isArray(data)
-        ? data
-        : (data?.items || data?.data || []);
-
-      if (!Array.isArray(items) || items.length === 0) break;
-
-      collected.push(...items);
-
-      if (items.length < queryPageSize) break;
-
-      p += 1;
-    }
-
-    setQueryLogs(collected);
+    const items = Array.isArray(data) ? data : (data?.items || data?.data || []);
+    setQueryLogs(Array.isArray(items) ? items : []);
   } catch (e) {
     console.error(e);
     setQueryLogs([]);
+  } finally {
+    setLoadingLogs(false);
   }
 };
 
 useEffect(() => {
-  getAllEmbeddingLogs();
   getAllQueryLogs();
+ const t = setInterval(getAllQueryLogs, 5000);
+  return () => clearInterval(t);
 }, []);
 
-//Total Ingestion cost calcualtion
-const totalIngestionCost = useMemo(() => {
 
-  return allLogs.reduce((acc, item) => {
-    const embedding =
-      (Number(item.textTokenCount || 0) / TOKENS_UNIT) * embeddingPrice;
-
-    const input =
-      (Number(item.imageTextTokenInput || 0) / TOKENS_UNIT) * llmInputPrice;
-
-    const output =
-      (Number(item.imageTextTokenOutput || 0) / TOKENS_UNIT) * llmOutputPrice;
-
-    return acc + embedding + input + output;
-  }, 0);
-}, [allLogs, embeddingPrice, llmInputPrice, llmOutputPrice]);
-
-//Total running cost calculation
-const totalRunningTokensInput = useMemo(() => {
-  return allLogs.reduce((acc, item) => {
-    return acc + Number(item.imageTextTokenInput || 0);
-  }, 0);
-}, [allLogs]);
-
-const totalRunningTokensOutput = useMemo(() => {
-  return allLogs.reduce((acc, item) => {
-    return acc + Number(item.imageTextTokenOutput || 0);
-  }, 0);
-}, [allLogs]);
-
-const totalRunningCost = useMemo(() => {
-  const inputCost =
-    (totalRunningTokensInput / TOKENS_UNIT) * llmInputPrice;
-
-  const outputCost =
-    (totalRunningTokensOutput / TOKENS_UNIT) * llmOutputPrice;
-
-  return inputCost + outputCost;
-}, [
-  totalRunningTokensInput,
-  totalRunningTokensOutput,
-  llmInputPrice,
-  llmOutputPrice,
-]);
-
-//Average running cost
-const avgRunningCost = useMemo(() => {
-  if (!allLogs.length) return 0;
-  return totalRunningCost / allLogs.length;
-}, [totalRunningCost, allLogs.length]);
-
-
-//Total token usage calculation
-const totalTokenUsage = useMemo(() => {
-  return allLogs.reduce((acc, item) => {
-    return (
-      acc +
-      Number(item.textTokenCount || 0) +
-      Number(item.imageTextTokenInput || 0) +
-      Number(item.imageTextTokenOutput || 0)
-    );
-  }, 0);
-}, [allLogs]);
-
-
-const latestFiveQueries = useMemo(() => {
-  return [...queryLogs]
-    .sort((a, b) => new Date(b.timeStamp) - new Date(a.timeStamp))
-    .slice(0, 10);
-}, [queryLogs]);
 
    return(
     <>  
         <div className="w-full rounded-2xl p-6 ">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Card 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
+                {/* Card 1 Check*/ }
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
                                 hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
@@ -185,31 +88,31 @@ const latestFiveQueries = useMemo(() => {
                     Total Ingestion Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    ${totalIngestionCost.toFixed(4)}
+                    {loadingCard ? "Loading..." : `$${totalIngestionCost.toFixed(4)}`}
                 </p>
                 </div>
 
-                {/* Card 2 */}
+                {/* Card 2 check*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
                                 hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
-                    Total Running Cost
+                    Total Query Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    ${totalRunningCost.toFixed(4)}
+                    {loadingCard ? "Loading..." : `$${totalQueryCost.toFixed(4)}`}
                 </p>
                 </div>
 
-                {/* Card 3 */}
+                {/* Card 3 to change*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
                                 hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
-                    Avg. Running Cost
+                    Total Overall Cost 
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    ${avgRunningCost.toFixed(4)}
+                    {loadingCard ? "Loading..." : `$${grandTotalCost.toFixed(4)}`}
                 </p>
                 </div>
 
@@ -218,10 +121,61 @@ const latestFiveQueries = useMemo(() => {
                                 hover:bg-[#0056e5] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
-                    Total Token Usage
+                    Average Ingestion Cost
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    {totalTokenUsage.toLocaleString()}
+                    {loadingCard ? "Loading..." : `$${averageIngestionCost.toFixed(4)}`}
+                </p>
+                </div>
+
+                {/* Card 5 */}
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
+                                shadow-md hover:shadow-lg">
+                <p className="text-sm text-blue-200/70 font-medium">
+                    Average Query Cost
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-white">
+                    {loadingCard ? "Loading..." : `$${averageQueryCost.toFixed(4)}`}
+                </p>
+                </div>
+
+                {/* Card 6 check*/}
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
+                                shadow-md hover:shadow-lg">
+                <p className="text-sm text-blue-200/70 font-medium">
+                    Overall Token Usage
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-white">
+                    {loadingCard ? "Loading..." : `${totalTokenUsage.toFixed()}`}
+                </p>
+                </div>
+
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Card 5 */}
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
+                                shadow-md hover:shadow-lg">
+                <p className="text-sm text-blue-200/70 font-medium">
+                    Total Query
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-white">
+                    {loadingCard ? "Loading..." : `${totalQueryCount.toFixed()}`}
+                </p>
+                </div>
+
+                {/* Card 6 check*/}
+                <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
+                                hover:bg-[#0056e5] transition-all duration-300 
+                                shadow-md hover:shadow-lg">
+                <p className="text-sm text-blue-200/70 font-medium">
+                    Total Document Embeddings
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-white">
+                    {loadingCard ? "Loading..." : `${totalEmbeddingCount.toFixed()}`}
                 </p>
                 </div>
 
@@ -313,8 +267,10 @@ const latestFiveQueries = useMemo(() => {
 
                 <tbody className="divide-y divide-blue-400/5 bg-[#27304d] ">
                 {queryLogs && queryLogs.length > 0 ? (
-                latestFiveQueries.slice(0,10).map((item) => (
-                    <tr className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
+                queryLogs.map((item) => (
+                    <tr 
+                     key={item.queryLogId ?? item.timeStamp}
+                    className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>{new Date(item.timeStamp).toLocaleString()}</span>
                         </td>
@@ -322,34 +278,21 @@ const latestFiveQueries = useMemo(() => {
                             <span className="block truncate">{item.userQuery}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>
-                            {(
-                                Number(item.answeringTotalInputToken || 0) +
-                                Number(item.answeringTotalOutputToken || 0)
-                            ).toFixed(2)}
-                            </span>
-                        </td>
-                        <td className="px-10 py-4 text-white/90 text-center">
                             <span>{item.reflectionModel}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>
-                                {(
-                                Number(item.reflectionTotalInputToken || 0) +
-                                Number(item.answeringTotalInputToken || 0) +
-                                Number(item.answeringTotalOutputToken || 0) +
-                                Number(item.reflectionTotalOutputToken || 0) 
-                            ).toFixed(2)}
+                            {Number(item.answeringModelTotalTokens ?? 0).toLocaleString()}
                             </span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>
-                                ${(
-                                (Number(item.reflectionTotalInputToken || 0) / TOKENS_UNIT) * reflectionInput +
-                                (Number(item.answeringTotalInputToken || 0) / TOKENS_UNIT) * llmInputPrice +
-                                (Number(item.answeringTotalOutputToken || 0) / TOKENS_UNIT) * llmOutputPrice +
-                                (Number(item.reflectionTotalOutputToken || 0) / TOKENS_UNIT) * reflectionOutput
-                                ).toFixed(4)}
+                              {Number(item.totalTokensUsed ?? 0).toLocaleString()}
+                            </span>
+                        </td>
+                        <td className="px-10 py-4 text-white/90 text-center">
+                            <span>
+                            ${Number(item.totalQueryCost ?? 0).toFixed(6)}
                             </span>
                         </td>
                     </tr>
@@ -357,7 +300,9 @@ const latestFiveQueries = useMemo(() => {
                         ) : (
                         <tr>
                             <td colSpan={13} className="px-5 py-16 text-center align-middle">
-                                <p className="text-white/80 text-sm">No query logs yet.</p>
+                                <p className="text-white/80 text-sm">
+                                {loadingLogs ? "Loading query logs..." : "No query logs yet."}
+                                </p>
                             </td>
                         </tr>
                         )}

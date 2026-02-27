@@ -47,6 +47,8 @@ export default function Home() {
 
 	const [reportMode, setReportMode] = useState("dashboard");
 
+	const [refreshKey, setRefreshKey] = useState(0);
+
 
 	//loading initial data
     useEffect(() => {
@@ -61,23 +63,23 @@ export default function Home() {
 	}
 	}, [mode]);
 
-		const initializeData = async () => {
-			await getAllDocuments(false, "General");
-			await getAllJobs();
-			await getDetails();
-			await getDocumentTags();
-			setLoading(false);
-		};
+const initializeData = async () => {
+	await getAllDocuments(false, "General");
+	await getAllJobs();
+	await getDetails();
+	await getDocumentTags();
+	setLoading(false);
+};
 
-		const notify = (msg, status) => {
-			if (status === "success") {
-				toast.success(msg);
-			} else if (status === "error") {
-				toast.error(msg);
-			} else if (status === "warning") {
-				toast.info(msg);
-			}
-		};
+const notify = (msg, status) => {
+	if (status === "success") {
+		toast.success(msg);
+	} else if (status === "error") {
+		toast.error(msg);
+	} else if (status === "warning") {
+		toast.info(msg);
+	}
+};
 
 	// get all documents
 const getAllDocuments = async (
@@ -130,128 +132,126 @@ useEffect(() => {
 }, [pageNumber, pageSize, mode]);
     
 
-	const validateFileSize = (data, maxMB) => {
-		const maxSize = maxMB * 1024 * 1024; 
-		return data.size <= maxSize;
-	};
+const validateFileSize = (data, maxMB) => {
+	const maxSize = maxMB * 1024 * 1024; 
+	return data.size <= maxSize;
+};
 
-	const handleUpload = async () => {
-			if (!file) {
-				notify("Please select a file to upload.", "warning");
-				return;
-			}
-
-			if (!docInfo) {
-				notify("Please select a document type.", "warning");
-				return;
-			}
-
-			if(!validateFileSize(file, 10)) {
-				notify("File must be less than 10MB", "error");
-				return;
-			};
-
-			let docType;
-
-			if (file.type === "application/pdf") {
-				docType = 0; // PDF
-			} else {
-				notify("Unsupported File Type", "error");
-				return;
-			}
-
-				const { base64String } = await convertFileToBytes(file);
-				
-			
-			// Check uniqueness of documents
-			if (generalDocuments 
-					&& generalDocuments.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
-					|| generalDocuments.some(d => d.data === base64String)) {
-				notify("A document with this filename or content already exists.", "error");
-				return;
-			}
-
-			setUploading(true);
-			setError("");
-
-			try {
-				const document = {
-					FileName: file.name,
-					DocumentType: docType,
-					productName:"General",
-					documentTagsId: Number(docInfo),
-					Data: base64String,
-					Uploaded: new Date().toISOString(),
-					DocumentInformation: docInfo
-				};
-
-				const res = await api.addDocument(document);
-				await api.addAIDocument(res.data.id);
-
-				setUploading(false);
-				setFile(null);
-				setDocInfo("");
-				notify("Successfully uploaded file!", "success")
-				getAllDocuments();
-
-			} catch (e) {
-				console.error("Error uploading document:", e);
-				notify("Upload Failed. Try again later.", "error");
-				setUploading(false);
-			}
-	};
-
-	const handleDelete = (documentId) => async () => {
-		setCurrentId(documentId);
-		setDeleting(true);
-		if (!window.confirm("Are you sure you want to delete this document?")) {
-			setDeleting(false);
+const handleUpload = async () => {
+		if (!file) {
+			notify("Please select a file to upload.", "warning");
 			return;
 		}
 
-		try {
-			
-			await api.deleteAIDocument(documentId);
-			await api.deleteDocument(documentId);
-			console.log("Document deleted successfully!");
-			notify("Document deleted successfully!", "success")
-			setDeleting(false);
-			setCurrentId(null);
-			getAllDocuments();
-			getAllProductDocuments();
-		} catch (e) {
-			console.error("Error deleting document:", e);
-			setDeleting(false);
-			notify("Failed to delete document.", "error");
+		if (!docInfo) {
+			notify("Please select a document type.", "warning");
+			return;
 		}
-	};
 
-	const handleDownload = (document) => {
-		try {
-			downloadFileFromBase64(document.data, document.fileName);
-		} catch (e) {
-			console.error("Error downloading document:", e);
-			notify("Failed to download document.", "error");
+		if(!validateFileSize(file, 10)) {
+			notify("File must be less than 10MB", "error");
+			return;
+		};
+
+		let docType;
+
+		if (file.type === "application/pdf") {
+			docType = 0; // PDF
+		} else {
+			notify("Unsupported File Type", "error");
+			return;
 		}
-	};		
-	
-	const getAllJobs = async () => {
+
+			const { base64String } = await convertFileToBytes(file);
+			
+		
+		// Check uniqueness of documents
+		if (generalDocuments 
+				&& generalDocuments.some(d => d.fileName && d.fileName.toLowerCase() === file.name.toLowerCase())
+				|| generalDocuments.some(d => d.data === base64String)) {
+			notify("A document with this filename or content already exists.", "error");
+			return;
+		}
+
+		setUploading(true);
+		setError("");
+
 		try {
-			const res = await api.getJobs();
-			setJobs(res.data);
-		} catch(e){
-			if(e.status == 401) { navigate("/admin/login");}
-			setNetworkError("Something went wrong. Try again later.");
-		}		
+			const document = {
+				FileName: file.name,
+				DocumentType: docType,
+				productName:"General",
+				documentTagsId: Number(docInfo),
+				Data: base64String,
+				Uploaded: new Date().toISOString(),
+				DocumentInformation: docInfo
+			};
+
+			const res = await api.addDocument(document);
+			await api.addAIDocument(res.data.id);
+
+			setUploading(false);
+			setFile(null);
+			setDocInfo("");
+			notify("Successfully uploaded file!", "success")
+			getAllDocuments();
+
+		} catch (e) {
+			console.error("Error uploading document:", e);
+			notify("Upload Failed. Try again later.", "error");
+			setUploading(false);
+		}
+};
+
+const handleDelete = (documentId) => async () => {
+	setCurrentId(documentId);
+	setDeleting(true);
+	if (!window.confirm("Are you sure you want to delete this document?")) {
+		setDeleting(false);
+		return;
 	}
 
-	const formatDate = (dateString) => {
+	try {
+		
+		await api.deleteAIDocument(documentId);
+		await api.deleteDocument(documentId);
+		console.log("Document deleted successfully!");
+		notify("Document deleted successfully!", "success")
+		setDeleting(false);
+		setCurrentId(null);
+		getAllDocuments();
+		getAllProductDocuments();
+	} catch (e) {
+		console.error("Error deleting document:", e);
+		setDeleting(false);
+		notify("Failed to delete document.", "error");
+	}
+};
+
+const handleDownload = (document) => {
+	try {
+		downloadFileFromBase64(document.data, document.fileName);
+	} catch (e) {
+		console.error("Error downloading document:", e);
+		notify("Failed to download document.", "error");
+	}
+};		
+
+const getAllJobs = async () => {
+	try {
+		const res = await api.getJobs();
+		setJobs(res.data);
+	} catch(e){
+		if(e.status == 401) { navigate("/admin/login");}
+		setNetworkError("Something went wrong. Try again later.");
+	}		
+}
+
+const formatDate = (dateString) => {
   const date = new Date(dateString);
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return date.toLocaleDateString('en-US', options);
 } 
-
-
 
 //editAIModel, handleUseModel, deleteModel, details
 //gets model credentials
@@ -314,6 +314,9 @@ const handleUseModel = async (row) => {
 };
 
 const onEditModel= (row) => setEditingRow(row);
+
+const onEditModelCost= (row) => setEditingRow(row);
+
 
 //document tags
 const getDocumentTags = async () => {
@@ -477,7 +480,7 @@ const SidePanel = () => {
 		}
 
 		if (mode === "costing") {
-			return<CostingList/>
+			return<CostingList notify={notify} refreshKey={refreshKey} editModelCost={onEditModelCost}/>
 		}
 
 
@@ -592,7 +595,7 @@ const SidePanel = () => {
 						)}
 
 						{mode === 'costing' && (
-							<ModelCosting/>
+						<ModelCosting notify={notify} onSaved={() => setRefreshKey((prev) => prev + 1)} editingRow={editingRow} />
 						)}
 
 						{mode === "producstandservices" && (
