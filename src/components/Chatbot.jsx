@@ -201,10 +201,8 @@ useEffect(() => {
   //chatbot message
   const handleSendMessage = async (forcedText) => {
     const messageToSend = (typeof forcedText === "string" ? forcedText : inputMessage);
-
-     const finalQuery = contextText
-    ? `${messageToSend}\n\n${contextText}`
-    : messageToSend;
+    console.log(`Current Chatbot Context: ${context}`);
+    const finalQuery =  messageToSend;
 
     if (!finalQuery.trim() && !attachedFile) return;
 
