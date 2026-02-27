@@ -51,7 +51,7 @@ export const api = {
   //AI Provider
   getAllProviders: () => Api.get("/Provider"),
   getProviderById: (id) => Api.get(`/Provider/${id}`),
- getProviderModels: (providerName) => Api.get("/Provider/ProviderModels", {params: { Provider: providerName },}),
+  getProviderModels: (providerName) => Api.get("/Provider/ProviderModels", {params: { Provider: providerName },}),
 
 
 
@@ -81,7 +81,18 @@ export const api = {
   getQueryLogs: (pageNumber, pageSize) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
   getEmbeddingLogs: (pageNumber, pageSize) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize}}),
 
+  //costing
+  addModelCost: (modelcost) => Api.post("/PricingMaster", modelcost),
+  getPricingMaster: () => Api.get("/PricingMaster"),
+  editModelCost: (payload) => Api.put("/PricingMaster",payload),
+  getModelCostId: (id) => Api.get(`/PricingMaster/${id}`),
+  softDeleteModelCostId: (id) => Api.put("/PricingMaster/SoftDelete",id),
 
+  //dashboard data
+  getDashboardData:() => Api.get("/Costing/Dashboard"),
+  
+  //dashboard query data
+  getDashboardQueryData:() => Api.get("/Costing/query")
 
 };
 
