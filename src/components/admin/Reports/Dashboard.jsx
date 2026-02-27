@@ -258,8 +258,8 @@ useEffect(() => {
                     <tr className="[&>th]:px-10 [&>th]:py-4 [&>th]:text-center [&>th]:text-xl [&>th]:font-semibold [&>th]:text-white/90">
                         <th>Timestamp</th>
                         <th>User Query</th>
-                        <th>Answering Model Token</th>
                         <th>Reflection Model</th>
+                        <th>Answering Model Token</th>
                         <th>Total Token</th>
                         <th>Query Cost</th>
                     </tr>
