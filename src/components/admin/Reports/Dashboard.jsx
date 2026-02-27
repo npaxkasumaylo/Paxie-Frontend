@@ -184,71 +184,21 @@ useEffect(() => {
         </div>
 
         <hr className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
+        <h1  className='text-3xl font-bold text-white'>Graphs</h1>
+        <div className="w-full flex gap-6 p-6">
+        <iframe
+            className="rounded-2xl w-1/2"
+            src="https://snapshots.raintank.io/dashboard/snapshot/ufSh3WAM8yejCAQzqmSuK1lhe80a1AAt"
+            height="950"
+        />
 
-        <div className='text-3xl font-bold text-white'>Graphs</div>
-            
-        <div className="w-full rounded-2xl p-6 ">
-            <div className="flex flex-col md:flex-row gap-4 p-4">
-                 <BarChart
-                xAxis={[
-                    {
-                    stroke: 'rgba(255,255,255,0.6)',
-                    id: 'barCategories',
-                    data: ['McFrame GA', 'McFrame 7', 'MotionBoard'],
-                    height: 28,
-                    colors: ['#3b82f6', '#6366f1', '#8b5cf6']
-                    },
-                ]}
-                series={[
-                    {
-                    data: [2, 5, 3],
-                    },
-                ]}
-                height={300}
-                sx={{
-                    // Bottom & left axis lines
-                    '& .MuiChartsAxis-line': {
-                        stroke: '#ffffff',
-                    },
+        <iframe
+            className="rounded-2xl w-1/2"
+            src="https://snapshots.raintank.io/dashboard/snapshot/PCgC5rcZwmboMHOhFUUsv8i5RuKsp6JL"
+            height="950"
+        />
 
-                    // Tick lines
-                    '& .MuiChartsAxis-tick': {
-                        stroke: '#ffffff',
-                    },
-
-                    // Axis labels
-                    '& .MuiChartsAxis-tickLabel': {
-                        fill: '#ffffff',
-                    },
-
-                    // Horizontal & vertical grid lines
-                    '& .MuiChartsGrid-line': {
-                        stroke: 'rgba(255,255,255,0.3)',
-                    },
-
-                    // Some versions use this instead
-                    '& .MuiChartsGrid-root line': {
-                        stroke: 'rgba(255,255,255,0.3)',
-                    },
-                    }}
-                />
-
-                <PieChart
-                series={[{ innerRadius: 50, outerRadius: 100, data, arcLabel: 'value' }]}
-                {...settings}
-                />
-            </div>
-
-
-            <iframe
-                className='rounded-2xl'
-                src="http://172.179.236.27:3000/public-dashboards/034fd1c78d744a139cc5b24df4391c8d"
-                width="100%" height="400" frameBorder="0"
-            >
-
-            </iframe>
         </div>
-
         
         <hr className="border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
         <h1  className='text-3xl font-bold text-white'>Running Cost: per user query (live feed)</h1>
