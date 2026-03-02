@@ -9,6 +9,22 @@ export default function DocumentLogs({ networkError }) {
   const [documentTags, setDocumentTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState("");
 
+  const [totalPages, setTotalPages] = useState("");
+
+  const loadTotalEmbeddingPages = async () => {
+  try {
+    const res = await api.getTotalEmbeddingPages(pageSize);
+    setTotalPages(Number(res?.data ?? 0));
+  } catch (e) {
+    console.error(e);
+    setTotalPages(0);
+  }
+};
+
+useEffect(() => {
+  loadTotalEmbeddingPages(); // once on mount
+}, []);
+
   const getDocumentTags = async () => {
     try {
       const res = await api.getDocumentTags(true);
@@ -76,6 +92,26 @@ export default function DocumentLogs({ networkError }) {
     );
   }, [filteredLogs]);
 
+  function HoverCell({ children }) {
+  return (
+    <div className="relative group ">
+      <div className="truncate cursor-pointer">{children}</div>
+
+      <div className="
+        absolute z-[9999] hidden group-hover:block
+          bottom-full mb-2 left-0
+          bg-[#0b1f3a] border border-white/20
+          text-white text-xs
+          p-3 rounded-xl shadow-xl
+          min-w-[250px] max-w-[500px]
+          whitespace-pre-wrap break-words
+      ">
+        {children}
+      </div>
+    </div>
+  );
+}
+
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10  bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
       <table className="w-full min-w-[720px] table-auto border-collapse">
@@ -102,6 +138,7 @@ export default function DocumentLogs({ networkError }) {
             <th>Text Token Count</th>
             <th>Image Text Token Input</th>
             <th>Image Text Token Output</th>
+            <th>Total Image Text Token</th>
           </tr>
         </thead>
 
@@ -110,16 +147,16 @@ export default function DocumentLogs({ networkError }) {
             pagedLogs.map((item) => (
               <tr key={item.id}  className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
                 <td className="px-5 py-4 text-white/90 max-w-[140px]">
-                  <span className="truncate block">{item.timeStamp}</span>
+                  <HoverCell>{item.timeStamp}</HoverCell>
                 </td>
                 <td className="px-5 py-4 text-white/90 max-w-[220px]">
-                  <span className="truncate block">{item.documentName}</span>
+                  <HoverCell>{item.documentName}</HoverCell>
                 </td>
                 <td className="px-5 py-4 text-white/90 max-w-[140px] text-center">
                   <span className="truncate block">{item.productName || "General"}</span>
                 </td>
                 <td className="px-5 py-4 text-white/90 max-w-[180px]">
-                  <span className="truncate block">{item.embeddingModel}</span>
+                  <HoverCell>{item.embeddingModel}</HoverCell>
                 </td>
                 <td className="px-5 py-4 text-white/90 max-w-[180px]">
                   <span className="truncate block">{item.llmModel}</span>
@@ -132,6 +169,9 @@ export default function DocumentLogs({ networkError }) {
                 </td>
                 <td className="px-5 py-4 text-white/90">
                   <span>{item.imageTextTokenOutput}</span>
+                </td>
+                <td className="px-5 py-4 text-white/90">
+                  <span>{item.imageTextTokenInput + item.imageTextTokenOutput}</span>
                 </td>
               </tr>
             ))
@@ -159,6 +199,7 @@ export default function DocumentLogs({ networkError }) {
               <th className="px-5 py-4 text-white">{totals.textTokenCount}</th>
               <th className="px-5 py-4 text-white">{totals.imageTextTokenInput}</th>
               <th className="px-5 py-4 text-white">{totals.imageTextTokenOutput}</th>
+              <th className="px-5 py-4 text-white">{totals.imageTextTokenInput + totals.imageTextTokenOutput}</th>
             </tr>
           </tfoot>
         )}
@@ -174,7 +215,7 @@ export default function DocumentLogs({ networkError }) {
         </button>
 
         <p className="text-sm text-white/70">
-          Page {pageNumber}
+          Page {pageNumber} of {totalPages}
         </p>
 
         <button

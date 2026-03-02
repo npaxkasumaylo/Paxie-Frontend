@@ -373,21 +373,8 @@ const SidePanel = () => {
 						<h1 className="text-2xl font-bold text-white pb-3 ">
 						General Document List
 						</h1>
-						<div className="relative">
-								<input
-								className="bg-white/10 border border-white/20 rounded-lg pl-3 pr-9 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
-								placeholder="Search documents..."
-								/>
-						</div>
-
-							<select
-								className="text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
-							>
-								<option value="">All</option>
-								<option value="">All</option>
-
-							</select>
-							</div>
+						
+					</div>
 
 						{generalDocuments && generalDocuments.length > 0 ? (
 							generalDocuments.map(item => (

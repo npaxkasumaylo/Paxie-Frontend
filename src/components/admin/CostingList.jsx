@@ -47,15 +47,15 @@ const [modelCost, setModelCost] = useState([])
                                 </td>
 
                                 <td className="px-5 py-4 text-white/90">
-                                  <span className="font-semibold">{c.inputPricePerMillionToken}</span>
+                                  <span className="font-semibold">${c.inputPricePerMillionToken}</span>
                                 </td>
 
                                 <td className="px-5 py-4 text-white/90">
-                                  <span className="font-semibold">{c.outputPricePerMillionToken}</span>
+                                  <span className="font-semibold">${c.outputPricePerMillionToken}</span>
                                 </td>
 
                                 <td className="px-5 py-4">
-                                <div className="flex justify-end gap-2">
+                                <div className="flex justify-center gap-2">
                                     <button
                                         onClick={() => editModelCost(c)}
                                         className="rounded-xl px-4 py-2 text-sm font-bold shadow transition bg-white/20 text-white hover:bg-white/30">
@@ -75,6 +75,7 @@ const [modelCost, setModelCost] = useState([])
                         </tbody>
                 </table>
                 </div>
+                <h3 className="text-white/70 text-sm p-2">Note: these prices are in USD per million tokens.</h3>
         </div>
     )
 }

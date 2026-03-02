@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { api } from "../../../api/api";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle,FileText } from "lucide-react";
 
 const MODELS =[
 
   ];
 
 export default function Calculator() {
+  const [file, setFile] = useState(null);
 
   const [providers, setProviders] = useState([]);
   const [provider, setProvider] = useState(""); 
@@ -84,6 +85,12 @@ useEffect(() => {
 }, [inputText]);
 
 
+const cancelCalculate = () => {
+		setFile(null);
+		setInputText("");
+	}
+
+
   return (
     <>
       {/* Top 2 panels */}
@@ -142,15 +149,21 @@ useEffect(() => {
             <input 
               type="file" 
               accept=".pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setFile(f);
+                e.target.value = ""; // allows re-uploading the same file
+              }}
               className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
             />
-                <div className="w-full justify-center flex p-2 hover:bg-white/20 cursor-pointer">
-            
-                    <p className="text-white/90 text-2xl"></p>
-                </div>
-          
-                <div className="text-white/90 mt-4">Click to upload or drag and drop</div>
-              
+                {file != null ? (
+                  <div className="w-full justify-center flex p-2 hover:bg-white/20 cursor-pointer">
+                      <FileText size={30} className="mr-2 text-white/90" />
+                      <p className="text-white/90 text-2xl">{file.name}</p>
+                  </div>
+                ) : (
+                  <div className="text-white/90 mt-4">Click to upload or drag and drop</div>
+                )}
             </div>
           </div>
 
@@ -162,6 +175,19 @@ useEffect(() => {
               placeholder="Enter your text here to calculate tokens..."
               className="mt-3 h-56 w-full resize-none rounded-lg bg-white/10 border border-white/20  px-4 py-1.5 text-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
             />
+          </div>
+
+          <div className="flex w-full"> 
+            <button 
+              className="w-full mt-6 bg-white/90 hover:bg-white/50 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg">
+              <span>Calculate Tokens</span>
+            </button>
+            {/* Cancel Button */}
+            <button 
+              onClick={cancelCalculate}
+              className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg">
+              Cancel
+            </button>
           </div>
         </div>
 
