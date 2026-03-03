@@ -92,7 +92,11 @@ export const api = {
   getDashboardData:() => Api.get("/Costing/Dashboard"),
   
   //dashboard query data
-  getDashboardQueryData:() => Api.get("/Costing/query")
+  getDashboardQueryData:() => Api.get("/Costing/query"),
+
+  //logging pagingation
+  getTotalqueryPages:(pageSize =10) => Api.get(`/Logging/GetTotalQueryPages?pageSize=${pageSize}`),
+  getTotalEmbeddingPages:(pageSize =10) => Api.get(`/Logging/GetTotalEmbeddingPages?pageSize=${pageSize}`),
 
 };
 

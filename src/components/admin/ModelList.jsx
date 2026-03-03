@@ -59,7 +59,7 @@ export default function ModelList({details = [], editAiModel, handleUseModel, de
                                 </td>
 
                                 <td className="px-5 py-4">
-                                <div className="flex justify-end gap-2">
+                                <div className="flex justify-center gap-2">
                                     <button 
                                      onClick={() => editAiModel(d)}
                                     disabled={d.isImplemented}

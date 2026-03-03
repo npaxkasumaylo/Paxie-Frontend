@@ -45,7 +45,7 @@ export default function Dashboard (){
 
   const totalIngestionCost  = Number(cardData?.totalIngestionCost ?? 0);
   const totalQueryCost = Number(cardData?.totalQueryCost ?? 0);
-  const averageQueryCost = Number(cardData?. averageQueryCost);
+  const averageQueryCost = Number(cardData?. averageQueryCost ?? 0);
   const averageIngestionCost = Number (cardData?. averageIngestionCost ?? 0);
   const grandTotalCost = Number (cardData?. grandTotalCost ?? 0);
   const totalTokenUsage = Number(cardData?.totalTokenUsage ?? 0);
@@ -148,7 +148,7 @@ useEffect(() => {
                     Overall Token Usage
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    {loadingCard ? "Loading..." : `${totalTokenUsage.toFixed()}`}
+                    {loadingCard ? "Loading..." : `${totalTokenUsage.toLocaleString()}`}
                 </p>
                 </div>
 
@@ -163,7 +163,7 @@ useEffect(() => {
                     Total Query
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    {loadingCard ? "Loading..." : `${totalQueryCount.toFixed()}`}
+                    {loadingCard ? "Loading..." : `${totalQueryCount.toFixed()}`} Queries
                 </p>
                 </div>
 
@@ -175,7 +175,7 @@ useEffect(() => {
                     Total Document Embeddings
                 </p>
                 <p className="mt-3 text-3xl font-semibold text-white">
-                    {loadingCard ? "Loading..." : `${totalEmbeddingCount.toFixed()}`}
+                    {loadingCard ? "Loading..." : `${totalEmbeddingCount.toFixed()}`} Documents
                 </p>
                 </div>
 
@@ -192,11 +192,15 @@ useEffect(() => {
             height="950"
         />
 
+       
+
         <iframe
             className="rounded-2xl w-1/2"
             src="https://snapshots.raintank.io/dashboard/snapshot/PCgC5rcZwmboMHOhFUUsv8i5RuKsp6JL"
             height="950"
         />
+
+        
 
         </div>
         
@@ -208,7 +212,7 @@ useEffect(() => {
                     <tr className="[&>th]:px-10 [&>th]:py-4 [&>th]:text-center [&>th]:text-xl [&>th]:font-semibold [&>th]:text-white/90">
                         <th>Timestamp</th>
                         <th>User Query</th>
-                        <th>Reflection Model</th>
+                        <th>Reflection Model Token</th>
                         <th>Answering Model Token</th>
                         <th>Total Token</th>
                         <th>Query Cost</th>
@@ -228,7 +232,7 @@ useEffect(() => {
                             <span className="block truncate">{item.userQuery}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
-                            <span>{item.reflectionModel}</span>
+                        <span>{item.reflectionModelTotalTokenUsage}</span>
                         </td>
                         <td className="px-10 py-4 text-white/90 text-center">
                             <span>
