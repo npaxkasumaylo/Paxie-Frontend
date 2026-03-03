@@ -11,6 +11,8 @@ export default function DocumentLogs({ networkError }) {
 
   const [totalPages, setTotalPages] = useState("");
 
+  const [docCounts, setDocCounts] = useState({});
+
   const loadTotalEmbeddingPages = async () => {
   try {
     const res = await api.getTotalEmbeddingPages(pageSize);
@@ -37,22 +39,29 @@ useEffect(() => {
 
   // ✅ Fetch ALL pages once
    const getEmbeddingLogs = async () => {
-    try {
-      const res = await api.getEmbeddingLogs(pageNumber, pageSize);
-      const data = res?.data;
+  try {
+    const productName = String(selectedTag || "").trim();
 
-      if(Array.isArray(data)){
-        setLogs(data);
-        return
-      }
+    const res = await api.getEmbeddingLogs(
+      pageNumber,
+      pageSize,
+      productName || undefined // if empty => all logs
+    );
 
-      const items = data?.items || data?.data || [];
-      setLogs(Array.isArray(items) ? items : []);
-    } catch (e) {
-      console.error(e);
-      setLogs([]);
+    const data = res?.data;
+
+    if (Array.isArray(data)) {
+      setLogs(data);
+      return;
     }
-  };
+
+    const items = data?.items || data?.data || [];
+    setLogs(Array.isArray(items) ? items : []);
+  } catch (e) {
+    console.error(e);
+    setLogs([]);
+  }
+};
 
   useEffect(() => {
     getDocumentTags();
@@ -60,28 +69,21 @@ useEffect(() => {
 
    useEffect(() => {
     getEmbeddingLogs();
-  }, [pageNumber]);
+  }, [pageNumber, selectedTag]);
 
   // ✅ reset to page 1 when filter changes
   useEffect(() => {
     setPageNumber(1);
   }, [selectedTag]);
 
-  // ✅ filter across ALL logs
-  const filteredLogs = useMemo(() => {
-    return (Array.isArray(logs) ? logs : []).filter((item) => {
-      if (!selectedTag) return true;
-      return String(item.productName || "") === String(selectedTag);
-    });
-  }, [logs, selectedTag]);
 
-  const pagedLogs = filteredLogs;
+  const pagedLogs = logs;
 
   const hasNextPage = logs.length === pageSize;
 
 
   const totals = useMemo(() => {
-    return filteredLogs.reduce(
+    return (logs || []).reduce(
       (acc, item) => {
         acc.textTokenCount += Number(item.textTokenCount || 0);
         acc.imageTextTokenInput += Number(item.imageTextTokenInput || 0);
@@ -90,7 +92,7 @@ useEffect(() => {
       },
       { textTokenCount: 0, imageTextTokenInput: 0, imageTextTokenOutput: 0 }
     );
-  }, [filteredLogs]);
+  }, [logs]);
 
   function HoverCell({ children }) {
   return (
@@ -112,6 +114,53 @@ useEffect(() => {
   );
 }
 
+// for document count
+const loadCountsPerTag = async () => {
+  if (!documentTags?.length) return;
+
+  const map = {};
+
+  for (const tag of documentTags) {
+    const name = String(tag.tagName || "").trim(); // ✅ normalize key
+    try {
+      const res = await api.getDocumentsCount(true, name);
+      map[name] = Number(res?.data?.totalDocuments ?? 0);
+    } catch (e) {
+      console.error("Failed count for:", name);
+      map[name] = 0;
+    }
+  }
+
+  setDocCounts(map);
+};
+
+useEffect(() => {
+  loadCountsPerTag();
+}, [documentTags]);
+
+useEffect(() => {
+  const loadPagesForSelected = async () => {
+    try {
+      const name = String(selectedTag || "").trim();
+
+      // no filter => global pages
+      if (!name) {
+        await loadTotalEmbeddingPages();
+        return;
+      }
+
+      const res = await api.getDocumentsCount(true, name);
+      const totalDocs = Number(res?.data?.totalDocuments ?? 0);
+      setTotalPages(Math.max(1, Math.ceil(totalDocs / pageSize)));
+    } catch (e) {
+      console.error(e);
+      setTotalPages(1);
+    }
+  };
+
+  loadPagesForSelected();
+}, [selectedTag]);
+
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10  bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
       <table className="w-full min-w-[720px] table-auto border-collapse">
@@ -122,7 +171,7 @@ useEffect(() => {
             <th className="px-5 py-4 text-white/90">
               <select
                 value={selectedTag}
-                onChange={(e) => setSelectedTag(e.target.value)}
+                onChange={(e) => setSelectedTag(e.target.value.trim())}
                 className="rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white/90 outline-none"
               >
                 <option value="" className="text-gray-800">Products/Services</option>
@@ -177,7 +226,7 @@ useEffect(() => {
             ))
           ) : (
             <tr>
-              <td colSpan={8} className="px-5 py-16 text-center align-middle">
+              <td colSpan={9} className="px-5 py-16 text-center align-middle">
                 {networkError ? (
                   <p className="text-red-400 font-medium">{networkError}</p>
                 ) : (
@@ -188,7 +237,7 @@ useEffect(() => {
           )}
         </tbody>
 
-        {filteredLogs.length > 0 && (
+        {logs.length > 0 && (
           <tfoot className="bg-[#27304d] border-t border-blue-400/10">
             <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-lg [&>th]:font-semibold [&>th]:text-white/90">
               <th className="px-5 py-4 text-white">Total</th>
@@ -226,6 +275,12 @@ useEffect(() => {
           Next
         </button>
       </div>
+
+      <div className="px-5 py-3 text-white/80 bg-[#00092d] text-xl border-b border-white/10">
+      {selectedTag
+      ? `${selectedTag}: ${docCounts[String(selectedTag).trim()] ?? 0} Documents`
+      : "Select a service to see its total documents."}
+    </div>
     </div>
   );
 }
