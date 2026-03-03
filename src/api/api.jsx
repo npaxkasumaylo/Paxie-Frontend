@@ -39,7 +39,7 @@ export const api = {
   removeJob: (jobId) => Api.put(`Jobs/UpdateJobOpeningStatus/${jobId}`),
 
   // AI API
-  getAIResponse: (query, id) => axios.post(`${AI_URL}/chatbot-ai`,{ query, id}),
+  getAIResponse: (query, id, context) => axios.post(`${AI_URL}/chatbot-ai`,{ query, id, context}),
   addAIDocument: (id) => axios.post(`${AI_URL}/newDocument?id=${id}`),
   deleteAIDocument: (id) => axios.delete(`${AI_URL}/deleteDocument?id=${id}`),
   deleteSession: (id) => axios.delete(`${AI_URL}/deleteSession?id=${id}`),
