@@ -186,22 +186,11 @@ useEffect(() => {
         <hr className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>
         <h1  className='text-3xl font-bold text-white'>Graphs</h1>
         <div className="w-full flex gap-6 p-6">
-        <iframe
-            className="rounded-2xl w-1/2"
-            src="https://snapshots.raintank.io/dashboard/snapshot/ufSh3WAM8yejCAQzqmSuK1lhe80a1AAt"
-            height="950"
-        />
-
-       
-
-        <iframe
-            className="rounded-2xl w-1/2"
-            src="https://snapshots.raintank.io/dashboard/snapshot/PCgC5rcZwmboMHOhFUUsv8i5RuKsp6JL"
-            height="950"
-        />
-
-        
-
+            <iframe
+                className="rounded-2xl w-full"
+                src="https://ai.n-pax.com:3000/public-dashboards/30a591b2889a4c6a9a7bd991ad058e4d"
+                height="600"
+            />
         </div>
         
         <hr className="border border-white/15 bg-white/10 backdrop-blur-lg shadow-2xl"/>

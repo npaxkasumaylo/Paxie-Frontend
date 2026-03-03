@@ -79,7 +79,7 @@ export const api = {
 
   //logging
   getQueryLogs: (pageNumber, pageSize) => Api.get("/Logging/GetQueryLogs", { params: { pageNumber, pageSize } }),
-  getEmbeddingLogs: (pageNumber, pageSize, productName) => Api.get("/Logging/GetEmbeddingLogs", {params:{pageNumber, pageSize, productName}}),
+  getEmbeddingLogs: (pageNumber, pageSize, productName) => Api.get("/Logging/GetEmbeddingLogs", {params: { pageNumber, pageSize, productName },}),
 
   //costing
   addModelCost: (modelcost) => Api.post("/PricingMaster", modelcost),
@@ -97,6 +97,9 @@ export const api = {
   //logging pagingation
   getTotalqueryPages:(pageSize =10) => Api.get(`/Logging/GetTotalQueryPages?pageSize=${pageSize}`),
   getTotalEmbeddingPages:(pageSize =10) => Api.get(`/Logging/GetTotalEmbeddingPages?pageSize=${pageSize}`),
+
+  //documentCount
+  getDocumentsCount: (isProductTag, productName) => Api.get("/Documents/Count", { params: { isProductTag, productName } }),
 
 };
 
