@@ -157,6 +157,9 @@ const handleUpload = async () => {
 
 		if (file.type === "application/pdf") {
 			docType = 0; // PDF
+		}
+		else if (file.type === "text/plain") {
+			docType = 1; // Text
 		} else {
 			notify("Unsupported File Type", "error");
 			return;
@@ -517,7 +520,7 @@ const SidePanel = () => {
 									<input 
 										onChange={(e) => setFile(e.target.files[0])}
 										type="file" 
-										accept=".pdf"
+										accept=".pdf,.txt"
 										className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
 									/>
 									

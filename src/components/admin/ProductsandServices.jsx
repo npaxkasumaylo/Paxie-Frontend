@@ -30,6 +30,9 @@ const addProductService = async (e) => {
     let docType;
     if (file.type === "application/pdf") {
       docType = 0;
+    }
+    else if (file.type === "text/plain") {
+      docType = 1;
     } else {
       notify("Unsupported file type.", "error");
       return;
@@ -77,10 +80,7 @@ const getDocumentTags = async () => {
 const validateFileSize = (data, maxMB) => {
     const maxSize = maxMB * 1024 * 1024;
     return data.size <= maxSize;
-  };
-
-
-
+};
 
 const cancel = () => {
     setFile(null);
@@ -95,7 +95,7 @@ const cancel = () => {
 		<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
             <input 
                 type="file" 
-                accept=".pdf"
+                accept=".pdf,.txt"
                 required
                 onChange={(e) => setFile(e.target.files[0])}
                 className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 

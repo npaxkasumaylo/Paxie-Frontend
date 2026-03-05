@@ -162,7 +162,8 @@ useEffect(() => {
 }, [selectedTag]);
 
   return (
-    <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10  bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+    <div className="w-full rounded-2xl border border-blue-400/10 bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+      <div className="w-full overflow-x-auto rounded-2xl">
       <table className="w-full min-w-[720px] table-auto border-collapse">
         <thead className="bg-[#27304d] border-b border-blue-400/10">
           <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
@@ -253,8 +254,9 @@ useEffect(() => {
           </tfoot>
         )}
       </table>
+      </div>
 
-      <div className="flex items-center bg-[#27304d] justify-between px-5 py-4 border-t border-white/10">
+      <div className="flex items-center  bg-[#27304d] justify-between px-5 py-4 border-t border-white/10">
         <button
           className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-sm text-white/90 disabled:opacity-40"
           disabled={pageNumber <= 1}
@@ -276,7 +278,7 @@ useEffect(() => {
         </button>
       </div>
 
-      <div className="px-5 py-3 text-white/80 bg-[#00092d] text-xl border-b border-white/10">
+      <div className="px-5 py-3 rounded-b-2xl text-white/80 bg-[#00092d] text-xl border-b border-white/10">
       {selectedTag
       ? `${selectedTag}: ${docCounts[String(selectedTag).trim()] ?? 0} Documents`
       : "Select a service to see its total documents."}
