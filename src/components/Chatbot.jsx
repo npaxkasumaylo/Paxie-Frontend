@@ -201,10 +201,8 @@ useEffect(() => {
   //chatbot message
   const handleSendMessage = async (forcedText) => {
     const messageToSend = (typeof forcedText === "string" ? forcedText : inputMessage);
-
-     const finalQuery = contextText
-    ? `${messageToSend}\n\n${contextText}`
-    : messageToSend;
+    console.log(`Current Chatbot Context: ${context}`);
+    const finalQuery =  messageToSend;
 
     if (!finalQuery.trim() && !attachedFile) return;
 
@@ -249,10 +247,10 @@ useEffect(() => {
         // console.log(userId)
         const query = finalQuery + " || Uploaded File: " + text;
         console.log(query, convoId)
-         res = await api.getAIResponse(query, convoId);
+         res = await api.getAIResponse(query, convoId, context);
       } else {
         console.log(inputMessage, convoId)
-        res = await api.getAIResponse(finalQuery, convoId);
+        res = await api.getAIResponse(finalQuery, convoId, context);
       }
       
       const botMessage = {
