@@ -22,11 +22,17 @@ const selectedTag = documentTags.find(
 const addProductService = async (e) => {
     e.preventDefault();
 
+    if (!file){
+      notify("Please select a file.", "error");
+      return;
+    }
+
     if (!validateFileSize(file, 10)) {
       notify("File must be less than 10MB", "error");
       return;
     }
 
+    
     let docType;
     if (file.type === "application/pdf") {
       docType = 0;
@@ -88,15 +94,12 @@ const cancel = () => {
 }
     return (
     <div>
-		<form className="space-y-2" onSubmit={addProductService}>
-			
-        <label className="block">
-            <span className="text-white/90 text-sm">Upload Document</span>
+		<form className="flex-row justify-between gap-6" onSubmit={addProductService}>
+      <span className="text-white/90 text-sm">Upload Document</span>
 		<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
             <input 
                 type="file" 
                 accept=".pdf,.txt"
-                required
                 onChange={(e) => setFile(e.target.files[0])}
                 className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
             />
@@ -110,16 +113,16 @@ const cancel = () => {
                 <div className="text-white/90 mt-4">Click to upload or drag and drop</div>
                 )}
         </div>
-        </label>
 
-		<label className="block">
+
+		<div className="mt-4 w-full">
             <span className="text-white/90 text-sm">Document Type</span>
             <select
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
                 disabled={!file}
                 required
-                className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+                className="block w-full px-3 py-2.5 rounded-lg bg-white/10 border border-default-medium text-white text-sm shadow-xs"
                 >
                 <option className="text-gray-800" value="">
                     Select document type
@@ -131,23 +134,24 @@ const cancel = () => {
                     </option>
                 ))}
                 </select>
-        </label>
+        </div>
 
-			<div className="pt-5">
+			<div className="flex w-full ">
 				<button 
           disabled={uploading} 
-          className={`w-full flex items-center justify-center gap-2 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-1.5 rounded-full transition`}>
-          {uploading ? (<><LoaderCircle className="h-5 w-5 animate-spin" />  <span className="ml-2">Uploading...</span></>) : "SAVE"}
+          className={`w-full mt-6 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-2 px-4 rounded-full transition`}>
+          {uploading ? (<><LoaderCircle className="animate-spin mr-2" />  <span className="ml-2">Uploading...</span></>) : "Upload File"}
         </button>
+
+        { file && !uploading &&(
+        <button 
+          onClick={cancel}
+				  className={`w-full mt-6 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
+					CANCEL
+			  </button>)}
 
 			</div>
 			</form>
-			<button 
-                onClick={cancel}
-				className={`w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
-					CANCEL
-			</button>
-
 		</div>
     )
 }

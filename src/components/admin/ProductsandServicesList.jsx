@@ -106,15 +106,16 @@ export default function ProductsandServicesList({
 
   return (
     <>
-      <div className="md:w-1/8 lg:1/3 w-full p-8 bg-[#00092d] backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl overflow-y-auto">
-        <div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
-          <h1 className="text-2xl font-bold text-white">Products and Services List</h1>
+      <div className="w-full lg:1/3 p-6 bg-[#00092d] backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl overflow-y-auto">
+        <div className="flex flex-wrap gap-3 items-center pb-3 mb-4 border-b-2 border-b-white/50">
+          <h1 className="text-2xl font-bold text-white">Document List</h1>
 
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-3 ml-auto">
+          <div className="relative w-full sm:w-64">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-white/10 border border-white/20 rounded-lg pl-3 pr-9 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+              className="w-full sm:w-60 bg-white/10 border border-white/20 rounded-lg pl-3 pr-9 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="Search documents..."
             />
             {searchLoading && (
@@ -125,7 +126,7 @@ export default function ProductsandServicesList({
           <select
             value={selectedTagId}
             onChange={(e) => setSelectedTagId(e.target.value)}
-            className="text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
+            className="w-full sm:w-auto text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
           >
             <option value="">All</option>
             {documentTags.map((t) => (
@@ -134,19 +135,23 @@ export default function ProductsandServicesList({
               </option>
             ))}
           </select>
+          </div>
         </div>
 
         <div>
           {pagedDocuments.length > 0 ? (
             pagedDocuments.map((item) => (
               <div key={item.documentId} className="relative group mt-2.5">
-                <div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
-                  <button onClick={() => handleDownload(item)} className="flex flex-1 items-center">
-                    <FileText className="mr-2 text-white/90" />
-                    <p className="text-white/90 truncate">{item.fileName}</p>
+                <div className="flex item-center gap-2 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200 overflow-hidden">
+                  <button onClick={() => handleDownload(item)} className="flex min-w-0 flex-1 items-center gap-2">
+                    <FileText className="shrink-0 text-white/90" />
+                    <p className="min-w-0 text-white/90 truncate">{item.fileName}</p>
                   </button>
 
-                  <button onClick={handleDelete(item.documentId)} disabled={deleting}>
+                  <button onClick={handleDelete(item.documentId)} 
+                  disabled={deleting}
+                  className="shrink-0"
+                  >
                     {deleting && currentId === item.documentId ? (
                       <LoaderCircle className="text-white/90 animate-spin" />
                     ) : (
