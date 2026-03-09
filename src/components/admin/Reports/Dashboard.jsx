@@ -3,17 +3,6 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { useEffect, useState } from "react";
 import { api } from "../../../api/api";
 
-const data = [
-  { label: 'Answering Agent', value:  65, color: '#0088FE' },
-  { label: 'Reflection Agent', value:  85 , color: '#00C49F' },
-];
-
-const settings = {
-  margin: { right: 5 },
-  width: 200,
-  height: 200,
-  hideLegend: true,
-};
 
 
 export default function Dashboard (){
@@ -82,7 +71,7 @@ useEffect(() => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
                 {/* Card 1 Check*/ }
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Ingestion Cost
@@ -94,7 +83,7 @@ useEffect(() => {
 
                 {/* Card 2 check*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Query Cost
@@ -106,7 +95,7 @@ useEffect(() => {
 
                 {/* Card 3 to change*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Overall Cost 
@@ -118,7 +107,7 @@ useEffect(() => {
 
                 {/* Card 4 */}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Average Ingestion Cost
@@ -130,7 +119,7 @@ useEffect(() => {
 
                 {/* Card 5 */}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Average Query Cost
@@ -142,7 +131,7 @@ useEffect(() => {
 
                 {/* Card 6 check*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Overall Token Usage
@@ -157,7 +146,7 @@ useEffect(() => {
             <div className="grid grid-cols-2 sm:grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Card 5 */}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Query
@@ -169,7 +158,7 @@ useEffect(() => {
 
                 {/* Card 6 check*/}
                 <div className="bg-[#27304d] border border-blue-400/10 rounded-xl p-6 
-                                hover:bg-[#0056e5] transition-all duration-300 
+                                hover:bg-[#0056e5] hover:scale-[1.02] transition-all duration-300 
                                 shadow-md hover:shadow-lg">
                 <p className="text-sm text-blue-200/70 font-medium">
                     Total Document Embeddings
