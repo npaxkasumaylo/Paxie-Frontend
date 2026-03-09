@@ -14,6 +14,8 @@ import { Link } from "react-router-dom";
 // import { useTranslation } from "react-i18next";
 import {useTranslation} from 'react-i18next';
 // import i18n from "../i18n";
+import ai_web_background from "../assets/ai_web_background.png";
+// import ai_bg from "../assets/ai_bg.png";
 import i18n from "../i18n.js";
 import Globe from "../assets/Globe.png";
 import NpaxImage from "../assets/npax-white.png";
@@ -23,11 +25,11 @@ import BusinessImage2 from "../assets/LP3.png";
 import BusinessImage3 from "../assets/LP4.png";
 import BusinessImage4 from "../assets/LP5.png";
 import BusinessImage5 from "../assets/LP6.png";
-import Sunshine from "../assets/Sunshine.png";
-import Classic from "../assets/Classic.png";
-import Outre from "../assets/Outre.png";
+import Sunshine from "../assets/sunshine.png";
+import Classic from "../assets/classic.png";
+import Outre from "../assets/outre.png";
 import Engineering from "../assets/Engineering.png";
-import Manufacturing from "../assets/Manufacturing.png";
+import Manufacturing from "../assets/manufacturing.png";
 import Warehouse from "../assets/Warehouse.png";
 import VP from "../assets/vp.png";
 import Quote from "../assets/quote.png";
@@ -78,17 +80,17 @@ export default function LandingPage() {
       <div
         className="p-0 relative overflow-x-hidden"
         style={{
-          backgroundImage: `url(${Globe})`,
-          backgroundSize: "cover",
+          backgroundImage: `url(${ai_web_background})`,
+          backgroundSize: "100% 100%",
           backgroundPosition: "center",
           width: "100%",
-          height: "115vh",
+          height: "100vh",
         }}
       >
         {/* Navigation */}
-        <nav className="relative z-20 flex items-center justify-between px-8 py-3 text-sm">
+        <nav className="relative z-20 flex items-center justify-end px-8 py-3 text-sm">
           {/* Logo */}
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <Link to="/">
               <img
                 src={nPaxImage}
@@ -96,13 +98,13 @@ export default function LandingPage() {
                 className="lg:h-14 h-8 w-auto cursor-pointer"
               />
             </Link>
-          </div>
+          </div> */}
 
           {/* Navigation Links */}
-          <div className="lg:flex hidden items-center gap-8 text-gray-500">
+          <div className="lg:flex hidden items-center gap-8 text-white">
             <Link
               to="/AboutUs"
-              className="text-gray-600 hover:text-blue-300 transition"
+              className="text-white hover:text-blue-300 transition"
             >
               ABOUT US
             </Link>
@@ -341,7 +343,7 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero Content */}
-        <div className="relative container mx-auto px-8 py-16 mt-28 grid md:grid-cols-2 gap-12 items-center">
+        {/* <div className="relative container mx-auto px-8 py-16 mt-28 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <h1 className="text-4xl md:text-4xl font-bold text-gray-700 leading-tight">
               {t('heroTitle')}
@@ -350,7 +352,7 @@ export default function LandingPage() {
               {t('heroSubtitle')}
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Solutions Section on Separate White Background */}
