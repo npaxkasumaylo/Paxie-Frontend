@@ -144,16 +144,16 @@ useEffect(() => {
 
   function HoverCell({ children }) {
   return (
-    <div className="relative group ">
+    <div className="relative group min-w-0">
       <div className="truncate cursor-pointer">{children}</div>
 
       <div className="
-        absolute z-[9999] hidden group-hover:block
-          bottom-full mb-2 left-0
+          hidden absolute z-[9999] group-hover:block
+          top-full mb-2 left-0
           bg-[#0b1f3a] border border-white/20
           text-white text-xs
-          p-3 rounded-xl shadow-xl
-          min-w-[250px] max-w-[500px]
+          p-3 rounded-xl shadow-xl w-max
+          min-w-[220px] max-w-[500px]
           whitespace-pre-wrap break-words
       ">
         {children}
@@ -168,7 +168,7 @@ useEffect(() => {
     <>
      <div className="w-full overflow-x-auto rounded-2xl border border-blue-400/10 bg-[#0b1f3a] backdrop-blur-lg shadow-[0_0_40px_rgba(0,0,0,0.6)]">
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[720px] table-auto border-collapse">
+        <table className="w-full min-w-[1200px] table-auto border-collapse">
           <thead className="bg-[#27304d] border-b border-blue-400/10">
             <tr className="[&>th]:px-5 [&>th]:py-4 [&>th]:text-left [&>th]:text-sm [&>th]:font-semibold [&>th]:text-white/90">
               <th>Timestamp</th>
@@ -224,13 +224,13 @@ useEffect(() => {
             {pagedLogs && pagedLogs.length > 0 ? (
               pagedLogs.map((item) => (
                 <tr key={item.id} className="border-b border-blue-400/5 hover:bg-[#0056e5] transition-colors duration-200">
-                  <td className="px-5 py-4 text-white/90 max-w-[100px]">
+                  <td className="relative overflow-visible px-5 py-4 text-white/90 max-w-[100px]">
                     <HoverCell>{item.timeStamp}</HoverCell>
                   </td>
-                  <td className="px-5 py-4 text-white/90 max-w-[160px]">
+                  <td className="relative overflow-visible px-5 py-4 text-white/90 max-w-[100px]">
                     <HoverCell>{item.userQuery}</HoverCell>
                   </td>
-                  <td className="px-5 py-4 text-white/90 max-w-[200px]">
+                  <td className="relative overflow-visible px-5 py-4 text-white/90 max-w-[100px]">
                     <HoverCell>{item.aiResponse}</HoverCell>
                   </td>
                   <td className="px-5 py-4 text-white/90 text-center">

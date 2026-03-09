@@ -374,7 +374,7 @@ const SidePanel = () => {
 				>
 					<div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
 						<h1 className="text-2xl font-bold text-white pb-3 ">
-						General Document List
+						Document List
 						</h1>
 						
 					</div>
@@ -464,6 +464,7 @@ const SidePanel = () => {
 				networkError={networkError}
 				tagMap={productTagMap}
 				/>
+
 		}
 		
 		if (mode === "models") {
@@ -483,7 +484,7 @@ const SidePanel = () => {
 		{ !loading ? (
 			<div className="flex flex-col min-h-screen bg-[url('/adminBG.jpg')] bg-cover bg-center select-none">
 
-				<AdminNavBar />
+				<AdminNavBar setMode={setMode} />
 				<div className="flex flex-col md:flex-row lg:flex-row justify-between gap-5 m-10 ">
 
 					{/* Upload Files */}
@@ -494,21 +495,9 @@ const SidePanel = () => {
 								{mode === "addJob" && "Manage Jobs"}
 								{mode === "models" && "Manage AI Models"}
 								{mode === "costing" && "Model Costing"}
-								{mode === "producstandservices" && "Products and Services"}
-								{mode === "report" && "AI Reports"}
+								{mode === "producstandservices" && "Upload Products and Services Files"}
+								{mode === "report" }
 							</h1>
-							<select
-								value={mode}
-								onChange={(e) => setMode(e.target.value)}
-								className="text-gray-600 font-semibold p-1.5 border border-gray-300 rounded-lg hover:bg-white "
-							>
-								<option value="files">Manage Files</option>
-								<option value="addJob">Manage Jobs</option>
-								<option value="producstandservices">Products and Services</option>
-								<option value="models">AI Models</option>
-								<option value="costing">Model Costing</option>
-								<option value="report">AI Reports</option>
-							</select>
 						</div> 
 						
 						{mode === "files" && (
@@ -540,9 +529,9 @@ const SidePanel = () => {
 									value={docInfo}
 									onChange={(e) => setDocInfo(e.target.value === "" ? "" : Number(e.target.value))}
 									disabled={!file}
-									className="block w-full px-3 py-2.5 cursor-pointer bg-white/10 border border-default-medium text-white text-sm rounded-lg shadow-xs"
+									className="block w-full px-3 py-2.5 rounded-lg bg-white/10 border border-default-medium text-white text-sm shadow-xs"
 								>
-									<option className="text-gray-800" value="">Choose document type</option>
+									<option className="text-gray-800" value="">Select document type</option>
 									{documentTags.map((t) => (
 									<option key={t.id} value={t.id} className="text-gray-800">
 										{t.tagName}
@@ -556,7 +545,7 @@ const SidePanel = () => {
 									{error && <p className={`text-red-600 text-sm mt-2 font-medium
 									bg-white p-1.5 px-2 rounded-b-lg`}>{error}</p>}
 
-									<button onClick={handleUpload} disabled={uploading} className="w-full mt-6 bg-white/90 hover:bg-white/50 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-lg">
+									<button onClick={handleUpload} disabled={uploading} className="w-full mt-6 bg-white/90 hover:bg-white/25 text-[#183398] hover:text-white text-md font-bold py-2 px-4 rounded-full transition">
 										<span>{uploading ? (
 											<div className="flex items-center justify-center">
 												<LoaderCircle className="animate-spin mr-2"/>
@@ -590,7 +579,7 @@ const SidePanel = () => {
 						)}
 
 						{mode === "producstandservices" && (
-						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} />
+						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} error={error} />
 						)}	
 
 						

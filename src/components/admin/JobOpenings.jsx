@@ -35,7 +35,11 @@ export default function JobOpenings({jobs, networkError, getAllJobs, notify}){
 							overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
 					[&::-webkit-scrollbar-thumb]:bg-white/50"
 					>
-							<h1 className="text-2xl font-bold text-white pb-3 border-b-2 border-b-white/50">Job Openings</h1>
+						<div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
+							<h1 className="text-2xl font-bold text-white pb-3 ">
+								Job List
+							</h1>
+						</div>
 							{jobs && jobs.length > 0 ? (
 								jobs.map(item => (
 									<div key={item.id} className=" mt-2.5 relative group" >
