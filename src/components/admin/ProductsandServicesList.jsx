@@ -67,10 +67,12 @@ export default function ProductsandServicesList({
 
   // ✅ Use server results only when searching
   const displayDocuments = useMemo(() => {
-  return search.trim()
-    ? searchedDocs
-    : (Array.isArray(documents) ? documents : []);
-}, [search, searchedDocs, documents]);
+    return search.trim()
+      ? searchedDocs
+      : Array.isArray(documents)
+        ? documents
+        : [];
+  }, [search, searchedDocs, documents]);
 
   // ✅ keep your filters + pagination (same logic)
   const filteredDocuments = useMemo(() => {
@@ -82,7 +84,9 @@ export default function ProductsandServicesList({
 
       // OPTIONAL: keep local includes (you can remove if you want pure server search)
       const fileName = String(d.fileName ?? "").toLowerCase();
-      const tagText = String(tagMap[String(d.documentTagsId)] ?? "").toLowerCase();
+      const tagText = String(
+        tagMap[String(d.documentTagsId)] ?? "",
+      ).toLowerCase();
       const searchMatch = !q || fileName.includes(q) || tagText.includes(q);
 
       return tagMatch && searchMatch;
@@ -90,10 +94,13 @@ export default function ProductsandServicesList({
   }, [displayDocuments, selectedTagId, search, tagMap]);
 
   useEffect(() => {
-  setPageNumber(1);
-}, [selectedTagId, search, searchedDocs, documents]);
+    setPageNumber(1);
+  }, [selectedTagId, search, searchedDocs, documents]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredDocuments.length / pageSize));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredDocuments.length / pageSize),
+  );
 
   const pagedDocuments = useMemo(() => {
     const start = (pageNumber - 1) * pageSize;
@@ -110,31 +117,31 @@ export default function ProductsandServicesList({
         <div className="flex flex-wrap gap-3 items-center pb-3 mb-4 border-b-2 border-b-white/50">
           <h1 className="text-2xl font-bold text-white">Document List</h1>
 
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
-          <div className="relative w-full sm:w-64">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full sm:w-60 bg-white/10 border border-white/20 rounded-lg pl-3 pr-9 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
-              placeholder="Search documents..."
-            />
-            {searchLoading && (
-              <LoaderCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-white/80 animate-spin" />
-            )}
-          </div>
+          <div className="flex flex-wrap items-center gap-3 ml-auto">
+            <div className="relative w-full sm:w-64">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full sm:w-60 bg-white/10 border border-white/20 rounded-lg pl-3 pr-9 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+                placeholder="Search documents..."
+              />
+              {searchLoading && (
+                <LoaderCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-white/80 animate-spin" />
+              )}
+            </div>
 
-          <select
-            value={selectedTagId}
-            onChange={(e) => setSelectedTagId(e.target.value)}
-            className="w-full sm:w-auto text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
-          >
-            <option value="">All</option>
-            {documentTags.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.tagName}
-              </option>
-            ))}
-          </select>
+            <select
+              value={selectedTagId}
+              onChange={(e) => setSelectedTagId(e.target.value)}
+              className="w-full sm:w-auto text-gray-700 font-semibold px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-white"
+            >
+              <option value="">All</option>
+              {documentTags.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.tagName}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -143,14 +150,18 @@ export default function ProductsandServicesList({
             pagedDocuments.map((item) => (
               <div key={item.documentId} className="relative group mt-2.5">
                 <div className="flex item-center gap-2 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200 overflow-hidden">
-                  <button onClick={() => handleDownload(item)} className="flex min-w-0 flex-1 items-center gap-2">
+                  <button
+                    onClick={() => handleDownload(item)}
+                    className="flex min-w-0 flex-1 items-center gap-2"
+                  >
                     <FileText className="shrink-0 text-white/90" />
                     <p className="min-w-0 text-white/90 truncate ">{item.fileName}</p>
                   </button>
 
-                  <button onClick={handleDelete(item.documentId)} 
-                  disabled={deleting}
-                  className="shrink-0"
+                  <button
+                    onClick={handleDelete(item.documentId)}
+                    disabled={deleting}
+                    className="shrink-0"
                   >
                     {deleting && currentId === item.documentId ? (
                       <LoaderCircle className="text-white/90 animate-spin" />
@@ -165,7 +176,10 @@ export default function ProductsandServicesList({
                     <b>File Format:</b> {docTypeArr[item.documentType]}
                   </p>
                   <p className="text-white/90 truncate text-sm">
-                    <b>File Information:</b>{documentTags.find(t => Number(t.id) === Number(item.documentTagsId))?.tagName ?? "Unknown"}
+                    <b>File Information:</b>
+                    {documentTags.find(
+                      (t) => Number(t.id) === Number(item.documentTagsId),
+                    )?.tagName ?? "Unknown"}
                   </p>
                   <p className="text-white/90 truncate text-sm">
                     <b>Date Uploaded:</b> {formatDate(item.uploaded)}

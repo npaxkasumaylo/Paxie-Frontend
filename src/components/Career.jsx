@@ -3,7 +3,7 @@ import { Menu, X, ChevronDown, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import NPAX1IImage from "../assets/N-Pax1.png";
 import nPaxImage from "../assets/npax-white.png";
-import CareerImage from "../assets/Career.png";
+import CareerImage from "../assets/career.png";
 import Chatbot from "./Chatbot.jsx";
 
 export default function Career() {

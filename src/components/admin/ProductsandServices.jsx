@@ -1,25 +1,25 @@
 import { FileText } from "lucide-react";
-import { useState, useEffect  } from "react";
+import { useState, useEffect } from "react";
 import Toast from "../Toast";
 import { api } from "../../api/api";
 import { convertFileToBytes } from "../../utils/FileConverter";
 import { LoaderCircle } from "lucide-react";
 
-export default function ManageProductsandServices({notify , onUploaded}){
-    const [file, setFile] = useState(null);
-    const [documentType, setDocumentType] = useState("");
-    const [documentTags, setDocumentTags] = useState([]);
-    const [uploading, setUploading] = useState(false);
+export default function ManageProductsandServices({ notify, onUploaded }) {
+  const [file, setFile] = useState(null);
+  const [documentType, setDocumentType] = useState("");
+  const [documentTags, setDocumentTags] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
-    useEffect(() => {
-        getDocumentTags();
-    }, []);
+  useEffect(() => {
+    getDocumentTags();
+  }, []);
 
-const selectedTag = documentTags.find(
-  t => Number(t.id) === Number(documentType)
-);
+  const selectedTag = documentTags.find(
+    (t) => Number(t.id) === Number(documentType),
+  );
 
-const addProductService = async (e) => {
+  const addProductService = async (e) => {
     e.preventDefault();
 
     if (!file){
@@ -32,7 +32,6 @@ const addProductService = async (e) => {
       return;
     }
 
-    
     let docType;
     if (file.type === "application/pdf") {
       docType = 0; // PDF
@@ -75,7 +74,7 @@ const addProductService = async (e) => {
 
       notify("Product document uploaded!", "success");
       cancel();
-      await onUploaded?.(); 
+      await onUploaded?.();
     } catch (e) {
       console.error(e);
       notify("Upload failed.", "error");
@@ -83,28 +82,28 @@ const addProductService = async (e) => {
     setUploading(false);
   };
 
-const getDocumentTags = async () => {
-  try {
-    const res = await api.getDocumentTags(true);
-    setDocumentTags(Array.isArray(res?.data) ? res.data : []);
-    console.log("documentTags:", res.data);
-  } catch (e) {
-    console.error(e);
-    notify?.("Failed to load document tags.", "error");
-    setDocumentTags([]);
-  }
-};
+  const getDocumentTags = async () => {
+    try {
+      const res = await api.getDocumentTags(true);
+      setDocumentTags(Array.isArray(res?.data) ? res.data : []);
+      console.log("documentTags:", res.data);
+    } catch (e) {
+      console.error(e);
+      notify?.("Failed to load document tags.", "error");
+      setDocumentTags([]);
+    }
+  };
 
-const validateFileSize = (data, maxMB) => {
+  const validateFileSize = (data, maxMB) => {
     const maxSize = maxMB * 1024 * 1024;
     return data.size <= maxSize;
-};
+  };
 
-const cancel = () => {
+  const cancel = () => {
     setFile(null);
     setDocumentType("");
-}
-    return (
+  };
+  return (
     <div>
 		<form className="flex-row justify-between gap-6" onSubmit={addProductService}>
       <span className="text-white/90 text-sm">Upload Document</span>
@@ -126,26 +125,25 @@ const cancel = () => {
                 )}
         </div>
 
+        <div className="mt-4 w-full">
+          <span className="text-white/90 text-sm">Document Type</span>
+          <select
+            value={documentType}
+            onChange={(e) => setDocumentType(e.target.value)}
+            disabled={!file}
+            required
+            className="block w-full px-3 py-2.5 rounded-lg bg-white/10 border border-default-medium text-white text-sm shadow-xs"
+          >
+            <option className="text-gray-800" value="">
+              Select document type
+            </option>
 
-		<div className="mt-4 w-full">
-            <span className="text-white/90 text-sm">Document Type</span>
-            <select
-                value={documentType}
-                onChange={(e) => setDocumentType(e.target.value)}
-                disabled={!file}
-                required
-                className="block w-full px-3 py-2.5 rounded-lg bg-white/10 border border-default-medium text-white text-sm shadow-xs"
-                >
-                <option className="text-gray-800" value="">
-                    Select document type
-                </option>
-
-                {documentTags.map((t) => (
-                    <option key={t.id} value={t.id} className="text-gray-800">
-                    {t.tagName}
-                    </option>
-                ))}
-                </select>
+            {documentTags.map((t) => (
+              <option key={t.id} value={t.id} className="text-gray-800">
+                {t.tagName}
+              </option>
+            ))}
+          </select>
         </div>
 
 			<div className="flex w-full ">
