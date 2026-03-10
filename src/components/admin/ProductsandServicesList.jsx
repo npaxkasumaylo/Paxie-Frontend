@@ -145,7 +145,7 @@ export default function ProductsandServicesList({
                 <div className="flex item-center gap-2 p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200 overflow-hidden">
                   <button onClick={() => handleDownload(item)} className="flex min-w-0 flex-1 items-center gap-2">
                     <FileText className="shrink-0 text-white/90" />
-                    <p className="min-w-0 text-white/90 truncate">{item.fileName}</p>
+                    <p className="min-w-0 text-white/90 truncate ">{item.fileName}</p>
                   </button>
 
                   <button onClick={handleDelete(item.documentId)} 

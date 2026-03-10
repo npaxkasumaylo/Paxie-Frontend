@@ -21,6 +21,8 @@ import Calculator from "./Reports/Calculator";
 import Dashboard from "./Reports/Dashboard";
 import ModelCosting from "./ModelCosting";
 import CostingList from "./CostingList";
+import SystemPrompt from "./SystemPrompt";
+import SystemPromptPreview from "./SystemPromptPreview";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -48,6 +50,21 @@ export default function Home() {
 	const [reportMode, setReportMode] = useState("dashboard");
 
 	const [refreshKey, setRefreshKey] = useState(0);
+	
+	const [promptPreview, setPromptPreview] = useState(`You are the N-PAX Cebu Corporation Assistant. Answer questions about N-PAX's profile, management, products, policies, and job postings.
+
+GUIDELINES:
+- Call a tool ONLY ONCE
+- Call a tool ONLY when you need to retrieve factual information you don't already have.
+- Once you have the information from a tool, use that to answer the question directly.
+- Only answer N-PAX-related questions; politely decline others.
+- Be concise and factual.
+- Never invent information.
+- You can assess a resume/cv if the query contains a resume or cv.
+- Do not summarize documents.
+- Use only one tool per query—choose the most relevant one.
+
+When answering, search relevant documents using the appropriate tool.`);
 
 
 	//loading initial data
@@ -155,11 +172,23 @@ const handleUpload = async () => {
 
 		let docType;
 
-		if (file.type === "application/pdf") {
+		  if (file.type === "application/pdf") {
 			docType = 0; // PDF
-		}
+		} 
 		else if (file.type === "text/plain") {
-			docType = 1; // Text
+			docType = 1; // TXT
+		} 
+		else if (
+			file.type === "application/msword" ||
+			file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+		) {
+			docType = 2; // Word
+		} 
+		else if (
+			file.type === "application/vnd.ms-excel" ||
+			file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+		) {
+			docType = 3; // Excel
 		} else {
 			notify("Unsupported File Type", "error");
 			return;
@@ -273,7 +302,7 @@ const deleteModel = async (model) => {
     getDetails();
   }catch (e){
     console.error(e);
-    notify?.("Failed to use model.", "error");
+    notify?.("Failed to delete model.", "error");
     getDetails();
   }
 };
@@ -475,6 +504,10 @@ const SidePanel = () => {
 			return<CostingList notify={notify} refreshKey={refreshKey} editModelCost={onEditModelCost}/>
 		}
 
+		if (mode === "systemPrompt") {
+			return<SystemPromptPreview savedPrompt={promptPreview}/>
+		}
+
 
 		return null;
 	};
@@ -496,6 +529,7 @@ const SidePanel = () => {
 								{mode === "models" && "Manage AI Models"}
 								{mode === "costing" && "Model Costing"}
 								{mode === "producstandservices" && "Upload Products and Services Files"}
+								{mode === "systemPrompt" && "Manage AI System Prompts"}
 								{mode === "report" }
 							</h1>
 						</div> 
@@ -509,7 +543,7 @@ const SidePanel = () => {
 									<input 
 										onChange={(e) => setFile(e.target.files[0])}
 										type="file" 
-										accept=".pdf,.txt"
+										accept=".pdf,.txt,.doc,.docx,.xls,.xlsx"
 										className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
 									/>
 									
@@ -556,7 +590,9 @@ const SidePanel = () => {
 									{/* Cancel Button */}
 									{
 										file && !uploading && (
-											<button onClick={() => {setFile(null); setDocInfo("")}} className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg">
+											<button 
+											onClick={() => {setFile(null); setDocInfo("")}}
+											 className="w-full mt-6 ml-4 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg">
 												Cancel
 											</button>
 										)
@@ -582,6 +618,9 @@ const SidePanel = () => {
 						<ManageProductsandServices getAllJobs={getAllJobs} notify={notify} jobs={jobs} onUploaded={getAllProductDocuments} error={error} />
 						)}	
 
+						{mode === "systemPrompt" && (
+						<SystemPrompt notify={notify} promptPreview={promptPreview} setPromptPreview={setPromptPreview}/>
+						)}	
 						
 
 						{mode === "report" && (

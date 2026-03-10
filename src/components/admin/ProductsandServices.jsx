@@ -23,7 +23,7 @@ const addProductService = async (e) => {
     e.preventDefault();
 
     if (!file){
-      notify("Please select a file.", "error");
+      notify("Please select a file.", "warning");
       return;
     }
 
@@ -35,10 +35,22 @@ const addProductService = async (e) => {
     
     let docType;
     if (file.type === "application/pdf") {
-      docType = 0;
-    }
+      docType = 0; // PDF
+    } 
     else if (file.type === "text/plain") {
-      docType = 1;
+      docType = 1; // TXT
+    } 
+    else if (
+      file.type === "application/msword" ||
+      file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      docType = 2; // Word
+    } 
+    else if (
+      file.type === "application/vnd.ms-excel" ||
+      file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) {
+      docType = 3; // Excel
     } else {
       notify("Unsupported file type.", "error");
       return;
@@ -99,7 +111,7 @@ const cancel = () => {
 		<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
             <input 
                 type="file" 
-                accept=".pdf,.txt"
+                accept=".pdf,.txt,.doc,.docx,.xls,.xlsx"
                 onChange={(e) => setFile(e.target.files[0])}
                 className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
             />
@@ -137,6 +149,7 @@ const cancel = () => {
         </div>
 
 			<div className="flex w-full ">
+        
 				<button 
           disabled={uploading} 
           className={`w-full mt-6 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-2 px-4 rounded-full transition`}>
@@ -146,8 +159,8 @@ const cancel = () => {
         { file && !uploading &&(
         <button 
           onClick={cancel}
-				  className={`w-full mt-6 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
-					CANCEL
+				  className={`w-full mt-6 ml-4 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
+					Cancel
 			  </button>)}
 
 			</div>

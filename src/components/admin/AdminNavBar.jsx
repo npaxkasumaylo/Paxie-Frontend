@@ -66,6 +66,12 @@ export default function AdminNavBar({ setMode }) {
 						<button className="text-white font-semibold px-3 py-2 rounded-lg 
 						hover:bg-white/10 hover:shadow-md hover:-translate-y-[1px] 
 						transition-all duration-200" 
+						onClick={() => setMode("systemPrompt")}>
+							System Prompt
+						</button>
+						<button className="text-white font-semibold px-3 py-2 rounded-lg 
+						hover:bg-white/10 hover:shadow-md hover:-translate-y-[1px] 
+						transition-all duration-200" 
 						onClick={() => setMode("report")}>
 							AI Reports
 						</button>
