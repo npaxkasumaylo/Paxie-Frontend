@@ -10,6 +10,10 @@ const handleEdit = () => {
 }
 
 const handleSave = () => {
+    const confirmed = window.confirm("Are you sure you want to update the system prompt? This will affect how the AI behaves.");
+
+    if (!confirmed) return;
+    
     setPromptPreview(systemPrompt)
     setEditing(false)
     setSystemPrompt("")
