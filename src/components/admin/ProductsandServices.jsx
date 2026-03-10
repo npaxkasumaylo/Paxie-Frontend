@@ -22,8 +22,8 @@ export default function ManageProductsandServices({ notify, onUploaded }) {
   const addProductService = async (e) => {
     e.preventDefault();
 
-    if (!file) {
-      notify("Please select a file.", "error");
+    if (!file){
+      notify("Please select a file.", "warning");
       return;
     }
 
@@ -34,9 +34,22 @@ export default function ManageProductsandServices({ notify, onUploaded }) {
 
     let docType;
     if (file.type === "application/pdf") {
-      docType = 0;
-    } else if (file.type === "text/plain") {
-      docType = 1;
+      docType = 0; // PDF
+    } 
+    else if (file.type === "text/plain") {
+      docType = 1; // TXT
+    } 
+    else if (
+      file.type === "application/msword" ||
+      file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      docType = 2; // Word
+    } 
+    else if (
+      file.type === "application/vnd.ms-excel" ||
+      file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) {
+      docType = 3; // Excel
     } else {
       notify("Unsupported file type.", "error");
       return;
@@ -92,29 +105,24 @@ export default function ManageProductsandServices({ notify, onUploaded }) {
   };
   return (
     <div>
-      <form
-        className="flex-row justify-between gap-6"
-        onSubmit={addProductService}
-      >
-        <span className="text-white/90 text-sm">Upload Document</span>
-        <div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
-          <input
-            type="file"
-            accept=".pdf,.txt"
-            onChange={(e) => setFile(e.target.files[0])}
-            className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0"
-          />
-
-          {file ? (
-            <div className="w-full justify-center flex p-2 hover:bg-white/20 cursor-pointer">
-              <FileText size={30} className="mr-2 text-white/90" />
-              <p className="text-white/90 text-2xl">{file.name}</p>
-            </div>
-          ) : (
-            <div className="text-white/90 mt-4">
-              Click to upload or drag and drop
-            </div>
-          )}
+		<form className="flex-row justify-between gap-6" onSubmit={addProductService}>
+      <span className="text-white/90 text-sm">Upload Document</span>
+		<div className="flex w-full relative flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-lg h-48 hover:bg-white/10 cursor-pointer">
+            <input 
+                type="file" 
+                accept=".pdf,.txt,.doc,.docx,.xls,.xlsx"
+                onChange={(e) => setFile(e.target.files[0])}
+                className="border border-white/20 cursor-pointer text-white w-full h-full absolute opacity-0" 
+            />
+                                            
+            {file ? (
+                <div className="w-full justify-center flex p-2 hover:bg-white/20 cursor-pointer">
+                    <FileText size={30} className="mr-2 text-white/90" />
+                    <p className="text-white/90 text-2xl">{file.name}</p>
+                </div>
+                         ) : (
+                <div className="text-white/90 mt-4">Click to upload or drag and drop</div>
+                )}
         </div>
 
         <div className="mt-4 w-full">
@@ -138,31 +146,23 @@ export default function ManageProductsandServices({ notify, onUploaded }) {
           </select>
         </div>
 
-        <div className="flex w-full ">
-          <button
-            disabled={uploading}
-            className={`w-full mt-6 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-2 px-4 rounded-full transition`}
-          >
-            {uploading ? (
-              <>
-                <LoaderCircle className="animate-spin mr-2" />{" "}
-                <span className="ml-2">Uploading...</span>
-              </>
-            ) : (
-              "Upload File"
-            )}
-          </button>
+			<div className="flex w-full ">
+        
+				<button 
+          disabled={uploading} 
+          className={`w-full mt-6 bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-2 px-4 rounded-full transition`}>
+          {uploading ? (<><LoaderCircle className="animate-spin mr-2" />  <span className="ml-2">Uploading...</span></>) : "Upload File"}
+        </button>
 
-          {file && !uploading && (
-            <button
-              onClick={cancel}
-              className={`w-full mt-6 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}
-            >
-              CANCEL
-            </button>
-          )}
-        </div>
-      </form>
-    </div>
-  );
+        { file && !uploading &&(
+        <button 
+          onClick={cancel}
+				  className={`w-full mt-6 ml-4 bg-red-600 hover:bg-red-700 text-white text-md font-bold py-1.5 rounded-full transition`}>
+					Cancel
+			  </button>)}
+
+			</div>
+			</form>
+		</div>
+    )
 }

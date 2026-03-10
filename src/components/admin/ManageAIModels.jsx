@@ -5,6 +5,7 @@ import { LoaderCircle } from "lucide-react";
 
 export default function ManageAiModels({ notify, getDetails, editingRow, clearEditingRow }) {
 
+const [modelType, setModelType] = useState([]);
 const [aiProviders, setAIProviders] = useState("");
 const [providers, setProviders] = useState([]);
 const [apiKey, setApiKey] = useState("");
@@ -17,7 +18,6 @@ const [apiVersion, setApiVersion] = useState("");
 
 const [isEditing, setIsEditing] = useState(false);
 const [editingId, setEditingId] = useState(null);
-
 
 
 const isAzureAIFoundry =
@@ -113,17 +113,22 @@ const addNewAiModel = async (e) => {
     e.preventDefault();
 
     if (!aiProviders) {
-      notify?.("Please select an AI provider", "error");
+      notify?.("Please select an AI provider", "warning");
       return;
     }
 
     if (!model) {
-      notify?.("Please select an AI model", "error");
+      notify?.("Please select an AI model", "warning");
       return;
     }
 
     if (!apiKey?.trim()) {
-    notify?.("Please enter an API key", "error");
+    notify?.("Please enter an API key", "warning");
+    return;
+  }
+
+     if (temperature === "" || temperature === null || temperature === undefined) {
+    notify?.("Please enter temperature", "warning");
     return;
   }
 
@@ -177,23 +182,23 @@ const updateAiModel = async (e) => {
     providers.find((p) => String(p.id) === String(aiProviders))?.name;
 
   if (!providerName) {
-    notify?.("Provider not found.", "error");
+    notify?.("Provider not found.", "warning");
     return;
   }
 
   if (!model?.trim()) {
-    notify?.("Please enter an AI model", "error");
+    notify?.("Please enter an AI model", "warning");
     return;
   }
 
   if (temperature === "" || temperature === null || temperature === undefined) {
-    notify?.("Please enter temperature", "error");
+    notify?.("Please enter temperature", "warning");
     return;
   }
 
   // If Azure and you want apiVersion required during edit:
   if (isAzureAIFoundry && !apiVersion?.trim()) {
-    notify?.("Please enter API version", "error");
+    notify?.("Please enter API version", "warning");
     return;
   }
 
@@ -238,7 +243,6 @@ const updateAiModel = async (e) => {
   
 }
 
-
 //cancel button
 const cancel = () => {
     setAIProviders("");
@@ -258,8 +262,22 @@ const cancel = () => {
     return (
         <div>
             <form onSubmit={isEditing ? updateAiModel : addNewAiModel} className="space-y-2">
+              {/* to change */}
         <label className="block">
+             <span className="text-white/90 text-sm">Model Type</span>
+            <select
+                value={modelType}
+                onChange={(e) => setModelType(e.target.value)}
+                disabled={isEditing}
+                className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
+                >
+                <option className="text-gray-900" value="">Select Model Type </option>
+                <option className="text-gray-900">Answering Model</option>
+                <option className="text-gray-900">Reflection Model</option>
+            </select>
+        </label>
 
+        <label className="block">
              <span className="text-white/90 text-sm">AI Provider</span>
             <select
                 value={aiProviders}
@@ -291,7 +309,6 @@ const cancel = () => {
             <span className="text-white/90 text-sm"></span>
             <input
               type="text"
-              required
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Model API Key"
@@ -306,7 +323,6 @@ const cancel = () => {
               min={0}
               max={1}
               step={0.01}
-              required
                 value={temperature}
                 onChange={(e) => {
               const value = Number(e.target.value);
@@ -354,7 +370,7 @@ const cancel = () => {
                 disabled={saving}
                 className={`w-full bg-white text-[#183398] hover:bg-white/25  hover:text-white text-md font-bold py-1.5 rounded-full transition`}
             >
-              {saving ? "SAVING..." : isEditing ? "UPDATE" : "SAVE"}
+              {saving ? (<><LoaderCircle className="animate-spin mr-2" /><span>SAVING...</span></>) : isEditing ? ("UPDATE") : ("SAVE")}
             </button>
         </div>
             </form>

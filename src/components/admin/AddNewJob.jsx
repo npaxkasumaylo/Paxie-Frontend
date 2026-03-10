@@ -10,7 +10,6 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 
 	const addNewJob = async (e) => {
 		e.preventDefault();
-		setAdding(true);
 
 		// Check uniqueness of a job opening
 		const title = jobTitle.trim();
@@ -20,8 +19,19 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 			return;
 		}
 
+		if (!jobTitle){
+			notify("Please input Job Title.", "warning");
+			return;
+		}
+
+		if (!jobDescription){
+			notify("Please input Job Description.", "warning");
+			return;
+		}
+
+		setAdding(true);
 		try {
-			const res = await api.addJob({
+				await api.addJob({
 				JobTitle: title,
 				JobDescription: jobDescription,
 				JobRequirements: jobRequirements,
@@ -51,10 +61,9 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
             <span className="text-white/90 text-sm">Job Title</span>
             <input
               type="text"
-              required
-							value={jobTitle}
-							minLength={10}
-							maxLength={100}
+			  value={jobTitle}
+			  minLength={10}
+			  maxLength={100}
               onChange={(e) => setJobTitle(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="e.g Software Engineer"
@@ -64,10 +73,9 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 					<label className="block">
             <span className="text-white/90 text-sm">Job Description</span>
             <textarea
-              required
-							value={jobDescription}
-							minLength={10}
-							maxLength={1500}
+			  value={jobDescription}
+			  minLength={10}
+			  maxLength={1500}
               onChange={(e) => setJobDescription(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="e.g Job Description"
@@ -77,9 +85,8 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 					<label className="block">
             <span className="text-white/90 text-sm">Job Requirements</span>
             <textarea
-              required
-							value={jobRequirements}
-							maxLength={1000}
+			  value={jobRequirements}
+			  maxLength={1000}
               onChange={(e) => setJobRequirements(e.target.value)}
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
               placeholder="Enter job requirements"
@@ -92,7 +99,7 @@ export default function AddNewJob({getAllJobs, notify, jobs}) {
 							disabled={adding}
 							className={`w-full ${adding ? 'bg-white/20 text-gray-500' : 'bg-white hover:bg-white/25 hover:text-white text-[#00092d]'}  text-md font-bold py-1.5 rounded-full transition`}
             >
-				{adding && <LoaderCircle className="h-5 w-5 animate-spin" />}
+				{adding && <LoaderCircle className="animate-spin mr-2"/>}
             	{adding ? "SAVING..."  : "SAVE"}
             </button>
 					</div>

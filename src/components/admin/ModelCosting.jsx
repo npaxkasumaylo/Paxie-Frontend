@@ -63,21 +63,21 @@ export default function ModelCosting({notify, onSaved, editingRow}) {
     e.preventDefault();
 
     if (!aiProviders) {
-      notify?.("Please select an AI provider", "error");
+      notify?.("Please select an AI provider", "warning");
       return;
     }
 
     if (!model) {
-      notify?.("Please select an AI model", "error");
+      notify?.("Please select an AI model", "warning");
       return;
     }
 
     if (!inputCost){
-      notify?.("Please enter an Input cost")
+      notify?.("Please enter an Input cost", "warning")
     }
 
     if (!outputCost){
-      notify?.("Please enter an Input cost")
+      notify?.("Please enter an Input cost", "warning")
     }
 
     setSaving(true);
@@ -235,7 +235,6 @@ const cancel = () => {
                 type="text"
                 value={inputCost}
                 onChange={(e) => setInputCost(e.target.value)}
-                required
                 placeholder="Input cost amount per million token"
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 />
@@ -248,7 +247,6 @@ const cancel = () => {
               type="text"
               value={outputCost}
               onChange={(e) => setOutputCost(e.target.value)}
-              required
               placeholder="Output cost amount per million token"
               className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
             />

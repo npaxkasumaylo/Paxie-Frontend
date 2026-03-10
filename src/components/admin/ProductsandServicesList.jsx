@@ -155,9 +155,7 @@ export default function ProductsandServicesList({
                     className="flex min-w-0 flex-1 items-center gap-2"
                   >
                     <FileText className="shrink-0 text-white/90" />
-                    <p className="min-w-0 text-white/90 truncate">
-                      {item.fileName}
-                    </p>
+                    <p className="min-w-0 text-white/90 truncate ">{item.fileName}</p>
                   </button>
 
                   <button
