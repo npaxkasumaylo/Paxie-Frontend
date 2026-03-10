@@ -1,12 +1,9 @@
-import { CircleX, FileText, LoaderCircle, LoaderIcon } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { CircleX, FileText, LoaderCircle } from "lucide-react";
+import React, {useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  convertFileToBytes,
-  downloadFileFromBase64,
-} from "../../utils/FileConverter";
+import { convertFileToBytes, downloadFileFromBase64 } from "../../utils/FileConverter";
 import { api } from "../../api/api";
-import { Bounce, toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import AdminNavBar from "./AdminNavBar";
 import PageLoader from "../PageLoader";
 import Toast from "../Toast";
@@ -16,7 +13,6 @@ import ManageAiModels from "./ManageAIModels";
 import ManageProductsandServices from "./ProductsandServices";
 import ProductsandServicesList from "./ProductsandServicesList";
 import ModelList from "./ModelList";
-import Report from "./Reports/QueryLogs";
 import QueryLogs from "./Reports/QueryLogs";
 import DocumentLogs from "./Reports/DocumentLogs";
 import Graphs from "./Reports/Graphs";
@@ -41,7 +37,7 @@ export default function Home() {
   	const [currentId, setCurrentId] = useState(null);
 	const [jobs, setJobs] = useState([]);
 	const [mode, setMode] = useState("files");
-	const docTypeArr = ['Pdf File', 'Excel File', 'Word FIle'];
+	const docTypeArr = ['Pdf File', 'Excel File', 'Word File', 'Excel File' ];
 	const [details, setDetails] = useState([]);
 	const [editingRow, setEditingRow] = useState(null);
  	const [documentTags, setDocumentTags] = useState([]);
@@ -119,45 +115,22 @@ const getAllDocuments = async (
       setGeneralDocuments(data);
       // Unknown total pages — treat as "Next exists if we got a full page"
       setTotalPages(1);
-    }
-  };
-
-  useEffect(() => {
-    if (mode === "files") {
-      getAllDocuments(false, "General", pageNumber, pageSize);
-    }
-  }, [pageNumber, pageSize, mode]);
-
-  const validateFileSize = (data, maxMB) => {
-    const maxSize = maxMB * 1024 * 1024;
-    return data.size <= maxSize;
-  };
-
-  const handleUpload = async () => {
-    if (!file) {
-      notify("Please select a file to upload.", "warning");
       return;
     }
 
-    if (!docInfo) {
-      notify("Please select a document type.", "warning");
-      return;
-    }
+    // If backend returns object { items, totalPages/totalCount }
+    const items = data?.items || data?.data || [];
+    setGeneralDocuments(Array.isArray(items) ? items : []);
 
-    if (!validateFileSize(file, 10)) {
-      notify("File must be less than 10MB", "error");
-      return;
-    }
+    const apiTotalPages = data?.totalPages ?? data?.pages ?? null;
+    const totalCount = data?.totalCount ?? data?.totalItems ?? data?.count ?? null;
 
-    let docType;
-
-    if (file.type === "application/pdf") {
-      docType = 0; // PDF
-    } else if (file.type === "text/plain") {
-      docType = 1; // Text
+    if (apiTotalPages != null) {
+      setTotalPages(Number(apiTotalPages) || 1);
+    } else if (totalCount != null) {
+      setTotalPages(Math.max(1, Math.ceil(Number(totalCount) / size)));
     } else {
-      notify("Unsupported File Type", "error");
-      return;
+      setTotalPages(1);
     }
   } catch (e) {
     if (e?.status === 401) navigate("/admin/login");
@@ -198,19 +171,16 @@ const handleUpload = async () => {
 
 		let docType;
 
-		  if (file.type === "application/pdf") {
+		if (file.type === "application/pdf") {
 			docType = 0; // PDF
-		} 
-		else if (file.type === "text/plain") {
-			docType = 1; // TXT
-		} 
-		else if (
+		} else if (file.type === "text/plain") {
+			docType = 1; // Text
+		} else if (
 			file.type === "application/msword" ||
 			file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 		) {
 			docType = 2; // Word
-		} 
-		else if (
+		} else if (
 			file.type === "application/vnd.ms-excel" ||
 			file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 		) {
@@ -349,238 +319,113 @@ const handleUseModel = async (row) => {
       return;
     }
 
-    setUploading(true);
-    setError("");
 
-    try {
-      const document = {
-        FileName: file.name,
-        DocumentType: docType,
-        productName: "General",
-        documentTagsId: Number(docInfo),
-        Data: base64String,
-        Uploaded: new Date().toISOString(),
-        DocumentInformation: docInfo,
-      };
+    await api.editModelCredentialsByUsedModel({
+      id: row.id,
+      isImplemented: true,
+    });
 
-      const res = await api.addDocument(document);
-      await api.addAIDocument(res.data.id);
+    notify?.("Model switched successfully.", "success");
 
-      setUploading(false);
-      setFile(null);
-      setDocInfo("");
-      notify("Successfully uploaded file!", "success");
-      getAllDocuments();
-    } catch (e) {
-      console.error("Error uploading document:", e);
-      notify("Upload Failed. Try again later.", "error");
-      setUploading(false);
-    }
-  };
 
-  const handleDelete = (documentId) => async () => {
-    setCurrentId(documentId);
-    setDeleting(true);
-    if (!window.confirm("Are you sure you want to delete this document?")) {
-      setDeleting(false);
+    getDetails();
+    console.log(response)
+  } catch (e) {
+    console.error(e);
+    notify?.(
+      e?.response?.data?.detail?.[0]?.msg ||
+        e?.response?.data?.message ||
+        "Failed to switch model.",
+      "error"
+    );
+  }
+};
+
+const onEditModel= (row) => setEditingRow(row);
+
+const onEditModelCost= (row) => setEditingRow(row);
+
+
+//document tags
+const getDocumentTags = async () => {
+  try {
+    const res = await api.getDocumentTags(false);
+    setDocumentTags(Array.isArray(res?.data) ? res.data : []);
+  } catch (e) {
+    console.error(e);
+    notify?.("Failed to load document tags.", "error");
+    setDocumentTags([]);
+  }
+};
+
+//get all products
+const getAllProductDocuments = async () => {
+  try {
+    setNetworkError("");
+
+    const resTags = await api.getDocumentTags(true);
+    const tags = Array.isArray(resTags?.data) ? resTags.data : [];
+
+    const productNames = [...new Set(tags.map(t => t?.tagName).filter(Boolean))];
+
+    // if somehow no tags exist, at least fetch General so ProductName is not empty
+    if (productNames.length === 0) {
+      const res = await api.getDocuments(true, "General", 1, 100);
+      setProductDocuments(Array.isArray(res?.data) ? res.data : []);
       return;
     }
 
-    try {
-      await api.deleteAIDocument(documentId);
-      await api.deleteDocument(documentId);
-      console.log("Document deleted successfully!");
-      notify("Document deleted successfully!", "success");
-      setDeleting(false);
-      setCurrentId(null);
-      getAllDocuments();
-      getAllProductDocuments();
-    } catch (e) {
-      console.error("Error deleting document:", e);
-      setDeleting(false);
-      notify("Failed to delete document.", "error");
-    }
-  };
+    const responses = await Promise.all(
+      productNames.map((name) => api.getDocuments(true, name, 1, 1000))
+    );
 
-  const handleDownload = (document) => {
-    try {
-      downloadFileFromBase64(document.data, document.fileName);
-    } catch (e) {
-      console.error("Error downloading document:", e);
-      notify("Failed to download document.", "error");
-    }
-  };
-
-  const getAllJobs = async () => {
-    try {
-      const res = await api.getJobs();
-      setJobs(res.data);
-    } catch (e) {
-      if (e.status == 401) {
-        navigate("/admin/login");
-      }
-      setNetworkError("Something went wrong. Try again later.");
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return date.toLocaleDateString("en-US", options);
-  };
-
-  //editAIModel, handleUseModel, deleteModel, details
-  //gets model credentials
-  const getDetails = async () => {
-    const res = await api.getModelCredentials();
-    setDetails(res.data || []);
-  };
-
-  const deleteModel = async (model) => {
-    try {
-      await api.deleteModelCredentials({
-        id: model.id,
-        isActive: false,
-      });
-      notify?.("Model successfuly deleted.", "success");
-      getDetails();
-    } catch (e) {
-      console.error(e);
-      notify?.("Failed to use model.", "error");
-      getDetails();
-    }
-  };
-
-  const handleUseModel = async (row) => {
-    try {
-      const response = await api.switchModel(row.id);
-
-      const result = response.data;
-      console.log("Switch model response:", result);
-
-      if (result != "Success") {
-        notify?.(result?.message || "Model switch failed.", "error");
-        return;
-      }
-
-      await api.editModelCredentialsByUsedModel({
-        id: row.id,
-        isImplemented: true,
-      });
-
-      notify?.("Model switched successfully.", "success");
-
-      getDetails();
-      console.log(response);
-    } catch (e) {
-      console.error(e);
-      notify?.(
-        e?.response?.data?.detail?.[0]?.msg ||
-          e?.response?.data?.message ||
-          "Failed to switch model.",
-        "error",
-      );
-    }
-  };
-
-  const onEditModel = (row) => setEditingRow(row);
-
-  const onEditModelCost = (row) => setEditingRow(row);
-
-  //document tags
-  const getDocumentTags = async () => {
-    try {
-      const res = await api.getDocumentTags(false);
-      setDocumentTags(Array.isArray(res?.data) ? res.data : []);
-    } catch (e) {
-      console.error(e);
-      notify?.("Failed to load document tags.", "error");
-      setDocumentTags([]);
-    }
-  };
-
-  //get all products
-  const getAllProductDocuments = async () => {
-    try {
-      setNetworkError("");
-
-      const resTags = await api.getDocumentTags(true);
-      const tags = Array.isArray(resTags?.data) ? resTags.data : [];
-
-      const productNames = [
-        ...new Set(tags.map((t) => t?.tagName).filter(Boolean)),
-      ];
-
-      // if somehow no tags exist, at least fetch General so ProductName is not empty
-      if (productNames.length === 0) {
-        const res = await api.getDocuments(true, "General", 1, 100);
-        setProductDocuments(Array.isArray(res?.data) ? res.data : []);
-        return;
-      }
-
-      const responses = await Promise.all(
-        productNames.map((name) => api.getDocuments(true, name, 1, 1000)),
-      );
-
-      const merged = responses.flatMap((r) =>
-        Array.isArray(r?.data) ? r.data : [],
-      );
-      setProductDocuments(merged);
-    } catch (e) {
-      console.error(e);
-      setNetworkError("Something went wrong. Try again later.");
-      setProductDocuments([]);
-      notify?.("Failed to load product documents.", "error");
-    }
-  };
-  const hasNextPage = generalDocuments.length === pageSize;
-  //SIDEPANEL
-  const SidePanel = () => {
-    if (mode === "files") {
-      return (
-        <div
-          className="md:w-1/8 lg:1/3 w-full p-8 bg-[#00092d] backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
+    const merged = responses.flatMap((r) => (Array.isArray(r?.data) ? r.data : []));
+    setProductDocuments(merged);
+  } catch (e) {
+    console.error(e);
+    setNetworkError("Something went wrong. Try again later.");
+    setProductDocuments([]);
+    notify?.("Failed to load product documents.", "error");
+  }
+};
+const hasNextPage = generalDocuments.length === pageSize;
+//SIDEPANEL 
+const SidePanel = () => {
+		if (mode === "files") {
+			return (
+				<div className="md:w-1/8 lg:-1/3 w-full p-8 bg-[#00092d] backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
 							overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full
 					[&::-webkit-scrollbar-thumb]:bg-white/50"
-        >
-          <div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
-            <h1 className="text-2xl font-bold text-white pb-3 ">
-              Document List
-            </h1>
-          </div>
+				>
+					<div className="flex items-center justify-between pb-3 mb-4 border-b-2 border-b-white/50">
+						<h1 className="text-2xl font-bold text-white pb-3 ">
+						Document List
+						</h1>
+						
+					</div>
 
-          {generalDocuments && generalDocuments.length > 0 ? (
-            generalDocuments.map((item) => (
-              <div key={item.documentId} className="relative group mt-2.5">
-                <div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
-                  <button
-                    onClick={() => handleDownload(item)}
-                    className="flex flex-1 items-center cursor-pointer hover:text-white"
-                  >
-                    <FileText className="mr-2 text-white/90 hover:text-white" />
-                    <p className="text-white/90 hover:text-white truncate">
-                      {item.fileName}
-                    </p>
-                  </button>
-                  <button
-                    onClick={handleDelete(item.documentId)}
-                    className="ml-auto flex-shrink-0"
-                    disabled={deleting}
-                  >
-                    {deleting && currentId === item.documentId ? (
-                      <LoaderCircle className="text-white/90 animate-spin" />
-                    ) : (
-                      <CircleX
-                        size={20}
-                        className="text-white/90 transition-transform duration-200 hover:scale-125"
-                      />
-                    )}
-                  </button>
-                </div>
+						{generalDocuments && generalDocuments.length > 0 ? (
+							generalDocuments.map(item => (
+								<div key={item.documentId} className="relative group mt-2.5">
+									<div className="flex p-2 bg-white/10 rounded-lg border border-white/10 hover:bg-white/20 transition-all duration-200">
+										<button 
+											onClick={() => handleDownload(item)}
+											className="flex flex-1 items-center cursor-pointer hover:text-white"
+										>
+											<FileText className="mr-2 text-white/90 hover:text-white" />
+											<p className="text-white/90 hover:text-white truncate">{item.fileName}</p>
+										</button>
+										<button onClick={handleDelete(item.documentId)} className="ml-auto flex-shrink-0" disabled={deleting}>
+											{deleting && currentId === item.documentId ? (
+												<LoaderCircle className="text-white/90 animate-spin"/>
+											) : (
+												<CircleX size={20} className="text-white/90 transition-transform duration-200 hover:scale-125"/>
+											)}
+										</button>
+									</div>
 
-                {/* Specific details */}
-                <div
-                  className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
+									{/* Specific details */}
+									<div className=" absolute right-0 left-0 top-full p-2 mt-1 bg-white/10 rounded-b-lg border border-t-0 border-white/10 shadow-xl overflow-hidden
 										max-h-0 opacity-0 pointer-events-none group-hover:static group-hover:max-h-60 group-hover:opacity-100 group-hover:pointer-events-auto
 										transition-all duration-300 ease-out"
 									>
