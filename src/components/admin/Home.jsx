@@ -22,6 +22,7 @@ import ModelCosting from "./ModelCosting";
 import CostingList from "./CostingList";
 import SystemPrompt from "./SystemPrompt";
 import SystemPromptPreview from "./SystemPromptPreview";
+import Settings from "./Settings";
 
 export default function Home() {
 	const [uploading, setUploading] = useState(false);
@@ -527,6 +528,7 @@ const SidePanel = () => {
 								{mode === "producstandservices" && "Upload Products and Services Files"}
 								{mode === "systemPrompt" && "Manage AI System Prompts"}
 								{mode === "report" }
+								{mode === "settings" && "Settings"}
 							</h1>
 						</div> 
 						
@@ -616,6 +618,10 @@ const SidePanel = () => {
 
 						{mode === "systemPrompt" && (
 						<SystemPrompt notify={notify} promptPreview={promptPreview} setPromptPreview={setPromptPreview}/>
+						)}	
+
+						{mode === "settings" && (
+						<Settings/>
 						)}	
 						
 

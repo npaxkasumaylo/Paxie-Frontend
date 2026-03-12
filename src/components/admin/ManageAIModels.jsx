@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 
 export default function ManageAiModels({ notify, getDetails, editingRow, clearEditingRow }) {
 
-const [modelType, setModelType] = useState([]);
+const [modelType, setModelType] = useState("");
 const [aiProviders, setAIProviders] = useState("");
 const [providers, setProviders] = useState([]);
 const [apiKey, setApiKey] = useState("");
@@ -42,12 +42,13 @@ useEffect(() => {
 
   setIsEditing(true);
   setEditingId(editingRow.id);
-
+  
   const provider = providers.find(p => p.name === editingRow.serviceProvider);
   setAIProviders(provider?.id ?? "");
   setModel(editingRow.modelName ?? "");
   setTemperature(editingRow.temperature ?? "");
   setApiVersion(editingRow.apiVersion ?? "");
+  setModelType(String(editingRow.modelType ?? ""));
   setApiKey("");
   setEndpoint("");
 }, [editingRow, providers]);
@@ -112,6 +113,12 @@ const encryptEndPoint = async (publicKeyBase64, endpoint) => {
 const addNewAiModel = async (e) => {
     e.preventDefault();
 
+    if (!modelType){
+      notify?.("Please select a model type", "warning");
+      return
+    }
+
+
     if (!aiProviders) {
       notify?.("Please select an AI provider", "warning");
       return;
@@ -142,6 +149,7 @@ const addNewAiModel = async (e) => {
       const providerName =providers.find((p) => String(p.id) === String(aiProviders))?.name;
 
       const modelDetails = {
+        modelType: Number(modelType),
         serviceProvider: providerName,
         modelName:model,
         apiKey: encryptedApiKey,
@@ -225,6 +233,7 @@ const updateAiModel = async (e) => {
       serviceProvider: current.serviceProvider,
       endpoint: encryptedEndPoint || "",
       apiVersion: apiVersion || "",
+      modelType: Number(modelType),
     };
 
     console.log(payload)
@@ -245,6 +254,7 @@ const updateAiModel = async (e) => {
 
 //cancel button
 const cancel = () => {
+    setModelType("");
     setAIProviders("");
     setModel("");
     setApiKey("");
@@ -272,8 +282,8 @@ const cancel = () => {
                 className="mt-2 block w-full rounded-lg bg-white/10 border border-white/20 px-4 py-1.5 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/80"
                 >
                 <option className="text-gray-900" value="">Select Model Type </option>
-                <option className="text-gray-900">Answering Model</option>
-                <option className="text-gray-900">Reflection Model</option>
+                <option className="text-gray-900" value="0">Answering Model</option>
+                <option className="text-gray-900" value="1">Reflection Model</option>
             </select>
         </label>
 

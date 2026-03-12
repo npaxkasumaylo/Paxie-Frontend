@@ -6,6 +6,14 @@ export default function ModelList({
   handleUseModel,
   deleteModel,
 }) {
+
+  const answeringModels = details.filter((d) => Number(d.modelType) === 0);
+  const reflectionModels = details.filter((d) => Number(d.modelType) === 1);
+
+  const getModelTypeName = (type) => {
+  return Number(type) === 0 ? "Answering" : "Reflection";
+};
+
   return (
     <div
       className="md:w-1/8 lg:1/3 w-full p-8 bg-[#00092d] backdrop-blur-lg rounded-2xl border border-white/10 shadow-2xl 
@@ -34,14 +42,14 @@ export default function ModelList({
               </thead>
 
               <tbody className="divide-y divide-white/10">
-                {details.length > 0 ? (
-                  details.map((d) => (
+                {answeringModels.length > 0 ? (
+                  answeringModels.map((d) => (
                     <tr
                       key={`answering-${d.id ?? `${d.model}-${d.apiKey}`}`}
                       className="transition hover:bg-white/10"
                     >
                       <td className="px-5 py-4 text-white">
-                        <span className="font-semibold">Answering</span>
+                        <span className="font-semibold">{getModelTypeName(d.modelType)}</span>
                       </td>
 
                       <td className="px-5 py-4 text-white">
@@ -142,14 +150,14 @@ export default function ModelList({
               </thead>
 
               <tbody className="divide-y divide-white/10">
-                {details.length > 0 ? (
-                  details.map((d) => (
+                {reflectionModels.length > 0 ? (
+                  reflectionModels.map((d) => (
                     <tr
                       key={`reflection-${d.id ?? `${d.model}-${d.apiKey}`}`}
                       className="transition hover:bg-white/10"
                     >
                       <td className="px-5 py-4 text-white">
-                        <span className="font-semibold">Reflection</span>
+                        <span className="font-semibold">{getModelTypeName(d.modelType)}</span>
                       </td>
 
                       <td className="px-5 py-4 text-white">
